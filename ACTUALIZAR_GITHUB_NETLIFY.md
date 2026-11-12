@@ -1,19 +1,16 @@
-# Actualizar Gildem Market & Craft a v1.4.0
+# Publicar Market & Craft v1.5.0 en GitHub y Netlify
 
-Repositorio independiente actual: https://github.com/drzjhon-dot/gildem-market-craft
+**Repositorio de este proyecto (no el antiguo):** https://github.com/drzjhon-dot/gildem-market-craft
 
-Sitio vinculado: https://gildemcraft.netlify.app/
+**Web:** https://gildemcraft.netlify.app/
 
-1. Antes de reemplazar archivos, conserva una copia de la versión que tienes en `main` o crea una rama de respaldo.
-2. Extrae **Gildem_Market_Craft_v1_4_0_GITHUB_NETLIFY.zip** en tu PC. Abre el contenido de la carpeta extraída.
-3. En GitHub abre el repositorio indicado, sube **el contenido de la carpeta** (index.html, styles.css, package.json, netlify.toml, directorios `src`, `netlify`, `scripts`, `assets`, `tests`, etc.) a la **raíz**. No crees un directorio extra encima de ellos.
-4. Si GitHub pide resolver duplicados, reemplaza los archivos antiguos con los nuevos; conserva el nombre y ubicación del repositorio. El ZIP contiene todo lo necesario y no depende del repositorio antiguo.
-5. Realiza el commit en `main`, por ejemplo: `v1.4: Craft Planner separado + tema grafito`.
-6. En Netlify abre el sitio ya conectado y verifica que el deploy termine. Después recarga la web con `Ctrl + Shift + R`.
-7. Verifica las tres pestañas: marca objetos del Top, envíalos al Planner, genera una ruta para una ciudad y transfiere el lote a la calculadora.
+1. En GitHub conserva o descarga una copia de `main` antes de reemplazar archivos.
+2. Extrae `Gildem_Market_Craft_v1_5_0_GITHUB_NETLIFY.zip`.
+3. Abre el repositorio existente y carga **todo el contenido de la carpeta** en la raíz, sustituyendo `index.html`, `styles.css`, `package.json`, `src/`, `assets/`, `tests/`, `scripts/`, `netlify/` y demás archivos. No crees una carpeta adicional por encima de esos archivos.
+4. Haz commit en `main`, por ejemplo: `v1.5: Craft Planner compacto, fama y variedad`.
+5. Netlify debe ejecutar `npm run build` y publicar `dist`, según `netlify.toml`. Comprueba el log de compilación y después recarga la web con `Ctrl + Shift + R`.
+6. Prueba: ranking de mazas T4–T8 → marcar variantes → Craft Planner → seleccionar ciudad y 10M → modo Fama o Silver → generar → revisar razones de exclusión → enviar lote → comprobar materiales y diarios consolidados.
 
-Si Netlify no despliega automáticamente, revisa que el sitio conserve la rama `main`, el comando `npm run build` y el directorio publicado `dist`. Están declarados en `netlify.toml`.
+**Precaución:** los presets son presupuestos máximos, no objetivos de gasto. En modo Fama, una ruta puede tener beneficio negativo dentro de los límites explícitos. No inviertas sin revisar precios reales, libro de órdenes, retornos y transporte. Los promedios AODP no prueban demanda ejecutable.
 
-**Atención:** la conexión de GitHub disponible para esta conversación anteriormente devolvió 403 al escribir. Esta entrega es un ZIP listo para carga manual; **no se ha modificado tu web ni tu repositorio desde aquí**.
-
-**Aviso de mercado:** los tests usan cotizaciones simuladas; confirma disponibilidad real de AODP y la liquidez de los mercados después del deploy.
+**Estado:** el ZIP es una entrega local. No se modificó GitHub ni Netlify desde esta conversación. Las pruebas se ejecutaron con datos de mercado simulados.

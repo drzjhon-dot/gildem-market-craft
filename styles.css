@@ -239,3 +239,104 @@ footer{background:#1d2326;border-color:#343f43;color:#98a9b2}
 @media(max-width:1120px){.planner-shell .risk-section .multifield{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:680px){.planner-basket-grid{grid-template-columns:1fr}.top-transfer-bar .btn-group{flex-direction:column;width:100%}.top-transfer-bar .btn{width:100%}.planner-shell .risk-section .multifield{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:420px){.planner-shell .risk-section .multifield{grid-template-columns:1fr}}
+
+/* v1.5 · Mercado Albion: configuración densa, más legibilidad y escenas propias */
+body{font-size:15px;line-height:1.5}
+.sidebar .nav-link strong{font-size:14px}
+.sidebar .nav-link small{font-size:11.5px}
+.panel-heading h2,.panel h2{font-size:18px}
+.panel-heading p{font-size:12px}
+.hero{min-height:210px;isolation:isolate;background-color:#2e393b;overflow:hidden}
+.hero::before{content:"";position:absolute;inset:0;background:linear-gradient(95deg,#182328f5 2%,#1c292de9 43%,#28383c90 70%,#273a3582 100%),url('/assets/scenes/royal-market.webp') center/cover no-repeat;z-index:-1}
+.hero--planner::before{background:linear-gradient(94deg,#222926f7 5%,#29322ce6 49%,#32413b8c 100%),url('/assets/scenes/planning.webp') center/cover no-repeat}
+.hero--calc::before{background:linear-gradient(94deg,#221f1cf7 5%,#292c2bdc 48%,#43372e83 100%),url('/assets/scenes/forge.webp') center/cover no-repeat}
+.hero .hero-game-scene{height:350px;width:440px;top:-68px;right:-10px;opacity:.8;filter:drop-shadow(0 16px 30px #040708aa)}
+.hero-copy{position:relative;z-index:1;text-shadow:0 2px 12px #071114a0}
+.hero p{max-width:680px}
+.panel.planner-basket,.manual-calculator{position:relative;isolation:isolate;overflow:hidden}
+.panel.planner-basket::before,.manual-calculator::before{content:"";position:absolute;inset:auto 0 0 auto;width:300px;height:220px;background:url('/assets/scenes/planning.webp') center/cover no-repeat;opacity:.055;pointer-events:none;z-index:-1;mask-image:linear-gradient(90deg,transparent,#000)}
+.manual-calculator::before{background-image:url('/assets/scenes/forge.webp')}
+/* Compact settings while keeping controls finger-friendly. */
+.planner-shell .config-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:9px}
+.planner-shell .config-section{padding:11px 12px;min-width:0;border-radius:10px;display:flex;flex-direction:column;gap:7px}
+.planner-shell .config-section h3{font-size:12px;margin:0;line-height:1.3;color:#f3d19d}
+.planner-shell .config-section p{font-size:10.5px;line-height:1.45;margin:0;color:#b7c2c0}
+.planner-shell .config-section .small-print{font-size:10px}
+.planner-shell .config-section select,.planner-shell .config-section input[type=number]{min-height:35px;height:35px;padding:6px 9px;font-size:12px}
+.planner-shell .config-section .toggle-chip{padding:5px 7px;min-height:31px;font-size:12px;display:inline-flex;align-items:center}
+.planner-shell .config-section .pill-choices{gap:5px}
+.planner-shell .config-section .checkline{font-size:11.5px;margin:0;line-height:1.35;align-items:center}
+.planner-shell .config-section input[type=checkbox]{width:17px;height:17px;accent-color:#e8bc73}
+.planner-shell .config-section .multifield{gap:7px}
+.planner-shell .config-section .multifield label{font-size:10px;line-height:1.3}
+.planner-shell .config-half,.planner-shell .risk-section{grid-column:span 2}
+.planner-shell .focus-section.expanded,.planner-shell .fame-config:has(.fame-loss-input){grid-column:span 2}
+.planner-shell .risk-section .multifield{grid-template-columns:repeat(4,minmax(0,1fr))}
+.budget-presets{display:flex;gap:6px;flex-wrap:wrap}
+.budget-choice{font-size:11px;font-weight:800;line-height:1;display:inline-flex;align-items:center;gap:4px;padding:8px 7px;min-height:34px;color:#c4d4ce;border:1px solid #61716e;border-radius:8px;background:#263232;cursor:pointer;white-space:nowrap}
+.budget-choice input{position:absolute;opacity:0;width:1px;height:1px;pointer-events:none}
+.budget-choice .budget-check{font-size:10px;color:transparent;border:1px solid #64736f;border-radius:3px;width:13px;height:13px;display:inline-grid;place-items:center}
+.budget-choice.active,.budget-choice:has(input:checked){color:#ffe2ab;border-color:#d8b476;background:#554b35}
+.budget-choice.active .budget-check,.budget-choice:has(input:checked) .budget-check{color:#1b211e;background:#e3b76e;border-color:#e3b76e}
+.budget-choice:focus-within{outline:2px solid #e9c481;outline-offset:2px}
+.budget-custom[hidden]{display:none}
+.fame-loss-input{font-size:11px;color:#f5c995;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.fame-loss-input input{max-width:66px}
+.risk-explain{font-size:10.5px;color:#f2c7a9}
+.planner-shopping-notice,.journal-ledger-notice{margin:15px 0 8px;padding:10px 13px;border:1px solid #647365;border-left:3px solid #e4bb7c;background:#313d3b;border-radius:9px;color:#d7e4df;font-size:12px;line-height:1.6}
+.plan-diagnostics{padding:11px 13px;border:1px solid #53656b;border-radius:10px;background:#263138;margin-top:15px}
+.plan-diagnostics summary{font-weight:800;color:#f0ce95;cursor:pointer;font-size:12px}
+.diagnostic-list{display:grid;grid-template-columns:repeat(auto-fit,minmax(290px,1fr));gap:7px;margin-top:12px;max-height:320px;overflow:auto}
+.diagnostic-item{display:flex;align-items:center;gap:8px;background:#303a3d;border:1px solid #516168;border-radius:8px;padding:7px;min-width:0}
+.diagnostic-item>img{width:42px;height:42px;object-fit:contain;flex-shrink:0}
+.diagnostic-item>div{min-width:0}
+.diagnostic-item strong{font-size:12px}
+.diagnostic-item small{display:block;font-size:10px;color:#bac7c4;margin-top:3px}
+.diagnostic-item .city-label{font-size:10px}
+/* Albion items & data typography */
+.game-item-cell{gap:12px}
+.game-item-cell img{width:47px;height:47px;flex:0 0 47px}
+.item-primary strong,.market-ranking .game-item-cell strong,#plan-results .game-item-cell strong{font-size:13.5px;line-height:1.35}
+.market-ranking td{padding:11px 10px}
+.market-ranking .rank-metric{font-size:14px}
+.rank-number{font-size:14px}
+.market-ranking .rank-sub{font-size:11px}
+#plan-results .rank-sub{margin-left:59px;font-size:11px;max-width:360px}
+#plan-results .result-table th{background:#303b3c!important;color:#d9e6df!important;font-size:11.5px}
+#plan-results .result-table td{font-size:12px}
+.batch-table .game-item-cell img{width:47px;height:47px;flex:0 0 47px}
+.batch-table .game-item-cell strong{font-size:13px;max-width:230px}
+.batch-table .variant-row{margin-left:57px}
+.batch-table th{font-size:11.5px!important}
+.batch-table td{font-size:12px}
+.batch-qty{font-size:14px!important}
+.batch-kpis strong{font-size:20px}
+.journal-tier-group td{background:linear-gradient(90deg,#4b4835,#35423e)!important;color:#f0cb89!important;font-size:12px;font-weight:800;letter-spacing:.3px;padding:10px 14px!important}
+.journal-material-row{background:#39403950}
+.journal-material-row .game-item-cell img{box-shadow:0 0 12px #b89e4640}
+.estimated-journal-badge{display:inline-block;margin:5px 0 0 59px;padding:3px 6px;color:#f4dba7;background:#564936;border:1px solid #8e7550;border-radius:5px;font-size:9px;font-weight:800}
+@media(max-width:1550px){.planner-shell .config-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(max-width:1080px){.planner-shell .config-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:700px){
+ .planner-shell .config-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}
+ .planner-shell .config-section{padding:10px;gap:6px}
+ .planner-shell .config-half,.planner-shell .risk-section,.planner-shell .focus-section.expanded,.planner-shell .fame-config:has(.fame-loss-input){grid-column:span 2}
+ .planner-shell .risk-section .multifield{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .hero{min-height:205px}.hero .hero-game-scene{opacity:.24;right:-120px}
+ .game-item-cell img{width:41px;height:41px;flex-basis:41px}
+ .batch-table .game-item-cell img{width:42px;height:42px;flex-basis:42px}
+ .batch-table .variant-row{margin-left:52px}
+ .estimated-journal-badge{margin-left:52px}
+}
+@media(max-width:480px){
+ .planner-shell .config-grid{grid-template-columns:1fr}
+ .planner-shell .config-half,.planner-shell .risk-section,.planner-shell .focus-section.expanded,.planner-shell .fame-config:has(.fame-loss-input){grid-column:span 1}
+ .budget-presets{flex-wrap:wrap}
+ .hero{min-height:200px}
+}
+
+/* Polish: no rectangular seam from foreground art; variety indicators */
+.hero .hero-game-scene{mask-image:linear-gradient(90deg,transparent 0%,#000 38%,#000 100%)}
+.variety-strip{display:flex;gap:7px;flex-wrap:wrap;margin:12px 0;padding:5px 0}
+.variety-strip span{padding:7px 11px;border-radius:9px;font-size:11px;font-weight:800;color:#e2ce9e;border:1px solid #66745e;background:#39423a}
+.batch-table .batch-qty,.game-craft-table .batch-qty{background:#283638!important;color:#f2e5d0!important;border:1px solid #73847b!important}

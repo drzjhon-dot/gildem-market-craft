@@ -8,10 +8,10 @@ const positive=x=>Number.isFinite(n(x))&&n(x)>0;
 const REFINED=/^T([2-8])_(METALBAR|PLANKS|CLOTH|LEATHER|STONEBLOCK)(?:_LEVEL[1-4])?(?:@([1-4]))?$/;
 const FAME={2:1.5,3:7.5,4:22.5,5:90,6:270,7:645,8:1395};
 export const DEFAULTS=Object.freeze({budget:10_000_000,tiers:[4,5,6,7,8],enchants:[0,1,2,3],saleDays:7,
- style:'balanced',goal:'balanced',diversify:false,useBudget:false,volume:false,bonusCity:true,dailyBonus:0,
+ style:'balanced',goal:'balanced',diversify:true,useBudget:false,volume:false,bonusCity:true,dailyBonus:0,
  focus:false,focusPerCraft:0,focusAvailable:0,focusBonus:59,premium:true,tax:4,listingFee:2.5,
  stationFee:0,maxQuoteHours:48,buyBufferPct:8,sellHaircutPct:2,minRoiPct:5,
- maxCapitalSharePct:40,stressGuard:true,deliveryCostPerUnit:0,historyPriceCapPct:10});
+ maxCapitalSharePct:40,stressGuard:true,deliveryCostPerUnit:0,historyPriceCapPct:10,fameLossBudgetPct:10});
 export function settings(cfg={}){const c={...DEFAULTS,...cfg};
  if(!Number.isSafeInteger(n(c.budget))||n(c.budget)<1000||n(c.budget)>1e12)throw Error('Presupuesto: entero entre 1.000 y un billón de silver.');
  if(!Array.isArray(c.tiers)||!c.tiers.length||c.tiers.some(x=>![4,5,6,7,8].includes(Number(x))))throw Error('Selecciona al menos un Tier válido.');
@@ -19,8 +19,8 @@ export function settings(cfg={}){const c={...DEFAULTS,...cfg};
  if(![0,10,20].includes(Number(c.dailyBonus)))throw Error('Bono diario: 0%, 10% o 20%.');
  if(!['prudent','balanced','dynamic'].includes(c.style)||!['silver','balanced','fame'].includes(c.goal))throw Error('Estilo u objetivo inválido.');
  if(![1,3,7,14,30].includes(Number(c.saleDays)))throw Error('Horizonte de venta no válido.');
- if(![c.tax,c.listingFee,c.stationFee,c.maxQuoteHours,c.buyBufferPct,c.sellHaircutPct,c.minRoiPct,c.maxCapitalSharePct,c.deliveryCostPerUnit,c.historyPriceCapPct].every(x=>Number.isFinite(n(x))&&n(x)>=0))throw Error('Comisiones y costes inválidos.');
- if(c.tax>30||c.listingFee>30||c.maxQuoteHours>168||c.maxQuoteHours<1||c.buyBufferPct>50||c.sellHaircutPct>30||c.minRoiPct>100||c.maxCapitalSharePct>100||c.maxCapitalSharePct<5||c.historyPriceCapPct>100)throw Error('Límites de comisiones o vigencia inválidos.');
+ if(![c.tax,c.listingFee,c.stationFee,c.maxQuoteHours,c.buyBufferPct,c.sellHaircutPct,c.minRoiPct,c.maxCapitalSharePct,c.deliveryCostPerUnit,c.historyPriceCapPct,c.fameLossBudgetPct].every(x=>Number.isFinite(n(x))&&n(x)>=0))throw Error('Comisiones y costes inválidos.');
+ if(c.tax>30||c.listingFee>30||c.maxQuoteHours>168||c.maxQuoteHours<1||c.buyBufferPct>50||c.sellHaircutPct>30||c.minRoiPct>100||c.maxCapitalSharePct>100||c.maxCapitalSharePct<5||c.historyPriceCapPct>100||c.fameLossBudgetPct>30)throw Error('Límites de comisiones o vigencia inválidos.');
  if(c.focus&&(!positive(c.focusPerCraft)||!positive(c.focusAvailable)||!Number.isFinite(n(c.focusBonus))||n(c.focusBonus)<0))throw Error('Para activar Focus necesitas verificar consumo por craft, Focus disponible y bono de producción en la configuración.');
  return c;
 }
@@ -53,14 +53,14 @@ export function gradeOneDaily(h){return h?.quality1DailyUnits??h?.averageDailyUn
 export function gradeOneDays(h){return h?.quality1ActiveDays??h?.activeDays??0;}
 function observationCheck(history,config){
  if(!history||!(gradeOneDaily(history)>0)||!(gradeOneDays(history)>=1))return false;
- return config.diversify||config.style==='dynamic'||gradeOneDays(history)>=Math.min(2,history.days||7);
+ return config.diversify||config.goal==='fame'||config.style==='dynamic'||gradeOneDays(history)>=Math.min(2,history.days||7);
 }
 function maxCraftByDemand(history,amount,config){
  const fraction={prudent:.06,balanced:.13,dynamic:.22}[config.style];
  const volumeFraction=config.volume?Math.min(.30,fraction*1.35):fraction;
  const units=gradeOneDaily(history)*Number(config.saleDays)*volumeFraction;
  // With explicit diversity allow 1 craft where *some* history exists, not absent history.
- const minimum=config.diversify&&gradeOneDaily(history)>0?1:0;
+ const minimum=(config.diversify||config.goal==='fame')&&gradeOneDaily(history)>0?1:0;
  return Math.min(250,Math.max(minimum,Math.floor(units/amount)));
 }
 function deriveImpact(history,units,config){
@@ -80,21 +80,24 @@ function realMaterials(recipe,quotes,config,now){
  return {gross,net,missing,materials};
 }
 export function buildCandidates({top=[],recipes={},quotes=new Map(),config={},selectedIds=[],selectedMarkets=[],now=Date.now()}={}){
- const c=settings(config),allowed=new Set(selectedIds),markets=new Set(selectedMarkets),candidates=[],rejected={
+ const c=settings(config),allowed=new Set(selectedIds),markets=new Set(selectedMarkets),candidates=[],rejectedSamples=[],rejected={
   fueraFiltros:0,sinReceta:0,sinHistorial:0,sinPrecioVenta:0,sinPrecioMaterial:0,margenNegativo:0,sinCupo:0,fueraPresupuesto:0};
+ // Save concrete exclusions: a T8 with 18 weekly units must not disappear silently.
+ const record=(h,category,reason)=>{rejected[category]++;if(rejectedSamples.length<350)rejectedSamples.push({id:h.id,city:h.city,code:category,reason,
+  q1UnitsDaily:gradeOneDaily(h),allQualitiesDaily:h.averageDailyUnits||0});};
  // One statistical row per item+city; history groups qualities 1–5, sale quote quality 1 only.
  for(const h of top){if(!markets.has(h.city)||allowed.size&&!allowed.has(h.id))continue;
-  const variantInfo=variant(h.id);if(!variantInfo||!c.tiers.map(Number).includes(variantInfo.tier)||!c.enchants.map(Number).includes(variantInfo.ench)){rejected.fueraFiltros++;continue;}
-  const recipe=recipes[h.id];if(!recipe||!Array.isArray(recipe.materials)||!recipe.materials.length){rejected.sinReceta++;continue;}
-  if(!observationCheck(h,c)){rejected.sinHistorial++;continue;}
+  const variantInfo=variant(h.id);if(!variantInfo||!c.tiers.map(Number).includes(variantInfo.tier)||!c.enchants.map(Number).includes(variantInfo.ench)){record(h,'fueraFiltros','Tier o encantamiento no seleccionado');continue;}
+  const recipe=recipes[h.id];if(!recipe||!Array.isArray(recipe.materials)||!recipe.materials.length){record(h,'sinReceta','No hay receta verificable');continue;}
+  if(!observationCheck(h,c)){record(h,'sinHistorial','Sin actividad suficiente de calidad 1 en este destino');continue;}
   const mode=h.city==='Black Market'?'bid':'ask';const sale=freshestQuotes(quotes,h.id,h.city,mode,c.maxQuoteHours,now)[0];
-  if(!sale){rejected.sinPrecioVenta++;continue;}
-  const mats=realMaterials(recipe,quotes,c,now);if(mats.missing.length){rejected.sinPrecioMaterial++;continue;}
-  const amount=Number(recipe.amountCrafted||recipe.amount||1);if(!Number.isSafeInteger(amount)||amount<1){rejected.sinReceta++;continue;}
+  if(!sale){record(h,'sinPrecioVenta','No hay cotización de venta Q1 vigente');continue;}
+  const mats=realMaterials(recipe,quotes,c,now);if(mats.missing.length){record(h,'sinPrecioMaterial',`Faltan precios de recursos: ${mats.missing.slice(0,3).join(', ')}`);continue;}
+  const amount=Number(recipe.amountCrafted||recipe.amount||1);if(!Number.isSafeInteger(amount)||amount<1){record(h,'sinReceta','Salida por craft sin confirmar');continue;}
   const gross=mats.gross*(1+Number(c.buyBufferPct)/100)+Number(c.stationFee),
    net=mats.net*(1+Number(c.buyBufferPct)/100)+Number(c.stationFee)+amount*Number(c.deliveryCostPerUnit);
-  if(!(gross>0)||gross>c.budget){rejected.fueraPresupuesto++;continue;}
-  const upper=maxCraftByDemand(h,amount,c);if(upper<1){rejected.sinCupo++;continue;}
+  if(!(gross>0)||gross>c.budget){record(h,'fueraPresupuesto','Un craft supera el capital disponible');continue;}
+  const upper=maxCraftByDemand(h,amount,c);if(upper<1){record(h,'sinCupo','Actividad Q1 insuficiente para el lote mínimo');continue;}
   const marketFee=(Number(c.tax)+ (h.city==='Black Market'?0:Number(c.listingFee)))/100;
   // Prevent a one-off quote spike from being accepted as an executable clearing price.
   // Qualities must match: history Q1 for selling Q1. Q2-5 do not influence the cap.
@@ -106,7 +109,12 @@ export function buildCandidates({top=[],recipes={},quotes=new Map(),config={},se
   const profit=priceNet-net;
   const roi=profit/gross*100;
   const stressProfit=salePerCraft*(1-marketFee)*(1-impactOne)*.9-net;
-  if(!(profit>0)||roi<Number(c.minRoiPct)|| (c.stressGuard&&!c.diversify&&stressProfit<0)){rejected.margenNegativo++;continue;}
+  const fameMode=c.goal==='fame';
+  // Fama permite rutas a pérdida controlada; silver/equilibrado nunca.
+  if((!fameMode&&(!(profit>0)||roi<Number(c.minRoiPct)||(c.stressGuard&&!c.diversify&&stressProfit<0)))
+   ||(fameMode&&(roi<-25 || (profit<0&&Number(c.fameLossBudgetPct)===0)))){
+    record(h,'margenNegativo',fameMode?'Pérdida por craft supera 25% del capital o límite de pérdida desactivado':'Beneficio / ROI / estrés insuficiente');continue;
+  }
   const fame=estimatedFame(h.id,recipe,c.premium);
   const row={id:h.id,city:h.city,craftCity:c.bonusCity?(recipe.city||'Sin especialidad'):'Sin bono de ciudad',
    maxCrafts:upper,craftAmount:amount,history:h,returnPct:returnRate({...c,recipe}).returnPct,
@@ -116,60 +124,96 @@ export function buildCandidates({top=[],recipes={},quotes=new Map(),config={},se
    fameEstimated:!!fame?.estimated,focusPerCraft:c.focus?Number(c.focusPerCraft):0,qty:0};
   candidates.push(row);
  }
- return {candidates,rejected,config:c};
+ return {candidates,rejected,rejectedSamples,config:c};
 }
-function score(r,c){const roi=r.estimatedProfitPerCraft/Math.max(1,r.grossCapitalPerCraft),silver=r.estimatedProfitPerCraft;
+function score(r,c){
+ const roi=r.estimatedProfitPerCraft/Math.max(1,r.grossCapitalPerCraft),silver=r.estimatedProfitPerCraft;
  const fame=r.expectedFamePerCraft/Math.max(1,r.grossCapitalPerCraft);
- const historicalStrength=Math.min(1,.55+(.45*r.history.activeDays/Math.max(1,r.history.days)));
- const diversityWeight=c.diversify?1:0;
- if(c.goal==='fame')return (roi*2+Math.log1p(Math.max(0,fame))*0.12+Math.log1p(silver)/100)*historicalStrength+diversityWeight*.001;
- if(c.goal==='silver')return (roi*3+Math.log1p(silver)/75+fame*.002)*historicalStrength;
- return (roi*3+Math.log1p(silver)/110+Math.log1p(Math.max(0,fame))*.08)*historicalStrength;
+ const active=(r.history.quality1ActiveDays??r.history.activeDays??1)/Math.max(1,r.history.days||7);
+ const historyWeight=.75+.25*Math.max(0,Math.min(1,active));
+ if(c.goal==='fame'){
+  // Fama real/estimada por silver consumido. Los tiers altos obtienen un pequeño desempate.
+  const tier=variant(r.id)?.tier||4;
+  return (fame + tier*.0003 + Math.max(-.15,roi)*.004)*historyWeight;
+ }
+ if(c.goal==='silver')return (roi*3+Math.log1p(Math.max(0,silver))/75+fame*.002)*historyWeight;
+ return (roi*3+Math.log1p(Math.max(0,silver))/110+Math.log1p(Math.max(0,fame))*.08)*historyWeight;
 }
+function previewLine(row,qty,c){
+ const units=qty*row.craftAmount,impact=deriveImpact(row.history,units,c);
+ const revenue=row.planningPrice*units*(1-Number(c.sellHaircutPct)/100)*(1-row.marketFee)*(1-impact);
+ const cost=row.expectedCostPerCraft*qty;
+ return {revenue,cost,profit:revenue-cost,stressProfit:revenue*.9-cost,impact:impact*100};
+}
+/**
+ * Allocation rules:
+ *  - Never spend over budget or over observed Q1 demand allowance.
+ *  - When diversity is on: first sample distinct selected tiers, then enchants, then items.
+ *  - Use rounds rather than filling one SKU at a time to avoid market saturation.
+ *  - Fame goal alone may lose silver, bounded by both per-route loss (25% of capital)
+ *    and total permitted losses (fameLossBudgetPct of the initial budget).
+ */
 export function allocatePlan({candidates=[],config={},recipes={}}={}){
- const c=settings(config),remainingById=new Map(),warnings=[];
- // A crafted ID cannot be allocated simultaneously in multiple destinations: unique best route.
- for(const row of candidates){const prior=remainingById.get(row.id);if(!prior||score(row,c)>score(prior,c))remainingById.set(row.id,{...row,qty:0});}
- const routes=[...remainingById.values()].sort((a,b)=>score(b,c)-score(a,c)||b.estimatedProfitPerCraft-a.estimatedProfitPerCraft);
- let available=c.budget,focusRemaining=c.focus?Number(c.focusAvailable):Infinity;
+ const c=settings(config),byId=new Map(),warnings=[];
+ for(const row of candidates){const prior=byId.get(row.id);if(!prior||score(row,c)>score(prior,c))byId.set(row.id,{...row,qty:0});}
+ const routes=[...byId.values()].sort((a,b)=>score(b,c)-score(a,c)||b.estimatedProfitPerCraft-a.estimatedProfitPerCraft);
+ const maxLines=c.volume?32:22,fameMode=c.goal==='fame',lossCap=fameMode?c.budget*c.fameLossBudgetPct/100:0;
+ let available=c.budget,focusRemaining=c.focus?Number(c.focusAvailable):Infinity,allocatedLoss=0;
  const picked=new Map();
- function add(row,limit){let nCan=Math.min(row.maxCrafts-row.qty,Math.floor((available+1e-6)/row.grossCapitalPerCraft),
-  c.focus?Math.floor(focusRemaining/row.focusPerCraft):Infinity,limit);
-  nCan=Math.max(0,Math.floor(nCan));if(!nCan)return 0;
-  row.qty+=nCan;available-=nCan*row.grossCapitalPerCraft;focusRemaining-=nCan*row.focusPerCraft;picked.set(row.id,row);return nCan;
- }
- if(c.diversify){for(const tier of [6,7,8]){if(!c.tiers.map(Number).includes(tier))continue;
-  const choices=routes.filter(r=>Number(r.id.match(/^T(\d)/)?.[1])===tier&&r.qty<1);
-  if(choices.length&&!choices.some(r=>add(r,1)))warnings.push(`No hay presupuesto/Focus para reservar al menos un craft T${tier} viable.`);
-  if(!choices.length)warnings.push(`T${tier}: ninguna receta con historial Q1, cotización y margen esperado positivo. No se fuerza.`);
- }}
- // Batches moderate, broad allocation; no phantom opportunities to justify a target budget.
- const maxLines=c.volume?32:22;
- for(const route of routes){if(picked.size>=maxLines&&!picked.has(route.id))continue;
-  const byCapital=Math.max(1,Math.floor(c.budget*Number(c.maxCapitalSharePct)/100/route.grossCapitalPerCraft));
-  const max=c.useBudget?byCapital:Math.min(byCapital,Math.max(1,Math.ceil(route.maxCrafts*(c.style==='prudent'?.55:.75))));
-  add(route,max);
- }
- const selected=[...picked.values()].sort((a,b)=>b.qty*b.estimatedProfitPerCraft-a.qty*a.estimatedProfitPerCraft);
- const purchase=new Map();const journals=new Map();let expectedProfit=0,expectedCost=0,totalFame=0,sales=0;
- for(const line of selected){const qty=line.qty,units=line.craftAmount*qty,h=line.history;
-  const impact=deriveImpact(h,units,c);const grossRevenue=line.planningPrice*units*(1-Number(c.sellHaircutPct)/100)*(1-line.marketFee)*(1-impact);
-  const netMaterialCost=line.expectedCostPerCraft*qty;
-  line.finalImpactPct=impact*100;
-  line.totalProfit=grossRevenue-netMaterialCost;
-  line.stressProfit=grossRevenue*.9-netMaterialCost;
-  line.totalRevenue=grossRevenue;line.totalCost=netMaterialCost;line.unitSaleExpected=grossRevenue/units;
-  line.totalFame=line.expectedFamePerCraft*qty;
-  // IMPORTANT: quantity-dependent impact can turn initially positive route negative.
-  // Reducing the batch is better than returning a loss-making recommendation.
-  while(line.qty>0&&(line.totalProfit<=0 || line.totalProfit/Math.max(1,line.qty*line.grossCapitalPerCraft)*100<Number(c.minRoiPct)
-   || (c.stressGuard&&!c.diversify&&line.stressProfit<0))){line.qty--;const q=line.qty,u=line.craftAmount*q,i=deriveImpact(h,u,c);
-   line.finalImpactPct=i*100;line.totalRevenue=line.planningPrice*u*(1-Number(c.sellHaircutPct)/100)*(1-line.marketFee)*(1-i);line.totalCost=line.expectedCostPerCraft*q;
-   line.totalProfit=line.totalRevenue-line.totalCost;line.stressProfit=line.totalRevenue*.9-line.totalCost;line.totalFame=line.expectedFamePerCraft*q;
+ function addOne(row,{tierReserve=false}={}){
+  if(row.qty>=row.maxCrafts || (!picked.has(row.id)&&picked.size>=maxLines))return false;
+  if(available+1e-7<row.grossCapitalPerCraft)return false;
+  if(c.focus&&focusRemaining<row.focusPerCraft)return false;
+  const capital=(row.qty+1)*row.grossCapitalPerCraft;
+  if(!tierReserve&&capital>c.budget*c.maxCapitalSharePct/100+1e-6)return false;
+  // One sample of a requested tier can breach only the *per-SKU share* cap.
+  // It can never breach actual budget/Focus or buy more than Q1 activity permits.
+  const before=previewLine(row,row.qty,c),after=previewLine(row,row.qty+1,c);
+  const newLoss=Math.max(0,-after.profit),oldLoss=Math.max(0,-before.profit);
+  const lossNext=allocatedLoss+newLoss-oldLoss;
+  if(fameMode){if(after.profit<0&&-after.profit>capital*.25)return false;
+   if(lossNext>lossCap+1e-6)return false;
+  } else {
+   if(!(after.profit>0)||after.profit/capital*100<c.minRoiPct)return false;
+   if(c.stressGuard&&!c.diversify&&after.stressProfit<0)return false;
   }
-  // refund allocated reserve for trimmed units
-  if(line.qty<qty){available+=(qty-line.qty)*line.grossCapitalPerCraft;focusRemaining+=(qty-line.qty)*line.focusPerCraft;}
-  if(line.qty===0)continue;
+  row.qty++;available-=row.grossCapitalPerCraft;focusRemaining-=row.focusPerCraft;
+  allocatedLoss=lossNext;picked.set(row.id,row);
+  if(tierReserve&&capital>c.budget*c.maxCapitalSharePct/100+1e-6)
+   warnings.push(`T${variant(row.id)?.tier}: un craft supera el límite por artículo (${c.maxCapitalSharePct}%), pero cabe en el presupuesto y el historial Q1.`);
+  return true;
+ }
+ const prioritize=c.diversify||fameMode;
+ if(prioritize){
+  // Tiers T8 -> T4: expensive, thinly traded tiers get their chance before T4 fills capital.
+  const tiers=[...new Set(c.tiers.map(Number))].sort((a,b)=>b-a);
+  for(const tier of tiers){const choices=routes.filter(r=>variant(r.id)?.tier===tier && !r.qty);
+   if(!choices.length){if(tier>=6)warnings.push(`T${tier}: sin rutas verificables con historial Q1, receta, cotización y riesgo permitido.`);continue;}
+   if(!choices.some(r=>addOne(r,{tierReserve:true}))&&tier>=6)warnings.push(`T${tier}: hay candidatos, pero presupuesto, Focus, pérdidas o riesgo impiden reservar un craft.`);
+  }
+  // Entchant diversity, without manufacturing new enchantments not present in Q1.
+  for(const ench of [...new Set(c.enchants.map(Number))]){
+   const choices=routes.filter(r=>variant(r.id)?.ench===ench && !r.qty);
+   choices.some(r=>addOne(r));
+  }
+ }
+ // Breadth first: give each verified item a chance before growing its production run.
+ for(const row of routes)if(!row.qty)addOne(row);
+ // Expansion round-robin limits any one SKU from crowding out other item variants.
+ const caps=new Map(routes.map(r=>[r.id,c.useBudget?r.maxCrafts:Math.min(r.maxCrafts,Math.max(1,Math.ceil(r.maxCrafts*(c.style==='prudent'?.55:.75))))]));
+ for(let round=0;round<250;round++){
+  let progressed=false;
+  for(const row of routes){if(!row.qty||row.qty>=caps.get(row.id))continue;
+   if(addOne(row))progressed=true;
+  }
+  if(!progressed)break;
+ }
+ const selected=[...picked.values()].filter(r=>r.qty>0);
+ const purchase=new Map(),journals=new Map();let expectedProfit=0,expectedCost=0,totalFame=0,sales=0;
+ for(const line of selected){
+  const q=previewLine(line,line.qty,c);line.finalImpactPct=q.impact;line.totalProfit=q.profit;
+  line.stressProfit=q.stressProfit;line.totalRevenue=q.revenue;line.totalCost=q.cost;
+  line.unitSaleExpected=q.revenue/(line.qty*line.craftAmount);line.totalFame=line.expectedFamePerCraft*line.qty;
   expectedProfit+=line.totalProfit;expectedCost+=line.totalCost;totalFame+=line.totalFame;sales+=line.qty*line.craftAmount;
   for(const m of line.materials){const key=m.id+'|'+m.city;const old=purchase.get(key)||{id:m.id,city:m.city,unitPrice:m.price,gross:0,net:0,firstCraft:0};
    old.gross+=m.count*line.qty;old.net+=m.netCount*line.qty;old.firstCraft=Math.max(old.firstCraft,m.count);purchase.set(key,old);
@@ -177,18 +221,20 @@ export function allocatePlan({candidates=[],config={},recipes={}}={}){
   const journal=journalEstimate(line.id,{value:line.expectedFamePerCraft},line.qty);
   if(journal){const j=journals.get(journal.id)||{...journal,fractional:0};j.fractional+=journal.fractional;journals.set(journal.id,j);}
  }
- const rows=selected.filter(x=>x.qty>0);
  const materials=[...purchase.values()].map(m=>{
   const gross=Math.ceil(m.gross),buy=Math.min(gross,Math.max(Math.ceil(m.net-1e-8),Math.ceil(m.firstCraft)));
-  return {...m,buy,reuse:Math.max(0,gross-buy),buyWithBuffer:Math.ceil(buy*m.unitPrice*(1+Number(c.buyBufferPct)/100))};
+  return {...m,buy,reuse:Math.max(0,gross-buy),buyWithBuffer:Math.ceil(buy*m.unitPrice*(1+c.buyBufferPct/100))};
  }).sort((a,b)=>b.buy*b.unitPrice-a.buy*a.unitPrice);
  const totalCapital=c.budget-available;
  if(totalCapital>c.budget+0.001)throw Error('Error de asignación: presupuesto excedido.');
- if(rows.some(r=>r.totalProfit<=0))throw Error('Error de asignación: ruta con pérdidas.');
- return {rows,materials,journals:[...journals.values()].map(j=>({...j,estimatedQty:Math.ceil(j.fractional-1e-8)})),
+ if(!fameMode&&selected.some(r=>r.totalProfit<=0))throw Error('Error de asignación: ruta con pérdidas en objetivo de silver.');
+ if(fameMode&&allocatedLoss>lossCap+.01)throw Error('Error de asignación: límite de pérdida para fama excedido.');
+ if(fameMode&&selected.some(r=>r.totalProfit<0))warnings.push(`Fama por silver: pérdida máxima autorizada ${c.fameLossBudgetPct}% del presupuesto (${Math.round(lossCap).toLocaleString('es-ES')} silver). Pérdidas estimadas de algunas rutas; comprueba el capital antes de fabricar.`);
+ return {rows:selected.sort((a,b)=>b.totalProfit-a.totalProfit),materials,
+  journals:[...journals.values()].map(j=>({...j,estimatedQty:Math.ceil(j.fractional-1e-8)})),
   summary:{budget:c.budget,capitalReserved:totalCapital,remaining:available,totalProfit:expectedProfit,totalCost:expectedCost,
-   totalFame,units:sales,crafts:rows.reduce((s,x)=>s+x.qty,0),focusSpent:c.focus?c.focusAvailable-focusRemaining:0,
-   roiOnCapital:totalCapital?expectedProfit/totalCapital*100:0},warnings};
+   totalFame,units:sales,crafts:selected.reduce((s,x)=>s+x.qty,0),focusSpent:c.focus?c.focusAvailable-focusRemaining:0,
+   roiOnCapital:totalCapital?expectedProfit/totalCapital*100:0,allowedFameLoss:lossCap,estimatedLosses:selected.reduce((s,r)=>s+Math.max(0,-r.totalProfit),0)},warnings};
 }
 
 // Calculadora individual, sin filtro por beneficio: muestra incluso una pérdida.

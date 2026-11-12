@@ -79,8 +79,29 @@ export function batchCalculate({items=[],recipes={},quotes=new Map(),history=[],
  }
  const grouped=[...materials.values()].map(m=>({...m,buy:Math.ceil(Math.max(0,m.net)),total:Math.ceil(Math.max(0,m.net))*m.unitPrice})).sort((a,b)=>a.id.localeCompare(b.id));
  const pending=[...pendingMaterials.values()].map(m=>({...m,buy:Math.ceil(Math.max(0,m.net)),total:null})).sort((a,b)=>a.id.localeCompare(b.id));
+ // Journals are optional, estimates from fame. Aggregate by exact journal ID:
+ // one T6 warrior journal across several T6 crafts appears once, not N separate rows.
+ const journalGroups=new Map();
+ for(const j of journals){const old=journalGroups.get(j.id)||{...j,fractional:0,usedBy:[],tier:variant(j.forId)?.tier||0};
+  old.fractional+=j.fractional;
+  if(!old.usedBy.includes(j.forId))old.usedBy.push(j.forId);
+  journalGroups.set(j.id,old);
+ }
+ const combinedJournals=[...journalGroups.values()].map(j=>({...j,estimatedQty:Math.ceil(j.fractional-1e-8)}))
+  .sort((a,b)=>a.tier-b.tier||a.name.localeCompare(b.name));
+ const journalRows=combinedJournals.map(j=>{
+  const manual=validPrice(buy[j.id]),observed=cheapestMaterial(quotes,j.id,ROYALS,Number(config.maxQuoteHours)||48,now);
+  const price=manual||observed?.price||null,city=manual?'Manual':observed?.city||null;
+  return {id:j.id,city,unitPrice:price,buy:j.estimatedQty,total:price?price*j.estimatedQty:null,
+   gross:j.estimatedQty,net:j.estimatedQty,returned:0,manual:!!manual,usedBy:j.usedBy,displayName:`${j.name} T${j.tier}`,
+   missing:!price,pending:!price,journal:true,tier:j.tier,estimated:true};
+ });
  const hasMissing=rows.some(r=>r.reason);
  if(hasMissing)warnings.push('Algunos artículos no tienen materiales o recetas verificadas; no se incluyen en los totales.');
  if(rows.some(r=>r.capital&&!r.bmHistorical&&!r.royalHistorical))warnings.push('Sin historial en el destino de algunos artículos: no se estima impacto de precio para esas ventas.');
- return {rows,materials:[...grouped,...pending],journals,warnings,totals:{capital,cost,fame,crafts,units:rows.filter(r=>!r.reason).reduce((n,r)=>n+r.units,0),profitBM:bmComplete&&!hasMissing?profitBM:null,profitRoyal:royalComplete&&!hasMissing?profitRoyal:null,buyCapital:grouped.reduce((n,m)=>n+m.total,0),incomplete:rows.filter(r=>r.reason).length}};
+ return {rows,materials:[...grouped,...pending,...journalRows],journals:combinedJournals,warnings,
+  totals:{capital,cost,fame,crafts,units:rows.filter(r=>!r.reason).reduce((n,r)=>n+r.units,0),
+   profitBM:bmComplete&&!hasMissing?profitBM:null,profitRoyal:royalComplete&&!hasMissing?profitRoyal:null,
+   buyCapital:grouped.reduce((n,m)=>n+m.total,0),journalCost:journalRows.reduce((n,m)=>n+(m.total||0),0),
+   journalsUnpriced:journalRows.filter(m=>m.missing).length,incomplete:rows.filter(r=>r.reason).length}};
 }
