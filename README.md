@@ -1,6 +1,6 @@
 # Gildem Albion Lab | Market & Craft
 
-**Proyecto nuevo e independiente (v1.0.0)** para Albion Online, servidor **América / West**.
+**Proyecto nuevo e independiente (v1.1.0)** para Albion Online, servidor **América / West**.
 
 Tiene **solamente dos pestañas**: `Top Mercado` y `Calculadora de Craft`. No modifica ni importa el motor de la aplicación anterior. La fuente única de **estadísticas y precios de mercado** es **Albion Online Data Project (AODP) REST West**. Las recetas y traducciones se obtienen de archivos públicos derivados de los datos oficiales del juego; esos archivos **no** aportan cifras del mercado.
 
@@ -106,3 +106,20 @@ assets/                      Elementos de marca, banners e iconos
 ---
 
 **Versión:** 1.0.0 · **Independiente de Gildem Albion Lab anterior** · **Servidor de mercado:** West.
+
+
+## Actualización visual v1.1.0 · estilo Albion Lab clásico
+
+- **Top Mercado**: selector de ramas en 10 categorías plegables compactas (5 columnas en PC), selección rápida mediante etiquetas con imagen, contador por categoría y opción «Contraer todo». No se eliminó ninguna de las 105 opciones.
+- **Calculadora de Craft**: ahora la primera sección es una calculadora manual de hasta 30 artículos, inspirada en la calculadora antigua de Gildem Albion Lab. Permite buscar y añadir por nombre/ID, editar cantidades, cambiar Tier y encantamiento cuando la receta existe, marcar fabricación sin bono, comparar beneficio BM/Royal y consultar compras agrupadas y diarios estimados. Puedes cambiar precios manualmente, exportar CSV y copiar la lista de compras.
+- **Desde Top a Calculadora**: «↗ Calc» añade un artículo a la calculadora y «Enviar marcados» transfiere los artículos seleccionados con recetas reales. Los marcados para el plan siguen separados.
+- **Generador automático**: se conserva con el motor independiente v1.0, bajo una sección expandible para que la pantalla principal siga siendo la calculadora manual. No se modificaron sus límites de beneficio/demanda/retorno.
+- **Diseño**: recupera la paleta violeta, dorado y jade, con paneles oscuros y controles compactos. Estilos responsive.
+
+### Importante sobre el profit manual
+
+El capital inicial bruto, la compra neta con retornos y el coste efectivo son cantidades diferentes. Las ediciones manuales de precios se identifican, no se presentan como cotizaciones verificadas. Si no existe precio utilizable, el resultado queda en `s/d` en lugar de inventarse. El profit de BM usa el **precio máximo de compra observado** y Royal el **menor precio de venta observado** con ajustes de comisiones. El efecto de tus propias ventas solo se descuenta cuando hay historial del destino; sin él, se indica la limitación.
+
+El Focus de la calculadora manual exige datos verificados de Focus por fabricación y Focus disponible. La estimación de diarios no entra en los costes de materiales. El calculador manual no necesita un historial Top previo, pero no estima automáticamente la demanda si no existe.
+
+La interfaz se comprobó también con navegación funcional automatizada en navegador (Top Mercado → búsqueda → lote → cantidad → ajustes), usando respuestas de mercado simuladas. El despliegue y la disponibilidad de AODP deben verificarse también en Netlify.
