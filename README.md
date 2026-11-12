@@ -26,3 +26,7 @@ Requiere Node.js >=20. `npm test`, `npm run build`, `npm run dev`. Netlify utili
 ## Precauciones
 
 AODP es comunitaria: verifica precios, profundidad de libros y comisiones actuales antes de invertir. **El traslado de materiales/diarios no se puede deducir directamente de AODP**. Su coste por unidad empieza en 0, visible como advertencia si compras fuera de la ciudad de fabricación; introduce una tarifa prudente. Comprar o fabricar en Caerleon puede implicar trayectos peligrosos y riesgo de pérdida de la carga. Una ruta que solo está cotizada puede no ser ejecutable. La búsqueda de beneficio es una heurística con restricciones, **no un optimizador exacto del mercado completo**.
+
+## v1.9.1: arreglo de Netlify
+
+La actualización incremental desde v1.8 podía conservar `tests/flips-v18.test.mjs`, una prueba que exigía cinco pestañas. Esta entrega sobrescribe ese archivo con una comprobación actual de tres pestañas. No es necesario reintroducir Flips ni separar Refinamiento. Se mantiene `npm run build` con pruebas activas. Ver `RELEASE_NOTES_v1_9_1.md`.
