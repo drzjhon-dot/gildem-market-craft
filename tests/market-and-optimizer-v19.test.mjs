@@ -14,7 +14,7 @@ test('Refinamiento: cinco familias en el catálogo, fuera del Top y con pestaña
  assert(BRANCH_BY_KEY.get('refine_metalbar').test('T8_METALBAR_LEVEL3@3'));
  assert(BRANCH_BY_KEY.get('refine_planks').test('T6_PLANKS'));
  assert(!BRANCH_BY_KEY.get('refine_planks').test('T6_METALBAR'));
- const html=readFileSync('index.html','utf8');assert.equal((html.match(/class="nav-link[^\"]*" data-route=/g)||[]).length,4);
+ const html=readFileSync('index.html','utf8');assert.equal((html.match(/class="nav-link[^\"]*" data-route=/g)||[]).length,5);
  assert(!html.includes('data-route="flip"')&&html.includes('data-route="refine"'));
  const main=readFileSync('src/main.js','utf8');assert(main.includes("TOP_GROUPS=GROUPS.filter(g=>g.key!=='refining')"));assert(!main.includes('if(state.selectedBranches.size>=6)'));
  assert(!main.includes('size>6')&&!main.includes('size===6'));

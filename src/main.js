@@ -3,6 +3,7 @@ import {marketFetch,summarizeHistory,rankEntries,sortRowsByTier,quoteMap,utcRang
 import {DEFAULTS,settings,returnRate,simulateItem,estimatedFame,journalEstimate} from './planner.js';
 import {buildRoutesV3,planV3,settingsV3,PRIORITIES} from './engine-v3.js';
 import {createRefinePage} from './refine-page.js';
+import {createBmPage} from './bm-page.js';
 import {batchCalculate,variantChoices} from './batch-calculator.js';
 import {markedItemsForPlanner,transferPlanRows} from './planner-transfer.js';
 import {demandSignals,sparkLevels} from './demand-signals.js';
@@ -31,7 +32,7 @@ const state={mobileCards:persisted.mobileCards!==false,page:'top',recipes:{},nam
  saleMarkets:new Set(Array.isArray(persisted.saleMarkets)?persisted.saleMarkets:['Black Market']),openedGroups:new Set(),
  days:Number(persisted.days)||7,sort:['silver','units','price','tier-asc','tier-desc'].includes(persisted.sort)?persisted.sort:'silver',planResultSort:['engine','tier-asc','tier-desc'].includes(persisted.planResultSort)?persisted.planResultSort:'engine',catalogMode:persisted.catalogMode==='selected'?'selected':'all',catalogSearch:'',catalogOnlySelected:false,catalogPicked:new Set(Array.isArray(persisted.catalogPicked)?persisted.catalogPicked.slice(0,150).map(x=>familyKey(x)||x):[]),customBudget:Number(persisted.customBudget)||12500000,forceFresh:persisted.forceFresh!==false,top:[],coverage:null,scannedIds:new Set(),pageOffset:0,tableLimit:65,
  marked:new Set(),plannerSignals:Array.isArray(persisted.plannerSignals)?persisted.plannerSignals.slice(0,300):[],plannerItems:Array.isArray(persisted.plannerItems)?[...new Set(persisted.plannerItems.filter(id=>typeof id==='string'&&/^[A-Z0-9_@-]{3,100}$/.test(id)))].slice(0,150):[],planTransferSummary:[],batchItems:Array.isArray(persisted.batchItems)?persisted.batchItems.filter(x=>x&&/^[A-Z0-9_@-]+$/.test(x.id)&&Number(x.qty)>=1).slice(0,150).map(x=>({id:x.id,qty:Math.min(100000,Math.round(x.qty)),noBonus:x.noBonus===true,...(Number(x.focusQty)>0?{focusQty:Math.round(x.focusQty)}:{})})):[],batchOverrides:persisted.batchOverrides||{buy:{},sellBM:{},sellRoyal:{}},batchResult:null,batchQuotes:null,batchBusy:false,batchSearch:'',filters: {...DEFAULTS,...(persisted.filters||{})},result:null,resultDiagnostics:null,scanLimit:150,lastQuote:null,singleItem:'',singleQty:1,singleResult:null,singleLoading:false,queryActive:false,planActive:false,topFilter:sanitizeTopFilter(persisted.topFilter),topDetailed:persisted.topDetailed===true,planLog:sanitizePlanLog(persisted.planLog),advancedOpen:false,planLogBusy:null,orderbookStatus:null,batchOrderbook:null};
-let refinePage=null;
+let refinePage=null,bmPage=null;
 for(const key of [...state.selectedBranches])if(!BRANCH_BY_KEY.has(key)||REFINING_BRANCH.has(key))state.selectedBranches.delete(key);
 if(!state.selectedBranches.size)state.selectedBranches.add('axe');
 if(Number(persisted.schemaVersion||0)<12){if(Number(state.filters.buyBufferPct)===8&&Number(state.filters.sellHaircutPct)===2){state.filters.buyBufferPct=2;state.filters.sellHaircutPct=0;}if(!PRIORITIES[state.filters.priority])state.filters.priority='fast-buy';}
@@ -39,7 +40,7 @@ for(const name of [...state.markets])if(!MARKETS.includes(name))state.markets.de
 for(const name of [...state.saleMarkets])if(!MARKETS.includes(name))state.saleMarkets.delete(name);
 if(Number(persisted.schemaVersion||0)<5)state.filters.diversify=true;
 if(state.filters.premium===false&&Number(state.filters.tax)===4)state.filters.tax=8; // activar variedad al migrar desde v1.4
-const save=()=>{try{localStorage.setItem('gildem_market_standalone_settings',JSON.stringify({schemaVersion:12,refine:refinePage?.saveState?.(),mobileCards:state.mobileCards,forceFresh:state.forceFresh,catalogMode:state.catalogMode,catalogPicked:[...state.catalogPicked],plannerSignals:state.plannerSignals,branches:[...state.selectedBranches],markets:[...state.markets],saleMarkets:[...state.saleMarkets],plannerItems:state.plannerItems,days:state.days,sort:state.sort,planResultSort:state.planResultSort,filters:state.filters,customBudget:state.customBudget,batchItems:state.batchItems,batchOverrides:state.batchOverrides,topFilter:state.topFilter,topDetailed:state.topDetailed,planLog:state.planLog}));}catch{}};
+const save=()=>{try{localStorage.setItem('gildem_market_standalone_settings',JSON.stringify({schemaVersion:12,refine:refinePage?.saveState?.(),bm:bmPage?.saveState?.(),mobileCards:state.mobileCards,forceFresh:state.forceFresh,catalogMode:state.catalogMode,catalogPicked:[...state.catalogPicked],plannerSignals:state.plannerSignals,branches:[...state.selectedBranches],markets:[...state.markets],saleMarkets:[...state.saleMarkets],plannerItems:state.plannerItems,days:state.days,sort:state.sort,planResultSort:state.planResultSort,filters:state.filters,customBudget:state.customBudget,batchItems:state.batchItems,batchOverrides:state.batchOverrides,topFilter:state.topFilter,topDetailed:state.topDetailed,planLog:state.planLog}));}catch{}};
 const name=id=>state.names[id]||id;
 let toastTimer;function toast(msg){const element=$('#toast');element.textContent=msg;element.classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(()=>element.classList.remove('show'),4600);}
 function marketImage(id){if(!/^[A-Z0-9_@-]+$/.test(id))return '';return itemImage(id);}
@@ -63,7 +64,7 @@ function itemWithCopy(id,{showId=false,label=null}={}){
 }
 
 function hero(which){
- const pages={top:['EXPLORADOR DE MERCADO','Top Mercado','Ranking de crafteo para ciudades Royal y Mercado Negro: marca los artículos y envíalos a Craft Planner o Calculadora.','top-market.webp','History · calidades 1–5'],planner:['PLANIFICACIÓN INTELIGENTE','Craft Planner','Optimiza capital y beneficio entre ciudades, objetos, tiers y encantamientos con demanda Q1 observada.','planning.webp','Beneficio marginal · West Q1'],calc:['TALLER DE CRAFTING','Calculadora de Craft','Calcula lotes y refinamientos, materiales, costes y diarios cuando correspondan.','forge.webp','Materiales · retornos · diarios'],refine:['REFINAMIENTO INTELIGENTE','Refinamiento','Compra, transmuta, refina y vende: el motor busca el plan de refinado con más silver para tu presupuesto, montura, Focus y ciudades.','craft-cal.webp','Refinado · transmutación · rutas']};
+ const pages={top:['EXPLORADOR DE MERCADO','Top Mercado','Ranking de crafteo para ciudades Royal y Mercado Negro: marca los artículos y envíalos a Craft Planner o Calculadora.','top-market.webp','History · calidades 1–5'],planner:['PLANIFICACIÓN INTELIGENTE','Craft Planner','Optimiza capital y beneficio entre ciudades, objetos, tiers y encantamientos con demanda Q1 observada.','planning.webp','Beneficio marginal · West Q1'],calc:['TALLER DE CRAFTING','Calculadora de Craft','Calcula lotes y refinamientos, materiales, costes y diarios cuando correspondan.','forge.webp','Materiales · retornos · diarios'],bm:['MERCADO NEGRO','Plan Mercado Negro','Plan diversificado para vender al Mercado Negro en pocos días: tope por artículo según sus ventas diarias, valor por material y precio máximo de cada material.','royal-market.webp','Ventas diarias · tope por artículo'],refine:['REFINAMIENTO INTELIGENTE','Refinamiento','Compra, transmuta, refina y vende: el motor busca el plan de refinado con más silver para tu presupuesto, montura, Focus y ciudades.','craft-cal.webp','Refinado · transmutación · rutas']};
  const [label,title,desc,scene,pill]=pages[which]||pages.top;
  return `<section class="hero hero--${which}"><div class="hero-copy"><span class="kicker">${label}</span><h1>${title}</h1><p>${desc}</p><div class="chips"><span class="chip">AODP · América / West</span><span class="chip">${pill}</span><span class="chip">Caché 1 hora · precios con fecha</span></div></div><img class="hero-game-scene" src="/assets/scenes/${scene}" alt="" aria-hidden="true"></section>`;
 }
@@ -396,8 +397,8 @@ function syncPhonePresentation(){
 }
 function updatePage(){
  document.querySelectorAll('[data-route]').forEach(b=>{const active=b.dataset.route===state.page;b.classList.toggle('is-active',active);b.setAttribute('aria-current',active?'page':'false');});
- $('#page-name').textContent={top:'Top Mercado',planner:'Craft Planner',calc:'Calculadora de Craft',refine:'Refinamiento'}[state.page]||'Top Mercado';
- $('#main').innerHTML=state.page==='top'?topPanel():state.page==='planner'?plannerPage():state.page==='refine'?refinePage.render():calcPage();
+ $('#page-name').textContent={top:'Top Mercado',planner:'Craft Planner',calc:'Calculadora de Craft',refine:'Refinamiento',bm:'Plan Mercado Negro'}[state.page]||'Top Mercado';
+ $('#main').innerHTML=state.page==='top'?topPanel():state.page==='planner'?plannerPage():state.page==='refine'?refinePage.render():state.page==='bm'?bmPage.render():calcPage();
  syncPhonePresentation();labelPhoneTables();
 }
 function nav(which){state.page=which;syncPhoneMenu(false);window.scrollTo({top:0,behavior:'instant'});updatePage();}
@@ -548,6 +549,7 @@ function exportCsv(){if(!state.result?.rows.length)return toast('No hay un plan 
 // Delegación: mantiene clics funcionales tras actualizar los paneles.
 document.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;
  if(b.closest('#refine-root')&&refinePage.onClick(b))return;
+ if(b.closest('#bm-root')&&bmPage.onClick(b))return;
  if(b.dataset.copyName!==undefined){
   const value=e.shiftKey?b.dataset.copyId:b.dataset.copyName;
   const message=e.shiftKey?'ID copiado':'Nombre copiado';
@@ -609,6 +611,7 @@ document.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)r
 document.addEventListener('toggle',e=>{if(e.target.matches?.('details.advanced-config'))state.advancedOpen=e.target.open;if(e.target.matches('details[data-group]')){if(e.target.open)state.openedGroups.add(e.target.dataset.group);else state.openedGroups.delete(e.target.dataset.group);} },true);
 document.addEventListener('change',e=>{const x=e.target;
  if(x.closest?.('#refine-root')&&refinePage.onChange(x))return;
+ if(x.closest?.('#bm-root')&&bmPage.onChange(x))return;
  if(x.id==='mobile-cards-switch'){state.mobileCards=x.checked;save();syncPhonePresentation();return;}
  if(x.dataset.budgetPreset!==undefined){const preset=x.dataset.budgetPreset;
   if(preset==='other'){const custom=Number(state.customBudget)||12500000;state.filters.budget=[5000000,10000000,15000000,20000000].includes(custom)?12500000:custom;}
@@ -650,6 +653,7 @@ let topSearchTimer=null;
 document.addEventListener('input',e=>{const field=e.target;if(field.id==='top-search'){clearTimeout(topSearchTimer);topSearchTimer=setTimeout(()=>{state.topFilter=sanitizeTopFilter({...state.topFilter,search:field.value});refreshTopResults({full:false});},180);return;}if(field.id==='catalog-search'){state.catalogSearch=field.value;const el=$('#catalog-search-results');if(el)el.innerHTML=catalogSelectionRows();return;}if(field.id!=='batch-search')return;state.batchSearch=field.value;const results=$('#batch-search-results');if(results){results.hidden=state.batchSearch.trim().length<2;results.innerHTML=batchSearchResults(state.batchSearch);}});
 // Cuatro herramientas: Top Mercado, Craft Planner, Refinamiento y Calculadora.
 refinePage=createRefinePage({escape,silver,small,compact,cityBadge,itemWithCopy,img,heading,hero,toast,progress,marketFetch,summarizeHistory,quoteMap,name,save,persisted,rerender:()=>{if(state.page==='refine')updatePage();}});
+bmPage=createBmPage({escape,silver,small,compact,itemWithCopy,img,heading,hero,toast,progress,marketFetch,summarizeHistory,quoteMap,name,save,persisted,recipes:()=>state.recipes,names:()=>state.names,rerender:()=>{if(state.page==='bm')updatePage();}});
 updatePage();loadCatalog().catch(e=>{state.catalogStatus='Error de catálogo: '+e.message;updatePage();});
 
 // Cerrar el menú de teléfono con Escape o al aumentar el ancho de pantalla.

@@ -38,5 +38,5 @@ test('Interfaz: selector en ambos resultados, persistencia y tres pestañas',()=
  assert(js.includes('id="top-sort-inline"')&&js.includes('id="plan-result-sort"'));
  assert(js.includes('planResultSort:state.planResultSort'));
  assert(js.includes("x.id==='plan-result-sort'"));
- assert.equal((html.match(/class="nav-link[^"]*" data-route=/g)||[]).length,4);
+ assert.equal((html.match(/class="nav-link[^"]*" data-route=/g)||[]).length,5);
 });

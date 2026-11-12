@@ -27,7 +27,7 @@ test('Tendencia: caída de actividad Q1 y ausencia de historial largo se informa
 test('Inputs de controles nuevos validados y disponibles en Craft Planner, nunca en Flips',()=>{
  const main=readFileSync('src/main.js','utf8');const html=readFileSync('index.html','utf8');
  for(const x of ['data-cfg="maxTierSharePct"','data-cfg="maxEnchantSharePct"','data-cfg="maxFamilySharePct"','data-cfg="trendAnalysis"','Comparativa de asignación'])assert(main.includes(x),x);
- assert.equal((html.match(/class="nav-link[^\"]*" data-route=/g)||[]).length,4);
+ assert.equal((html.match(/class="nav-link[^\"]*" data-route=/g)||[]).length,5);
  assert.throws(()=>settings({...cfg(),maxTierSharePct:105}),/Límites/);
 });
 

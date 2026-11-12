@@ -8,7 +8,7 @@
  <meta name="mobile-web-app-capable" content="yes">
  <link rel="manifest" href="/manifest.webmanifest">
  <link rel="apple-touch-icon" href="/assets/pwa-icon-192.png">
- <meta name="description" content="Gildem Market & Craft: Top Mercado, Craft Planner y Calculadora de Craft conectados mediante AODP West.">
+ <meta name="description" content="Gildem Market & Craft: Top Mercado, Craft Planner, Plan Mercado Negro, Refinamiento y Calculadora de Craft conectados mediante AODP West.">
  <title>Gildem Market & Craft · Albion Online</title>
  <link rel="icon" type="image/webp" href="/assets/branding/gildem-crest.webp">
  <link rel="stylesheet" href="/styles.css">
@@ -17,14 +17,15 @@
 <div class="app">
  <aside class="sidebar" id="mobile-menu">
   <div class="brand"><img src="/assets/branding/gildem-sidebar-logo.webp" alt="Emblema Gildem Albion Lab"><div><small>GILDEM ALBION LAB</small><strong>Market & Craft</strong></div></div>
-  <div class="sidebar-label">LABORATORIO / V3.0.0</div>
+  <div class="sidebar-label">LABORATORIO / V3.1.0</div>
   <nav id="main-navigation" aria-label="Navegación principal" class="main-nav">
    <button type="button" class="nav-link is-active" data-route="top" id="nav-top"><img src="/assets/tabs/top-market.svg" alt=""><span><strong>Top Mercado</strong><small>Market intelligence</small></span><span class="nav-arrow">›</span></button>
    <button type="button" class="nav-link" data-route="planner" id="nav-planner"><img src="/assets/tabs/craft-planner.svg" alt=""><span><strong>Craft Planner</strong><small>Planificación de inversión</small></span><span class="nav-arrow">›</span></button>
+   <button type="button" class="nav-link" data-route="bm" id="nav-bm"><img src="/assets/tabs/bm-plan.svg" alt=""><span><strong>Plan Mercado Negro</strong><small>Vender en pocos días</small></span><span class="nav-arrow">›</span></button>
    <button type="button" class="nav-link" data-route="refine" id="nav-refine"><img src="/assets/tabs/refine-tab.svg" alt=""><span><strong>Refinamiento</strong><small>Comprar · refinar · vender</small></span><span class="nav-arrow">›</span></button>
    <button type="button" class="nav-link" data-route="calc" id="nav-calc"><img src="/assets/tabs/craft-cal.svg" alt=""><span><strong>Calculadora de Craft</strong><small>Materiales y lotes manuales</small></span><span class="nav-arrow">›</span></button>
   </nav>
-  <div class="sidebar-bottom"><div class="status-card"><span class="status-dot"></span><div><strong>América · West</strong><small id="source-status">AODP REST · listo para consultar</small></div></div><p>Cuatro herramientas · Motor 3.0. Cálculos sin ventas inventadas.</p><small class="version">STANDALONE · 3.0.0</small></div>
+  <div class="sidebar-bottom"><div class="status-card"><span class="status-dot"></span><div><strong>América · West</strong><small id="source-status">AODP REST · listo para consultar</small></div></div><p>Cinco herramientas · Motor 3.0 · Plan Mercado Negro. Cálculos sin ventas inventadas.</p><small class="version">STANDALONE · 3.1.0</small></div>
  </aside>
  <button type="button" id="mobile-backdrop" aria-label="Cerrar menú" tabindex="-1" hidden></button>
  <div class="workspace">
@@ -35,6 +36,7 @@
  <nav class="phone-dock" aria-label="Herramientas para teléfono">
   <button type="button" data-route="top" class="phone-tab is-active" aria-label="Top Mercado" aria-current="page"><img src="/assets/tabs/top-market.svg" alt=""><span>Mercado</span></button>
   <button type="button" data-route="planner" class="phone-tab" aria-label="Craft Planner"><img src="/assets/tabs/craft-planner.svg" alt=""><span>Planner</span></button>
+  <button type="button" data-route="bm" class="phone-tab" aria-label="Plan Mercado Negro"><img src="/assets/tabs/bm-plan.svg" alt=""><span>M. Negro</span></button>
   <button type="button" data-route="refine" class="phone-tab" aria-label="Refinamiento"><img src="/assets/tabs/refine-tab.svg" alt=""><span>Refinar</span></button>
   <button type="button" data-route="calc" class="phone-tab" aria-label="Calculadora de Craft"><img src="/assets/tabs/craft-cal.svg" alt=""><span>Calculadora</span></button>
  </nav>

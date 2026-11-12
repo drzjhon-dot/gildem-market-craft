@@ -1,6 +1,10 @@
-# Gildem Market & Craft 3.0.0
+# Gildem Market & Craft 3.1.0
 
-Aplicación independiente para Albion Online **América (West)**; cuatro pestañas: **Top Mercado**, **Craft Planner**, **Refinamiento** y **Calculadora de Craft**.
+Aplicación independiente para Albion Online **América (West)**; cinco pestañas: **Top Mercado**, **Craft Planner**, **Plan Mercado Negro**, **Refinamiento** y **Calculadora de Craft**.
+
+## Plan Mercado Negro (v3.1)
+
+Plan diversificado para vender al Mercado Negro en pocos días. La demanda sale de AODP o de una tabla de ventas pegada. Ningún artículo pasa del 6 % del volumen del plazo. Se descartan las variantes que pagan menos por material, el plan se reparte entre tiers y familias, y cada material lleva su precio máximo de compra. Ver [`RELEASE_NOTES_v3_1_0.md`](./RELEASE_NOTES_v3_1_0.md).
 
 ## Motor 3.0 (Craft Planner)
 

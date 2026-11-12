@@ -1,0 +1,721 @@
+ITEM	CIUDAD	CATEGORÍA	CANTIDAD DIARIA MEDIA	VOLUMEN PLATA DIARIO	PRECIO MEDIO UNITARIO
+T4_MAIN_SWORD
+Espada ancha del iniciado
+T4.0
+Black Market	
+Weapons
+>
+Sword
+584	5,1M	8,7K
+T4_2H_DUALSWORD
+Dos espadas del iniciado
+T4.0
+Black Market	
+Weapons
+>
+Sword
+550	5,8M	10,6K
+T5_2H_CLAYMORE
+Claymore del experto
+T5.0
+Black Market	
+Weapons
+>
+Sword
+518	15,7M	30,3K
+T4_2H_CLAYMORE
+Claymore del iniciado
+T4.0
+Black Market	
+Weapons
+>
+Sword
+492	5,7M	11,6K
+T5_MAIN_SWORD
+Espada ancha del experto
+T5.0
+Black Market	
+Weapons
+>
+Sword
+384	7,1M	18,6K
+T6_MAIN_SWORD
+Espada ancha del maestro
+T6.0
+Black Market	
+Weapons
+>
+Sword
+239	12,3M	51,3K
+T5_2H_DUALSWORD
+Dos espadas del experto
+T5.0
+Black Market	
+Weapons
+>
+Sword
+219	6,7M	30,7K
+T4_2H_DUALSWORD@1
+Dos espadas del iniciado
+T4.1
+Black Market	
+Weapons
+>
+Sword
+212	2,8M	13,4K
+T6_2H_DUALSWORD
+Dos espadas del maestro
+T6.0
+Black Market	
+Weapons
+>
+Sword
+184	16,6M	90,6K
+T4_2H_CLAYMORE@1
+Claymore del iniciado
+T4.1
+Black Market	
+Weapons
+>
+Sword
+179	3,2M	18,2K
+T4_MAIN_SWORD@1
+Espada ancha del iniciado
+T4.1
+Black Market	
+Weapons
+>
+Sword
+172	2,7M	15,5K
+T5_MAIN_SWORD@1
+Espada ancha del experto
+T5.1
+Black Market	
+Weapons
+>
+Sword
+124	3,8M	31,1K
+T6_2H_CLAYMORE
+Claymore del maestro
+T6.0
+Black Market	
+Weapons
+>
+Sword
+109	8,7M	80K
+T5_2H_DUALSWORD@1
+Dos espadas del experto
+T5.1
+Black Market	
+Weapons
+>
+Sword
+79	4,2M	53,6K
+T7_2H_DUALSWORD
+Dos espadas del gran maestro
+T7.0
+Black Market	
+Weapons
+>
+Sword
+54	13M	242,1K
+T5_2H_CLAYMORE@1
+Claymore del experto
+T5.1
+Black Market	
+Weapons
+>
+Sword
+49	2,2M	45,4K
+T6_MAIN_SCIMITAR_MORGANA
+Hoja Clarent del maestro
+T6.0
+Black Market	
+Weapons
+>
+Sword
+44	3,3M	74K
+T6_MAIN_SWORD@1
+Espada ancha del maestro
+T6.1
+Black Market	
+Weapons
+>
+Sword
+42	4,8M	112,8K
+T4_MAIN_SWORD@2
+Espada ancha del iniciado
+T4.2
+Black Market	
+Weapons
+>
+Sword
+40	1,3M	33,5K
+T8_MAIN_SWORD
+Espada ancha del anciano
+T8.0
+Black Market	
+Weapons
+>
+Sword
+39	15,3M	390,6K
+T6_2H_CLAYMORE@1
+Claymore del maestro
+T6.1
+Black Market	
+Weapons
+>
+Sword
+36	5,5M	152,3K
+T4_MAIN_SCIMITAR_MORGANA@1
+Hoja Clarent del iniciado
+T4.1
+Black Market	
+Weapons
+>
+Sword
+35	654,9K	18,8K
+T4_2H_DUALSWORD@2
+Dos espadas del iniciado
+T4.2
+Black Market	
+Weapons
+>
+Sword
+34	1,4M	41,8K
+T6_2H_DUALSWORD@1
+Dos espadas del maestro
+T6.1
+Black Market	
+Weapons
+>
+Sword
+31	5M	161,6K
+T7_MAIN_SWORD
+Espada ancha del gran maestro
+T7.0
+Black Market	
+Weapons
+>
+Sword
+30	5M	165,8K
+T4_MAIN_SCIMITAR_MORGANA
+Hoja Clarent del iniciado
+T4.0
+Black Market	
+Weapons
+>
+Sword
+30	252,1K	8,4K
+T4_2H_CLAYMORE@2
+Claymore del iniciado
+T4.2
+Black Market	
+Weapons
+>
+Sword
+22	1,6M	74,3K
+T8_2H_CLAYMORE
+Claymore del anciano
+T8.0
+Black Market	
+Weapons
+>
+Sword
+19	10,2M	531,8K
+T7_2H_CLAYMORE
+Claymore del gran maestro
+T7.0
+Black Market	
+Weapons
+>
+Sword
+19	4,5M	236,6K
+T7_MAIN_SCIMITAR_MORGANA
+Hoja Clarent del gran maestro
+T7.0
+Black Market	
+Weapons
+>
+Sword
+16	2,4M	154,8K
+T4_2H_CLEAVER_HELL
+Espada tallada del iniciado
+T4.0
+Black Market	
+Weapons
+>
+Sword
+14	231K	16,2K
+T5_MAIN_SCIMITAR_MORGANA@1
+Hoja Clarent del experto
+T5.1
+Black Market	
+Weapons
+>
+Sword
+14	582,1K	41,6K
+T5_MAIN_SCIMITAR_MORGANA
+Hoja Clarent del experto
+T5.0
+Black Market	
+Weapons
+>
+Sword
+12	366,8K	29,9K
+T6_2H_DUALSCIMITAR_UNDEAD
+Dos galatinas del maestro
+T6.0
+Black Market	
+Weapons
+>
+Sword
+12	1,6M	138,5K
+T5_2H_DUALSWORD@2
+Dos espadas del experto
+T5.2
+Black Market	
+Weapons
+>
+Sword
+12	1,6M	138,5K
+T6_MAIN_SWORD@2
+Espada ancha del maestro
+T6.2
+Black Market	
+Weapons
+>
+Sword
+10	4,3M	412,3K
+T5_2H_CLAYMORE@2
+Claymore del experto
+T5.2
+Black Market	
+Weapons
+>
+Sword
+10	1,6M	161,8K
+T6_2H_CLAYMORE@2
+Claymore del maestro
+T6.2
+Black Market	
+Weapons
+>
+Sword
+10	5,6M	568,9K
+T6_MAIN_SCIMITAR_MORGANA@1
+Hoja Clarent del maestro
+T6.1
+Black Market	
+Weapons
+>
+Sword
+9	1,3M	145,5K
+T5_MAIN_SWORD@2
+Espada ancha del experto
+T5.2
+Black Market	
+Weapons
+>
+Sword
+9	956,9K	112,6K
+T6_2H_CLEAVER_HELL
+Espada tallada del maestro
+T6.0
+Black Market	
+Weapons
+>
+Sword
+8	699,6K	84,8K
+T4_2H_CLEAVER_HELL@1
+Espada tallada del iniciado
+T4.1
+Black Market	
+Weapons
+>
+Sword
+8	200,2K	26,3K
+T7_2H_CLAYMORE@1
+Claymore del gran maestro
+T7.1
+Black Market	
+Weapons
+>
+Sword
+7	4,6M	629,4K
+T6_2H_DUALSWORD@2
+Dos espadas del maestro
+T6.2
+Black Market	
+Weapons
+>
+Sword
+7	4M	556,6K
+T8_2H_DUALSWORD
+Dos espadas del anciano
+T8.0
+Black Market	
+Weapons
+>
+Sword
+7	4,9M	745,6K
+T7_2H_DUALSWORD@1
+Dos espadas del gran maestro
+T7.1
+Black Market	
+Weapons
+>
+Sword
+7	3,4M	517,6K
+T4_2H_DUALSWORD@3
+Dos espadas del iniciado
+T4.3
+Black Market	
+Weapons
+>
+Sword
+6	943,9K	160,7K
+T4_2H_CLAYMORE@3
+Claymore del iniciado
+T4.3
+Black Market	
+Weapons
+>
+Sword
+4	863,2K	230,2K
+T5_2H_CLEAVER_HELL
+Espada tallada del experto
+T5.0
+Black Market	
+Weapons
+>
+Sword
+3	250,2K	77K
+T7_MAIN_SWORD@1
+Espada ancha del gran maestro
+T7.1
+Black Market	
+Weapons
+>
+Sword
+3	1,3M	422K
+T6_2H_CLAYMORE@3
+Claymore del maestro
+T6.3
+Black Market	
+Weapons
+>
+Sword
+2	3,4M	1,5M
+T4_MAIN_SWORD@3
+Espada ancha del iniciado
+T4.3
+Black Market	
+Weapons
+>
+Sword
+2	382,6K	180K
+T5_2H_DUALSCIMITAR_UNDEAD
+Dos galatinas del experto
+T5.0
+Black Market	
+Weapons
+>
+Sword
+2	108,3K	51K
+T6_2H_DUALSCIMITAR_UNDEAD@1
+Dos galatinas del maestro
+T6.1
+Black Market	
+Weapons
+>
+Sword
+2	434,7K	231,8K
+T4_2H_DUALSCIMITAR_UNDEAD
+Dos galatinas del iniciado
+T4.0
+Black Market	
+Weapons
+>
+Sword
+2	39,3K	20,9K
+T5_MAIN_SWORD@3
+Espada ancha del experto
+T5.3
+Black Market	
+Weapons
+>
+Sword
+2	741,5K	423,7K
+T5_MAIN_SCIMITAR_MORGANA@2
+Hoja Clarent del experto
+T5.2
+Black Market	
+Weapons
+>
+Sword
+2	136,6K	84K
+T4_MAIN_SCIMITAR_MORGANA@2
+Hoja Clarent del iniciado
+T4.2
+Black Market	
+Weapons
+>
+Sword
+2	56,8K	35K
+T4_2H_CLEAVER_HELL@2
+Espada tallada del iniciado
+T4.2
+Black Market	
+Weapons
+>
+Sword
+1	42K	37,4K
+T6_2H_CLEAVER_HELL@1
+Espada tallada del maestro
+T6.1
+Black Market	
+Weapons
+>
+Sword
+1	199,4K	177,2K
+T6_MAIN_SWORD@3
+Espada ancha del maestro
+T6.3
+Black Market	
+Weapons
+>
+Sword
+1	1,3M	1,2M
+T4_2H_CLAYMORE_AVALON
+Crea-reyes del iniciado
+T4.0
+Black Market	
+Weapons
+>
+Sword
+1	33,8K	30,1K
+T7_MAIN_SWORD@2
+Espada ancha del gran maestro
+T7.2
+Black Market	
+Weapons
+>
+Sword
+1	1,2M	1,2M
+T5_2H_CLEAVER_HELL@1
+Espada tallada del experto
+T5.1
+Black Market	
+Weapons
+>
+Sword
+1	129,5K	129,5K
+T5_2H_DUALSWORD@3
+Dos espadas del experto
+T5.3
+Black Market	
+Weapons
+>
+Sword
+1	406,4K	464,5K
+T7_2H_DUALSWORD@2
+Dos espadas del gran maestro
+T7.2
+Black Market	
+Weapons
+>
+Sword
+1	1,6M	1,8M
+T5_2H_CLAYMORE@3
+Claymore del experto
+T5.3
+Black Market	
+Weapons
+>
+Sword
+1	431,6K	493,3K
+T6_MAIN_SCIMITAR_MORGANA@2
+Hoja Clarent del maestro
+T6.2
+Black Market	
+Weapons
+>
+Sword
+1	304K	405,3K
+T5_2H_DUALSCIMITAR_UNDEAD@1
+Dos galatinas del experto
+T5.1
+Black Market	
+Weapons
+>
+Sword
+1	35,9K	57,5K
+T6_2H_DUALSWORD@3
+Dos espadas del maestro
+T6.3
+Black Market	
+Weapons
+>
+Sword
+1	824,1K	1,3M
+T8_2H_CLAYMORE@1
+Claymore del anciano
+T8.1
+Black Market	
+Weapons
+>
+Sword
+1	937,6K	1,5M
+T7_2H_CLAYMORE@2
+Claymore del gran maestro
+T7.2
+Black Market	
+Weapons
+>
+Sword
+1	854,5K	1,7M
+T4_2H_DUALSCIMITAR_UNDEAD@1
+Dos galatinas del iniciado
+T4.1
+Black Market	
+Weapons
+>
+Sword
+1	14,9K	29,9K
+T7_2H_CLEAVER_HELL
+Espada tallada del gran maestro
+T7.0
+Black Market	
+Weapons
+>
+Sword
+1	130K	260K
+T7_2H_CLEAVER_HELL@1
+Espada tallada del gran maestro
+T7.1
+Black Market	
+Weapons
+>
+Sword
+1	245,9K	491,8K
+T7_2H_DUALSWORD@3
+Dos espadas del gran maestro
+T7.3
+Black Market	
+Weapons
+>
+Sword
+0	1,7M	4,6M
+T4_2H_CLAYMORE_AVALON@1
+Crea-reyes del iniciado
+T4.1
+Black Market	
+Weapons
+>
+Sword
+0	12,9K	34,5K
+T5_2H_CLAYMORE@4
+Claymore del experto
+T5.4
+Black Market	
+Weapons
+>
+Sword
+0	822,4K	3,3M
+T4_2H_DUALSCIMITAR_UNDEAD@2
+Dos galatinas del iniciado
+T4.2
+Black Market	
+Weapons
+>
+Sword
+0	7,5K	30K
+T8_2H_CLAYMORE@3
+Claymore del anciano
+T8.3
+Black Market	
+Weapons
+>
+Sword
+0	3M	11,8M
+T7_MAIN_SCIMITAR_MORGANA@1
+Hoja Clarent del gran maestro
+T7.1
+Black Market	
+Weapons
+>
+Sword
+0	46,1K	369K
+T5_2H_CLEAVER_HELL@2
+Espada tallada del experto
+T5.2
+Black Market	
+Weapons
+>
+Sword
+0	25,8K	206K
+T7_2H_CLAYMORE@4
+Claymore del gran maestro
+T7.4
+Black Market	
+Weapons
+>
+Sword
+0	1,9M	15,3M
+T6_2H_CLAYMORE@4
+Claymore del maestro
+T6.4
+Black Market	
+Weapons
+>
+Sword
+0	386,5K	3,1M
+T7_MAIN_SWORD@3
+Espada ancha del gran maestro
+T7.3
+Black Market	
+Weapons
+>
+Sword
+0	510,2K	4,1M
+T4_2H_CLAYMORE@4
+Claymore del iniciado
+T4.4
+Black Market	
+Weapons
+>
+Sword
+0	150K	1,2M
+T6_2H_CLEAVER_HELL@2
+Espada tallada del maestro
+T6.2
+Black Market	
+Weapons
+>
+Sword
+0	58,7K	470K
+T4_MAIN_SCIMITAR_MORGANA@3
+Hoja Clarent del iniciado
+T4.3
+Black Market	
+Weapons
+>
+Sword
+0	18,7K	149,8K
+T4_2H_DUALSWORD@4
+Dos espadas del iniciado
+T4.4
+Black Market	
+Weapons
+>
+Sword
+0	136,4K	1,1M
+T6_2H_DUALSCIMITAR_UNDEAD@2
+Dos galatinas del maestro
+T6.2
+Black Market	
+Weapons
+>
+Sword
+0	83,8K	670K
