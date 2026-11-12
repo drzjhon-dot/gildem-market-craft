@@ -2,7 +2,8 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import {summarizeHistory,quoteMap} from '../src/market.js';
-import {buildCandidates,allocatePlan,DEFAULTS,gradeOneDaily} from '../src/planner.js';
+import {DEFAULTS,gradeOneDaily} from '../src/planner.js';
+import {buildRoutesV3} from '../src/engine-v3.js';
 const now=Date.parse('2026-11-11T18:00:00Z');
 const qdate=new Date(now-3600000).toISOString();
 const candle='2026-11-10T00:00:00Z';
@@ -20,7 +21,7 @@ const history=summarizeHistory(marketRows,{days:1,now});
 const config={...DEFAULTS,budget:1000000,tiers:[6],enchants:[0],saleDays:7,minRoiPct:5,stressGuard:false,style:'dynamic'};
 function produce(opts={},dest='Lymhurst'){
  const c={...config,...opts};
- return buildCandidates({top:history,quotes:prices,recipes,config:c,selectedMarkets:[dest],now});
+  return buildRoutesV3({top:history,quotes:prices,recipes,config:c,selectedMarkets:[dest],now});
 }
 test('historial 1-5 en ranking, pero planes y impacto solo con liquidez Q1',()=>{
  const row=history.find(h=>h.city==='Lymhurst');
@@ -48,26 +49,6 @@ test('con más colchón de compra y rebaja de venta, el profit proyectado baja',
  assert(safe.estimatedProfitPerCraft<loose.estimatedProfitPerCraft);
  assert(safe.grossCapitalPerCraft>loose.grossCapitalPerCraft);
 });
-test('ROI mínimo / estrés rechaza rutas marginales sin reservar silver ficticio',()=>{
- const tooHigh=produce({minRoiPct:100});assert(tooHigh.candidates.length===0||tooHigh.candidates.every(r=>r.estimatedProfitPerCraft/r.grossCapitalPerCraft>=1));
- const badPrice=quoteMap([quoted('T6_METALBAR','Martlock',600),quoted('T6_PLANKS','Lymhurst',400),quoted(item,'Lymhurst',19000)]);
- const strictConfig={...config,buyBufferPct:40,sellHaircutPct:30,minRoiPct:80,stressGuard:true};
- const strict=buildCandidates({top:history,recipes,quotes:badPrice,config:strictConfig,selectedMarkets:['Lymhurst'],now});
- assert.equal(strict.candidates.length,0);
- const output=allocatePlan({...strict,config:strict.config});assert.equal(output.summary.capitalReserved,0);
-});
-test('tamaño final respeta presupuesto, ROI, estrés y concentración por objeto',()=>{
- const b=produce({maxCapitalSharePct:35,stressGuard:true});
- const o=allocatePlan({...b,config:b.config});
- assert(o.rows.length>=1);
- assert(o.summary.capitalReserved<=config.budget+0.001);
- for(const r of o.rows){
-  assert(r.totalProfit>0);
-  assert(r.totalProfit/(r.qty*r.grossCapitalPerCraft)>=config.minRoiPct/100);
-  assert(r.stressProfit>=0);
-  assert(r.qty*r.grossCapitalPerCraft<=config.budget*.35+r.grossCapitalPerCraft);
- }
-});
 test('Craft Planner contiene configuración de ventas independiente y la calculadora manual permanece',()=>{
  const src=readFileSync(new URL('../src/main.js',import.meta.url),'utf8');
  assert.match(src,/function planBuilderPanel\(/);
@@ -78,3 +59,4 @@ test('Craft Planner contiene configuración de ventas independiente y la calcula
  assert.match(src,/marketFetch\('history',missingIds/);
  assert.doesNotMatch(src,/state\.saleMarkets=new Set\(state\.markets\)/);
 });
+

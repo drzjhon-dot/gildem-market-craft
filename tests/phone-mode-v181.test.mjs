@@ -7,12 +7,12 @@ const css=readFileSync('styles.css','utf8');
 test('teléfono: dock accesible con las tres rutas',()=>{
  for(const route of ['top','planner','calc'])assert.match(html,new RegExp('class="phone-tab[^\\"]*"[^>]*data-route="'+route+'"|data-route="'+route+'"[^>]*class="phone-tab'));
  assert.match(html,/aria-label="Herramientas para teléfono"/);
- assert.equal((html.match(/class="nav-link[^\"]*" data-route=/g)||[]).length,3);
+ assert.equal((html.match(/class="nav-link[^\"]*" data-route=/g)||[]).length,4);
 });
 test('teléfono: tarjetas y tablas seleccionables, preferencia persistente',()=>{
  assert.match(html,/id="mobile-cards-switch"/);
  assert.match(script,/mobileCards:persisted.mobileCards!==false/);
- assert.match(script,/schemaVersion:11,mobileCards:state.mobileCards/);
+ assert.match(script,/schemaVersion:12,refine:refinePage\?\.saveState\?\.\(\),mobileCards:state.mobileCards/);
  assert.match(script,/function labelPhoneTables\(\)/);
  assert.match(css,/html\[data-mobile-cards="1"\] \.result-table/);
  assert.match(css,/@media \(max-width:800px\)/);

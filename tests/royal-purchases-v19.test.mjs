@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {purchaseQuote,SAFE_ROYAL_PURCHASE_CITIES} from '../src/market.js';
-import {DEFAULTS,settings,buildCandidates,allocatePlan} from '../src/planner.js';
+import {DEFAULTS,settings} from '../src/planner.js';
 import {batchCalculate} from '../src/batch-calculator.js';
 import {readFileSync} from 'node:fs';
 const now=Date.parse('2026-11-12T15:00:00Z');
@@ -38,17 +38,6 @@ test('Modo compra local solo utiliza el mercado de la ciudad de fabricación',()
  assert.equal(purchaseQuote(q,'T4_METALBAR','Lymhurst',{...cfg,purchaseMode:'craft-city'},now+1000).city,'Lymhurst');
  assert.equal(purchaseQuote(q,'T4_METALBAR','Thetford',{...cfg,purchaseMode:'craft-city'},now+1000),null);
 });
-test('Planner calcula capital y profit usando precio material + transporte, no solo menor precio',()=>{
- const data=buildCandidates({top:[h],recipes:recipe,quotes:q,config:cfg,selectedIds:['T4_MAIN_MACE'],selectedMarkets:['Black Market'],now:now+1000});
- assert.equal(data.candidates.length,1);
- const r=data.candidates[0];assert.equal(r.craftCity,'Lymhurst');assert.equal(r.materials[0].city,'Fort Sterling');
- assert.equal(r.materials[0].landedUnitPrice,88);assert.equal(r.grossCapitalPerCraft,1056);
- assert(r.expectedCostPerCraft>0);
- const result=allocatePlan({candidates:data.candidates,config:cfg});
- assert(result.rows.length>0);assert(result.summary.capitalReserved<=cfg.budget+0.01);
- assert(result.summary.purchaseTransportEstimated>0);
- assert(result.materials.some(m=>m.city==='Fort Sterling'&&m.transportPerUnit===8));
-});
 test('Calculadora agrupa diarios T4 y compra diario en la Royal más barata con traslado',()=>{
  const result=batchCalculate({items:[{id:'T4_MAIN_MACE',qty:2}],recipes:recipe,quotes:q,now:now+1000,config:cfg});
  const metal=result.materials.find(x=>x.id==='T4_METALBAR');
@@ -60,10 +49,10 @@ test('Calculadora agrupa diarios T4 y compra diario en la Royal más barata con 
  assert.equal(result.totals.journalCost,diary.total);
  assert(result.totals.profitBM!==null);assert(result.totals.purchaseTransportEstimated>0);
 });
-test('La interfaz permite seleccionar compras Royal y coste de traslado y mantiene tres pestañas',()=>{
+test('La interfaz permite seleccionar compras Royal y coste de traslado y mantiene sus pestañas',()=>{
  const ui=readFileSync('src/main.js','utf8'),html=readFileSync('index.html','utf8');
  for(const name of ['purchaseMode','inboundTransportPerUnit','includeCaerleonPurchases','craftFallbackCity'])assert(ui.includes(`data-cfg="${name}"`));
- assert(!html.includes('data-route="flip"'));assert(!html.includes('data-route="refine"'));
+ assert(!html.includes('data-route="flip"'));assert(html.includes('data-route="refine"'));
  assert(ui.includes('→ fabricar en'));
  assert.throws(()=>settings({...cfg,purchaseMode:'sin-control'}),/modo de compra/);
 });
@@ -79,3 +68,4 @@ test('No fusiona la misma materia al transportarla a destinos de fabricación di
  assert.equal(ly.landedUnitPrice,88);assert.equal(fs.landedUnitPrice,80);
  assert.equal(res.totals.buyCapital,steel.reduce((sum,r)=>sum+r.total,0));
 });
+

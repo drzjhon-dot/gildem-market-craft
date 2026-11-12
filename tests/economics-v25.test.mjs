@@ -1,8 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {journalValue,bestFullJournalSale,purchaseAssessment,qualityExtraPerUnit,qualityBids,premiumTax,QUALITY_PROBS_DEFAULT} from '../src/economics.js';
-import {buildCandidates,allocatePlan,DEFAULTS} from '../src/planner.js';
-import {optimizePortfolio,estimateRoute} from '../src/portfolio-engine.js';
+import {DEFAULTS,focusCostFactor} from '../src/planner.js';
 import {batchCalculate} from '../src/batch-calculator.js';
 import {transferPlanRows} from '../src/planner-transfer.js';
 const T=Date.parse('2026-11-12T12:00:00Z'),fresh=T-3600e3;
@@ -18,32 +17,6 @@ test('v2.5 diarios: el lleno se vende por el mejor canal neto y se descuenta el 
  assert.equal(best.city,'Lymhurst');assert.equal(Math.round(best.net),28050);
  const v=journalValue({quotes,journal:{id:'T6_JOURNAL_WARRIOR_EMPTY',fractional:.5},craftCity:'Martlock',config:{tax:4,listingFee:2.5,purchaseMode:'craft-city'},now:T});
  assert.equal(Math.round(v.valuePerCraft),Math.round((28050-4000)*.5));assert.equal(v.emptyCostPerCraft,2000);
-});
-
-test('v2.5 diarios en el Planner: bajan el coste neto, suben el capital y se pueden desactivar',()=>{
- const recipes={T6_MAIN_MACE:{city:'Martlock',amountCrafted:1,materials:[{id:'T6_METALBAR',count:16},{id:'T6_CLOTH',count:8}]}};
- const quotes=Q([['T6_METALBAR','Martlock',2500],['T6_CLOTH','Martlock',2600],['T6_MAIN_MACE','Black Market',0,70000],
-  ['T6_JOURNAL_WARRIOR_EMPTY','Martlock',4000],['T6_JOURNAL_WARRIOR_FULL','Martlock',30000]]);
- const top=[{id:'T6_MAIN_MACE',city:'Black Market',days:7,quality1DailyUnits:10,quality1ActiveDays:7,quality1AveragePrice:70000}];
- const on=buildCandidates({top,recipes,quotes,config:cfg({}),selectedMarkets:['Black Market'],now:T}).candidates[0];
- const off=buildCandidates({top,recipes,quotes,config:cfg({journalProfit:false}),selectedMarkets:['Black Market'],now:T}).candidates[0];
- assert(on.journal&&on.journalGainPerCraft>0);assert.equal(off.journal,null);
- assert(Math.abs((off.expectedCostPerCraft-on.expectedCostPerCraft)-on.journalGainPerCraft)<1e-6);
- assert(on.grossCapitalPerCraft>off.grossCapitalPerCraft);
-});
-
-test('v2.5 Focus: se reparte donde más silver ahorra por punto y ninguna ruta queda en pérdida',()=>{
- const route=(id,cost,costF,points)=>({id,city:'Black Market',routeKey:id+'|BM',maxCrafts:10,craftAmount:1,history:{quality1DailyUnits:500},
-  grossCapitalPerCraft:1000,expectedCostPerCraft:cost,costWithFocus:costF,focusPerCraft:points,planningPrice:2000,marketFee:0,
-  expectedFamePerCraft:0,estimatedProfitPerCraft:2000-cost,materials:[],qty:0});
- // A ahorra 300 silver con 100 puntos (3/punto); B ahorra 300 con 300 puntos (1/punto).
- const A=route('T5_MAIN_MACE',1500,1200,100),B=route('T6_MAIN_MACE',1500,1200,300);
- const c=cfg({budget:100000,focus:true,focusAvailable:1000,maxCapitalSharePct:100,useBudget:true,style:'dynamic',sellHaircutPct:0});
- const out=optimizePortfolio([A,B],c),get=id=>out.selected.find(r=>r.id===id);
- assert.equal(get('T5_MAIN_MACE').focusQty,10,'A recibe Focus primero');
- assert.equal(get('T6_MAIN_MACE').focusQty,0,'a B solo le quedarían 0 puntos útiles');
- assert(out.best.focusLeft>=0);
- for(const r of out.selected)assert(estimateRoute(r,r.qty,c,r.focusQty).profit>0);
 });
 
 test('v2.5 calidades superiores: extra esperado con la mejor puja de calidad ≤ q y tope del 15 %',()=>{
@@ -94,17 +67,8 @@ test('v2.5 diario de planes: guarda rutas y compara con la actividad real',()=>{
  assert.equal(sanitizePlanLog([e,{bad:1}]).length,1);
 });
 
-test('v2.5 diarios: tope del 25 % de la venta del objeto',()=>{
- const recipes={T8_MAIN_MACE:{city:'Martlock',amountCrafted:1,materials:[{id:'T8_METALBAR',count:16},{id:'T8_CLOTH',count:8}]}};
- const quotes=Q([['T8_METALBAR','Martlock',20000],['T8_CLOTH','Martlock',21000],['T8_MAIN_MACE','Black Market',0,600000],
-  ['T8_JOURNAL_WARRIOR_EMPTY','Martlock',10000],['T8_JOURNAL_WARRIOR_FULL','Martlock',2000000]]);
- const top=[{id:'T8_MAIN_MACE',city:'Black Market',days:7,quality1DailyUnits:10,quality1ActiveDays:7,quality1AveragePrice:600000}];
- const r=buildCandidates({top,recipes,quotes,config:cfg({}),selectedMarkets:['Black Market'],now:T}).candidates[0];
- assert(r.journal.capped);assert(Math.abs(r.journalGainPerCraft-600000*.25)<1e-6);
-});
-
-import {focusCostFactor} from '../src/planner.js';
 test('v2.5 Focus: 10.000 de eficiencia (FCE) reducen el coste a la mitad',()=>{
  assert.equal(focusCostFactor({focusEfficiency:0}),1);assert.equal(focusCostFactor({focusEfficiency:10000}),.5);
  assert(Math.abs(focusCostFactor({focusEfficiency:20000})-.25)<1e-12);
 });
+

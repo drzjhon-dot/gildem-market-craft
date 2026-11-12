@@ -898,3 +898,23 @@ select:focus-visible,input:focus-visible,button:focus-visible,summary:focus-visi
 .advice-tip{display:grid;gap:2px;padding:7px 0;border-top:1px solid #241a0e}
 .advice-tip:first-of-type{border-top:0}
 .advice-tip b{color:#fff;font-size:13px}.advice-tip span{color:#c9b89a;font-size:12px;line-height:1.45}
+.advice-tip .btn{justify-self:start;margin-top:6px}
+/* ===== v3.0 · Refinamiento + Motor 3.0 ===== */
+.plan-verdict{display:flex;flex-direction:column;gap:3px;border:1px solid #2c3a2f;border-left:3px solid var(--teal);background:#0b130e;border-radius:6px;padding:11px 14px;margin:6px 0 14px;font-size:12px;color:#cfe9d8}
+.plan-verdict b{font-family:var(--hud-font,inherit);text-transform:uppercase;letter-spacing:.07em;font-size:13px}
+.plan-verdict.risky{border-color:#5c3412;border-left-color:#f2b13c;background:#140d05;color:#f2dcb0}
+.plan-verdict.risky b{color:#ffcf73}
+.refine-types{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-bottom:16px}
+.refine-type{display:flex;align-items:center;gap:10px;text-align:left;border:1px solid #262a30;background:#0e1013;border-radius:10px;padding:10px 12px;color:#c9ced5;min-height:62px}
+.refine-type img{width:42px;height:42px;object-fit:contain}
+.refine-type strong{display:block;font-size:13px;color:#eef0f2}
+.refine-type small{display:block;font-size:10px;color:#9aa3af}
+.refine-type.active{border-color:#f2b13c;background:linear-gradient(120deg,#1d160a,#101113);box-shadow:inset 0 0 0 1px #f2b13c55}
+.refine-type.active strong{color:#ffd27a}
+.refine-steps{list-style:none;counter-reset:st;padding:0;margin:0 0 16px;display:grid;gap:8px}
+.refine-steps li{counter-increment:st;display:flex;align-items:center;justify-content:space-between;gap:12px;border:1px solid #23272c;background:#0f1113;border-radius:9px;padding:8px 12px}
+.refine-steps li:before{content:counter(st);font-family:var(--hud-font,inherit);color:#f2b13c;font-weight:700;width:18px}
+.refine-steps li .item-cell{flex:1}
+.result-table tr.row-risky td{background:#1a1206}
+@media (max-width:1100px){.refine-types{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:800px){.phone-dock{grid-template-columns:repeat(4,minmax(0,1fr))!important}.refine-types{grid-template-columns:1fr}.refine-steps li{flex-wrap:wrap}}

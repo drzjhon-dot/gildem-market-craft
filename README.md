@@ -1,17 +1,21 @@
-# Gildem Market & Craft 2.7.0
+# Gildem Market & Craft 3.0.0
 
-Aplicación independiente para Albion Online **América (West)**; tres pestañas: **Top Mercado**, **Craft Planner** y **Calculadora de Craft**.
+Aplicación independiente para Albion Online **América (West)**; cuatro pestañas: **Top Mercado**, **Craft Planner**, **Refinamiento** y **Calculadora de Craft**.
 
-## Motor de cartera 2.0
+## Motor 3.0 (Craft Planner)
 
-- Analiza **tres repartos independientes** (`profit`, `balanced`, `spread`) de los mismos artículos y restricciones; elige el de mejor puntuación para tu objetivo.
-- Añade controles de concentración por **tier, familia y encantamiento**. Mantiene los filtros de presupuesto bruto, Focus, comisión, riesgos, cupo Q1 y coste de compra/traslado.
-- Un segundo pase revisa intercambios entre crafts para mejorar beneficio neto estimado, sin aumentar artificialmente las unidades vendidas.
-- Compara opcionalmente el historial Q1 de **14 días** con la ventana reciente, para evitar que un pico temporal sobrestime capacidad de venta.
-- Muestra **tres escenarios de profit/capital/diversidad** y diagnósticos por objeto o mercado descartado.
-- Sigue en tres pestañas: **Top Mercado, Craft Planner y Calculadora**. Refinamiento continúa dentro de las ramas, no como pestaña.
+- **Beneficio marginal sin topes fijos:** cada lote adicional compite con los demás por silver ganado / silver invertido. El precio baja a medida que cubres más volumen Q1 y el motor se detiene cuando el siguiente lote deja de compensar (antes había un máximo de 24/40/55 rutas).
+- **Prioridad de compra y venta:** Compra rápida (compra instantánea + orden de venta), Más silver (orden de compra + orden de venta) o Venta rápida (todo instantáneo). El Mercado Negro siempre vende a sus pujas.
+- **Capacidad de venta realista para órdenes de venta:** Prudente 20 %, Equilibrado 30 %, Dinámico 45 % del volumen Q1 del plazo, ajustado por confianza (frecuencia, picos, caída de actividad, antigüedad del precio).
+- **Capital real:** neto del retorno de recursos + el retorno de un craft; el encarecimiento por comprar muchos días de un material se reparte entre todas las rutas que lo comparten.
+- **Plan arriesgado:** aviso cuando una ruta supera el 30 % del volumen Q1 del horizonte, con la cantidad recomendada.
+- Sin cotización de venta pero con historial Q1, la ruta se valora a precio histórico −3 % y con menos confianza (ya no se descarta).
 
-Investigación, metodología y límites en [`INVESTIGACION_Y_ARQUITECTURA_MOTOR_V2.md`](./INVESTIGACION_Y_ARQUITECTURA_MOTOR_V2.md).
+## Refinamiento inteligente (pestaña nueva)
+
+Lingotes, Tablas, Tela y Cuero, T4–T8 .0–.4: compra en la ciudad más barata (con coste por salto), **transmutación** cuando sale más barata (costes base del juego), **refinado en cadena** del tier inferior, Focus donde más ahorra, **capacidad de montura (kg) y viajes**, **divisiones** (1–5 ciudades de venta o automático), prioridad de compra/venta y aviso de plan arriesgado. Recetas, transmutaciones y pesos extraídos de ao-bin-dumps (`src/refining-data.js`).
+
+Detalles y comparación con el motor anterior en [`RELEASE_NOTES_v3_0_0.md`](./RELEASE_NOTES_v3_0_0.md).
 
 ## Novedades
 

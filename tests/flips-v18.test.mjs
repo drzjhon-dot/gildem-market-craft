@@ -20,14 +20,13 @@ const countRoutes = (markup, className) =>
     .map(tag => tag.match(/data-route="([^"]+)"/)?.[1])
     .filter(Boolean);
 
-test('Migración v1.9: solo Top Mercado, Craft Planner y Calculadora en escritorio', () => {
-  assert.deepEqual(countRoutes(html, 'nav-link'), ['top', 'planner', 'calc']);
+test('v3.0: Top Mercado, Craft Planner, Refinamiento y Calculadora en escritorio', () => {
+  assert.deepEqual(countRoutes(html, 'nav-link'), ['top', 'planner', 'refine', 'calc']);
   assert(!html.includes('data-route="flip"'));
-  assert(!html.includes('data-route="refine"'));
 });
 
-test('Migración v1.9: los mismos tres accesos en la barra del teléfono', () => {
-  assert.deepEqual(countRoutes(html, 'phone-tab'), ['top', 'planner', 'calc']);
+test('v3.0: los mismos cuatro accesos en la barra del teléfono', () => {
+  assert.deepEqual(countRoutes(html, 'phone-tab'), ['top', 'planner', 'refine', 'calc']);
 });
 
 test('Migración v1.9: refinamiento dentro del Top, y transferencias activas', () => {

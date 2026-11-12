@@ -4,9 +4,9 @@ import {basename} from 'node:path';
 await rm('dist',{recursive:true,force:true});await mkdir('dist',{recursive:true});
 for(const file of ['index.html','styles.css','manifest.webmanifest','sw.js'])await cp(file,`dist/${file}`);
 // Exclude obsolete source/assets when files remain in an incrementally updated GitHub repo.
-const deprecated=new Set(['flipping.js','flips.svg','refining.svg']);
+const deprecated=new Set(['flipping.js','flips.svg','refining.svg','portfolio-engine.js']);
 for(const dir of ['src','assets'])await cp(dir,`dist/${dir}`,{recursive:true,filter:path=>!deprecated.has(basename(path))});
-await writeFile('dist/version.json',JSON.stringify({name:'Gildem Market & Craft',version:'2.7.0',builtAt:new Date().toISOString()},null,2));
+await writeFile('dist/version.json',JSON.stringify({name:'Gildem Market & Craft',version:'3.0.0',builtAt:new Date().toISOString()},null,2));
 let fileConfig=null;try{fileConfig=JSON.parse(await readFile('orderbook.config.json','utf8'));}catch{}
 const ob=orderbookConfig({fileConfig,env:process.env});
 await writeFile('dist/orderbook.config.json',JSON.stringify(ob));
