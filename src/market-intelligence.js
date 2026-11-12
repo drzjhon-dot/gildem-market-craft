@@ -40,6 +40,59 @@ export function catalogItemMatches({ids=[],names={},branchKeys=[],search='',sele
  matches.sort((a,b)=>Number(chosen.has(b))-Number(chosen.has(a))||Number(names[a]===undefined)-Number(names[b]===undefined)||a.localeCompare(b));
  return {ids:matches.slice(0,maxResults),total:matches.length,showing:Math.min(matches.length,maxResults)};
 }
+/**
+ * Individual item picker works on PRODUCT FAMILIES rather than SKUs.
+ * e.g. MAIN_MACE selects T4_MAIN_MACE, T8_MAIN_MACE and available enchants.
+ * Market Top still displays every tier/enchantment separately.
+ */
+export function familyKey(id){
+ const m=/^T[1-8]_([A-Z0-9_]+?)(?:@[1-4])?$/.exec(String(id||''));
+ return m?.[1]||null;
+}
+export function familyDisplayName(label,family=''){
+ const raw=String(label||'').trim();
+ // Remove the Spanish tier descriptor only when it closes the name.
+ const simplified=raw.replace(/\s+(?:del|de la|de los|de las)\s+(?:iniciado|novato|adepto|experto|maestro|gran maestro|anciano|principiante)(?:s|as)?$/i,'').replace(/\s+T[1-8](?:\.[0-4])?$/i,'').trim();
+ if(simplified && simplified!==family)return simplified;
+ return String(family).split('_').filter(Boolean).map(x=>x[0]+x.slice(1).toLowerCase()).join(' ');
+}
+export function catalogFamilies({ids=[],names={},branchKeys=[],search='',selectedOnly=false,selectedFamilies=[],maxResults=64}={}){
+ const branches=branchKeys.map(k=>BRANCH_BY_KEY.get(k)).filter(Boolean);
+ const chosen=new Set(selectedFamilies.map(x=>familyKey(x)||String(x)));
+ const norm=s=>String(s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().trim();
+ const searchTerm=norm(search), grouped=new Map();
+ for(const id of ids){
+  const key=familyKey(id);if(!key||!variant(id)||!branches.some(b=>b.test(id)))continue;
+  let family=grouped.get(key);
+  if(!family){family={key,id,name:'',count:0,searchText:'',score:Infinity};grouped.set(key,family);}
+  const v=variant(id),score=(v.tier===4?0:10+v.tier)*10+v.ench;
+  // Prefer T4.0 as icon/label; fallback to the lowest known variant.
+  if(score<family.score){family.id=id;family.score=score;}
+  family.count++;
+  const localized=String(names[id]||'');
+  if(localized)family.searchText+=' '+localized;
+  family.searchText+=' '+id;
+ }
+ const families=[];
+ for(const f of grouped.values()){
+  if(selectedOnly&&!chosen.has(f.key))continue;
+  f.name=familyDisplayName(names[f.id],f.key);
+  if(searchTerm&&!norm(f.searchText+' '+f.name+' '+f.key).includes(searchTerm))continue;
+  families.push({key:f.key,id:f.id,label:f.name,variants:f.count,selected:chosen.has(f.key)});
+ }
+ families.sort((a,b)=>Number(b.selected)-Number(a.selected)||a.label.localeCompare(b.label,'es')||a.key.localeCompare(b.key));
+ return {families:families.slice(0,maxResults),total:families.length,showing:Math.min(maxResults,families.length)};
+}
+export function expandSelectedFamilies({ids=[],branchKeys=[],selectedFamilies=[],offset=0,limit=240}={}){
+ const selected=new Set(selectedFamilies.map(x=>familyKey(x)||String(x)));
+ const branches=branchKeys.map(k=>BRANCH_BY_KEY.get(k)).filter(Boolean);
+ const all=ids.filter(id=>selected.has(familyKey(id))&&branches.some(b=>b.test(id))&&variant(id));
+ // Cross-tier and cross-enchantment interleaving avoids cutting a big family at T4.
+ const lines=new Map();for(const id of all){const v=variant(id),lane=`${v.tier}.${v.ench}`;if(!lines.has(lane))lines.set(lane,[]);lines.get(lane).push(id);}
+ const ordered=[];const queues=[...lines].sort((a,b)=>a[0].localeCompare(b[0])).map(x=>x[1].sort());
+ for(let i=0;queues.some(x=>i<x.length);i++)for(const queue of queues)if(queue[i])ordered.push(queue[i]);
+ return {ids:ordered.slice(offset,offset+limit),total:ordered.length,offset,nextOffset:Math.min(ordered.length,offset+limit),complete:offset+limit>=ordered.length};
+}
 export function reconcileMarketEvidence({snapshots=[],queried=[],ids=[],markets=[],days=7,now=Date.now()}={}){
  const window=observedWindow(days,now),included=new Set(ids),destinations=new Set(markets),out=new Map(),discrepancies=[];
  // Fresh data is only applicable when it describes exactly the same complete UTC days.

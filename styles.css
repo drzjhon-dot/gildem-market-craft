@@ -439,3 +439,18 @@ body{background:#111920;color:var(--text);font-size:15px;letter-spacing:.005em}
 .planner-basket-item .tier-badge{flex:none}
 @media(max-width:900px){.catalog-item-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:640px){.catalog-item-grid{grid-template-columns:1fr}.market-ranking .rank-metric{font-size:14px}}
+
+/* v1.7 · menú individual por objeto y explicación de riesgo/fuentes */
+.catalog-families .catalog-item span small{display:block;font-size:11px;font-weight:500;color:#b8c6c9;margin-top:3px}
+.catalog-families .catalog-item img{width:41px;height:41px}
+.catalog-families .catalog-item strong{font-size:13px;line-height:1.35}
+.profit-help{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px 15px;margin:11px 0;padding:12px;background:#17232a;border:1px solid #546470;border-radius:11px}
+.profit-help span{color:#ced8d9;line-height:1.48;font-size:11.5px}
+.profit-help strong{color:#f2ce90}
+.west-data-source{margin:16px 0 6px;background:#1d292f;border:1px solid #405866;border-radius:10px;overflow:hidden}
+.west-data-source>summary{cursor:pointer;padding:13px 16px;font-size:12px;font-weight:800;color:#ead3a9}
+.west-data-source-body{padding:0 17px 15px;color:#c5d0d5;font-size:12px;line-height:1.6}
+.west-data-source-body p{margin:6px 0 9px}
+.source-links{display:flex;flex-wrap:wrap;gap:11px;margin-top:12px}
+.source-links a{color:#f4c887;text-decoration:underline;text-underline-offset:4px}
+@media(max-width:680px){.profit-help{grid-template-columns:1fr}.catalog-families .catalog-item{min-height:58px}}

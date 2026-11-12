@@ -1,4 +1,12 @@
-# Gildem Albion Lab · Market & Craft v1.6.0
+# Gildem Market & Craft | West v1.7.0
+
+> Tres pestañas independientes: **Top Mercado → Craft Planner → Calculadora de Craft**.
+
+**Novedad 1.7:** Objetos individuales se eligen por *tipo de objeto* (no por tier); el Top muestra T4–T8 y encantamientos. «Forzar datos frescos» viene activo de inicio. La protección del beneficio ahora explica qué significa cada porcentaje.
+
+Ver [notas 1.7](RELEASE_NOTES_v1_7_0.md), [guía de instalación](ACTUALIZAR_GITHUB_NETLIFY.md) y [revisión de fuentes West](FUENTES_MERCADO_WEST.md).
+
+# Gildem Albion Lab · Market & Craft v1.7.0
 
 Herramienta independiente de inteligencia de mercado y crafting para **Albion Online América (West)**. Tres pestañas conectadas: **Top Mercado → Craft Planner → Calculadora de Craft**. Diseñada para GitHub y Netlify, sin servidor de pago ni claves privadas.
 

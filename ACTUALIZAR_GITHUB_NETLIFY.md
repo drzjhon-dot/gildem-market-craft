@@ -1,35 +1,27 @@
-# Actualizar Gildem Market & Craft a v1.6.0
+# Subir Gildem Market & Craft v1.7.0 a GitHub y Netlify
 
-**Repositorio que debes actualizar:** https://github.com/drzjhon-dot/gildem-market-craft
+El repositorio que usa esta aplicación es https://github.com/drzjhon-dot/gildem-market-craft . **No subas estos archivos al repositorio antiguo de Gildem Albion Lab.**
 
-**Sitio al que apunta Netlify:** https://gildemcraft.netlify.app/
+1. Haz una copia de la versión publicada o crea una rama en GitHub antes de reemplazar archivos.
+2. Descomprime `Gildem_Market_Craft_v1_7_0_GITHUB_NETLIFY.zip` en tu PC.
+3. Sube su contenido al directorio raíz de `drzjhon-dot/gildem-market-craft`, conservando las carpetas `src/`, `netlify/functions/`, `assets/`, `tests/` y `scripts/` y el archivo `netlify.toml`.
+4. Si tu sitio Netlify despliega automáticamente desde `main`, realiza el commit allí cuando quieras publicar, o prueba primero desde una rama con Deploy Preview.
+5. En Netlify abre https://gildemcraft.netlify.app/ cuando termine la publicación. Prueba «Mazas → Objetos individuales → Maza → Solo mis objetos → Consultar top».
+6. Revisa el indicador «Forzar datos frescos» (debe iniciar marcado) y los controles de «Protección del beneficio» en Craft Planner.
 
-Esta actualización **no toca** el repositorio antiguo de Gildem Albion Lab.
+## Antes de publicar desde Windows (opcional)
 
-## Pasos
-
-1. Descarga y descomprime `Gildem_Market_Craft_v1_6_0_GITHUB_NETLIFY.zip`.
-2. Entra en el repositorio `gildem-market-craft`. Para mayor seguridad, haz una copia o crea una rama de respaldo con tu versión actual.
-3. Actualiza la raíz del repositorio con **el contenido del ZIP**, no con una carpeta contenedora. Sube también `src/market-intelligence.js` y `tests/market-intelligence-v16.test.mjs`, además de los demás archivos reemplazados.
-4. Haz commit en `main`. Netlify, si continúa conectado a esta rama, ejecutará `npm run build` y publicará `dist`.
-5. Comprueba que ves **LABORATORIO / V1.6** en la barra lateral.
-6. Prueba: selecciona **Mazas** → busca `T8_MAIN_MACE` → marca la variante → modo **Solo mis artículos** → consulta Mercado Negro → marca una fila → envía a Craft Planner. La cesta debe mostrar **Q1** y **total** por día. Al generar el plan, revisa el campo **cuota del periodo** y el diagnóstico de exclusiones.
-7. Antes de invertir, verifica precios y profundidad reales de materiales/venta en el juego. Una fila del ranking no confirma una venta ejecutable.
-
-## Problemas comunes
-
-- **No veo los cambios:** revisa el log del despliegue de Netlify y que la rama publicada sea `main`; recarga la web después de que se publique.
-- **Precios o datos vacíos:** AODP puede devolver 429, estar caído o no tener observaciones recientes. La herramienta no suplanta información faltante.
-- **No aparece un T8 en el plan:** abre «¿Por qué algunos objetos no entraron?». Necesita actividad histórica **Q1**, receta, precio reciente, capital y riesgo compatible; una observación 1–5 no es prueba Q1.
-- **Cambian las cantidades entre Top y Planner:** verifica la ventana UTC, la ciudad de venta y la columna Calidad 1/día. Los destinos no incluidos en Top requieren consulta aparte.
-
-## Comprobar fuera de Netlify
-
-Con Node 22+:
+En la carpeta descomprimida con Node.js 20+ instalado:
 
 ```bash
-npm test
 npm run build
 ```
 
-Esta versión superó 53 pruebas automáticas y una prueba de navegación con datos simulados. La integración externa en producción debe comprobarse desde tu despliegue.
+Se ejecutan las pruebas y se genera `dist/`. Netlify también dispone de un build configurado por el proyecto.
+
+## Cambios que **no** hacen esta actualización
+
+- No añade una cuarta pestaña.
+- No altera los porcentajes ni el modelo de beneficio de la versión 1.6.
+- No afirma obtener volumen de ventas reales: el History sigue midiendo órdenes observadas.
+- No instala una suscripción NATS ni combina fuentes externas sin comprobar.
