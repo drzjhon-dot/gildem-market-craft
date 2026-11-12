@@ -1,0 +1,13 @@
+{
+  "name": "gildem-market-craft-standalone",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Aplicación independiente AODP West: Top Mercado + Calculadora de Craft",
+  "scripts": {
+    "dev": "node scripts/dev.mjs",
+    "test": "node --test tests/*.test.mjs",
+    "build": "npm test && node scripts/build.mjs"
+  },
+  "engines": { "node": ">=20" }
+}
