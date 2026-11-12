@@ -1,9 +1,9 @@
-# Publicación de Gildem Market & Craft v2.0.1
+# Publicación de Gildem Market & Craft v2.0.0
 
 ## Método seguro: reemplazo integral del repositorio nuevo
 
 1. Haz una copia o rama de respaldo de `https://github.com/drzjhon-dot/gildem-market-craft`.
-2. Descarga y descomprime el ZIP **v2.0.1**.
+2. Descarga y descomprime el ZIP **v2.0.0**.
 3. **Elimina del repositorio los archivos que ya no estén en el ZIP**, especialmente restos de pestañas abandonadas y pruebas obsoletas. Subir una carpeta por encima de otra NO borra archivos viejos. En la actualización anterior eso causó un deploy fallido por un test que esperaba cinco pestañas.
 4. Sube el contenido de la carpeta extraída a la **raíz** de `main`: `index.html`, `src/`, `tests/`, `scripts/`, `netlify/`, `assets/`, `netlify.toml`, etc. No metas una carpeta `Gildem_Market_Craft_v2_0_0` dentro del repositorio.
 5. Confirma los cambios y revisa que Netlify lance `npm run build`. El resultado esperado es `100 pass`, `0 fail` y `dist/ lista para Netlify`.

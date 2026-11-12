@@ -14,8 +14,7 @@ const family=id=>String(id||'').replace(/^T[1-8]_/,'').replace(/@[1-4]$/,'');
 const familyGroup=id=>family(id).replace(/(?:_SET\d+|_UNIQUE(?:_\w+)?|_LEVEL\d+)$/,'');
 const keyOf=r=>r.routeKey||`${r.id}|${r.city}`;
 function marginalImpact(r,qty,c){const units=qty*finite(r.craftAmount||1),daily=finite(r.history?.effectiveQuality1DailyUnits??r.history?.quality1DailyUnits??r.history?.averageDailyUnits);
- // Mismo coeficiente que planner.deriveImpact: el impacto depende del mercado, no del estilo.
- return cap(units/Math.max(1,daily*finite(c.saleDays||7))*.75,0,.33);
+ return cap(units/Math.max(1,daily*finite(c.saleDays||7))*({prudent:.45,balanced:.75,dynamic:1.1}[c.style]||.75),0,.33);
 }
 export function estimateRoute(r,qty,c){const units=qty*finite(r.craftAmount||1),impact=marginalImpact(r,qty,c);
  const revenue=finite(r.planningPrice)*units*(1-finite(c.sellHaircutPct)/100)*(1-finite(r.marketFee))*(1-impact);
@@ -39,8 +38,7 @@ const increase=(map,k,v)=>map.set(k,sum(map,k)+v);
 function evalNext(s,r,c,limit,exposure){const key=keyOf(r),qty=sum(s.qty,key),out=(why)=>({ok:false,why});
  const gross=finite(r.grossCapitalPerCraft);
  if(!(gross>0)||!(r.maxCrafts>0))return out('Coste o límite de demanda Q1 no verificable');
- // maxCrafts ya incorpora el estilo (parte de la actividad Q1). No se aplica una segunda reducción.
- const used=qty,styleLimit=r.maxCrafts;
+ const used=qty,styleLimit=c.useBudget?r.maxCrafts:Math.min(r.maxCrafts,Math.max(1,Math.ceil(r.maxCrafts*({prudent:.35,balanced:.7,dynamic:1}[c.style]||.7))));
  if(used>=styleLimit)return out('Límite de volumen de calidad 1 / estilo');
  if(!used&&s.activeCount>=limit)return out('Límite de variantes del estilo');
  if(gross>s.budgetLeft+1e-7)return out('Presupuesto bruto agotado');

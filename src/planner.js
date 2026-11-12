@@ -59,28 +59,18 @@ function observationCheck(history,config){
  if(!history||!(gradeOneDaily(history)>0)||!(gradeOneDays(history)>=1))return false;
  return config.diversify||config.goal==='fame'||config.style==='dynamic'||gradeOneDays(history)>=Math.min(2,history.days||7);
 }
-// v2.0.1: el estilo decide UNA sola vez qué parte de la actividad Q1 puedes cubrir.
-// El impacto de precio es una propiedad del mercado, no del estilo: mismo coeficiente para todos.
-export const MARKET_IMPACT=0.75;
-export const DEMAND_SHARE=Object.freeze({prudent:.06,balanced:.12,dynamic:.23});
-// Un lote mínimo de 1 craft solo se admite si no supera esta parte de la actividad Q1 del horizonte.
-export const MIN_LOT_MAX_SHARE=Object.freeze({prudent:.12,balanced:.18,dynamic:.25});
-export function demandUnits(history){return Number(history?.effectiveQuality1DailyUnits??gradeOneDaily(history))||0;}
-export function maxCraftByDemand(history,amount,config){
- const fraction=DEMAND_SHARE[config.style]??DEMAND_SHARE.balanced;
+function maxCraftByDemand(history,amount,config){
+ const fraction={prudent:.04,balanced:.12,dynamic:.23}[config.style];
  const volumeFraction=config.volume?Math.min(.30,fraction*1.35):fraction;
  const reliability=trafficSignal(history).confidence;
- const horizon=demandUnits(history)*Number(config.saleDays);
- const units=horizon*volumeFraction*reliability;
- const byDemand=Math.floor(units/amount+1e-9);
- if(byDemand>=1)return Math.min(250,byDemand);
- // Diversidad/fama pueden pedir 1 craft en rutas finas, pero nunca si ese craft satura el destino.
- const allowMinimum=(config.diversify||config.goal==='fame')&&horizon>0&&amount/horizon<=(MIN_LOT_MAX_SHARE[config.style]??.18);
- return allowMinimum?1:0;
+ const units=Number(history?.effectiveQuality1DailyUnits??gradeOneDaily(history))*Number(config.saleDays)*volumeFraction*reliability;
+ // With explicit diversity allow 1 craft where *some* history exists, not absent history.
+ const minimum=(config.diversify||config.goal==='fame')&&gradeOneDaily(history)>0?1:0;
+ return Math.min(250,Math.max(minimum,Math.floor(units/amount)));
 }
 function deriveImpact(history,units,config){
- const share=units/Math.max(1,demandUnits(history)*Number(config.saleDays));
- return clamp(share*MARKET_IMPACT,0,.33);
+ const share=units/Math.max(1,Number(history?.effectiveQuality1DailyUnits??gradeOneDaily(history))*Number(config.saleDays));
+ return clamp(share*({prudent:.45,balanced:.75,dynamic:1.1}[config.style]),0,.33);
 }
 function realMaterials(recipe,quotes,config,now){
  const craftCity=config.bonusCity&&recipe.city?recipe.city:config.craftFallbackCity;
@@ -114,7 +104,7 @@ export function buildCandidates({top=[],recipes={},quotes=new Map(),config={},se
   const gross=mats.gross*(1+Number(c.buyBufferPct)/100)+Number(c.stationFee),
    net=mats.net*(1+Number(c.buyBufferPct)/100)+Number(c.stationFee)+amount*Number(c.deliveryCostPerUnit);
   if(!(gross>0)||gross>c.budget){record(h,'fueraPresupuesto','Un craft supera el capital disponible');continue;}
-  const upper=maxCraftByDemand(h,amount,c);if(upper<1){const share=amount/Math.max(1e-9,demandUnits(h)*Number(c.saleDays))*100;record(h,'sinCupo',`Un solo craft cubriría ${share.toFixed(0)}% de la actividad Q1 de ${c.saleDays} días: saturaría el destino`);continue;}
+  const upper=maxCraftByDemand(h,amount,c);if(upper<1){record(h,'sinCupo','Actividad Q1 insuficiente para el lote mínimo');continue;}
   const marketFee=(Number(c.tax)+ (h.city==='Black Market'?0:Number(c.listingFee)))/100;
   // Prevent a one-off quote spike from being accepted as an executable clearing price.
   // Qualities must match: history Q1 for selling Q1. Q2-5 do not influence the cap.
@@ -170,15 +160,6 @@ function previewLine(row,qty,c){
  *  - Fame goal alone may lose silver, bounded by both per-route loss (25% of capital)
  *    and total permitted losses (fameLossBudgetPct of the initial budget).
  */
-/**
- * Compra mínima para fabricar TODO el lote reutilizando el retorno.
- * Cada craft devuelve recursos que sirven para el siguiente, pero el retorno del último
- * craft ya no se usa: compra = neto + retorno de un craft (el mayor del grupo), nunca más que el bruto.
- * Es seguro en cualquier orden de fabricación. Valores esperados: el retorno real en el juego varía.
- */
-export function purchaseNeeded(gross,net,lastReturn){
- return Math.min(Math.ceil(gross-1e-8),Math.ceil(net+lastReturn-1e-8));
-}
 export function allocatePlan({candidates=[],config={},recipes={}}={}){
  const c=settings(config),warnings=[],allocationNotes=[];
  const optimized=optimizePortfolio(candidates,c);
@@ -199,14 +180,14 @@ export function allocatePlan({candidates=[],config={},recipes={}}={}){
   line.coverageSharePct=(line.qty*line.craftAmount/Math.max(1,Number(line.history.effectiveQuality1DailyUnits??gradeOneDaily(line.history))*Number(c.saleDays)))*100;
   expectedProfit+=line.totalProfit;expectedCost+=line.totalCost;totalFame+=line.totalFame;sales+=line.qty*line.craftAmount;
   for(const m of line.materials){const key=m.id+'|'+m.city+'|'+m.craftCity;const old=purchase.get(key)||{id:m.id,city:m.city,craftCity:m.craftCity,unitPrice:m.price,transportPerUnit:m.transportPerUnit,landedUnitPrice:m.landedUnitPrice,
-    savingsVsCraftCity:m.savingsVsCraftCity,riskRoute:m.riskRoute,gross:0,net:0,lastReturn:0};
-   old.gross+=m.count*line.qty;old.net+=m.netCount*line.qty;old.lastReturn=Math.max(old.lastReturn,m.returned);purchase.set(key,old);
+    savingsVsCraftCity:m.savingsVsCraftCity,riskRoute:m.riskRoute,gross:0,net:0,firstCraft:0};
+   old.gross+=m.count*line.qty;old.net+=m.netCount*line.qty;old.firstCraft=Math.max(old.firstCraft,m.count);purchase.set(key,old);
   }
   const journal=journalEstimate(line.id,{value:line.expectedFamePerCraft},line.qty);
   if(journal){const j=journals.get(journal.id)||{...journal,fractional:0};j.fractional+=journal.fractional;journals.set(journal.id,j);}
  }
  const materials=[...purchase.values()].map(m=>{
-  const gross=Math.ceil(m.gross-1e-8),buy=purchaseNeeded(m.gross,m.net,m.lastReturn);
+  const gross=Math.ceil(m.gross),buy=Math.min(gross,Math.max(Math.ceil(m.net-1e-8),Math.ceil(m.firstCraft)));
   return {...m,buy,reuse:Math.max(0,gross-buy),buyWithBuffer:Math.ceil(buy*m.landedUnitPrice*(1+c.buyBufferPct/100))};
  }).sort((a,b)=>b.buy*b.unitPrice-a.buy*a.unitPrice);
  const externalPurchases=materials.filter(m=>m.city!==m.craftCity);

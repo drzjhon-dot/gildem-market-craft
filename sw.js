@@ -1,5 +1,5 @@
 /* Gildem v2.0: offline shell ONLY. Never cache market data. */
-const CACHE = 'gildem-shell-v201';
+const CACHE = 'gildem-shell-v200';
 const SHELL = ["/", "/index.html", "/styles.css", "/manifest.webmanifest", "/src/batch-calculator.js", "/src/branch-reference.js", "/src/branches.js", "/src/main.js", "/src/market-intelligence.js", "/src/market.js", "/src/planner-transfer.js", "/src/planner.js", "/src/portfolio-engine.js", "/src/market-trends.js", "/src/recipe-extractor.js", "/src/refining.js", "/assets/branding/gildem-crest.webp", "/assets/branding/gildem-sidebar-logo.webp", "/assets/pwa-icon-192.png", "/assets/pwa-icon-512.png", "/assets/scenes/craft-cal.webp", "/assets/scenes/forge.webp", "/assets/scenes/planning.webp", "/assets/scenes/royal-market.webp", "/assets/scenes/top-market.webp", "/assets/tabs/craft-cal.svg", "/assets/tabs/craft-planner.svg", "/assets/tabs/top-market.svg"];
 self.addEventListener('install', event => {
  event.waitUntil(caches.open(CACHE).then(cache => cache.addAll(SHELL)).then(() => self.skipWaiting()));

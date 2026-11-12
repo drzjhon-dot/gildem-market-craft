@@ -2,13 +2,11 @@
 // El plan automático conserva su propio motor. Este módulo no lo modifica.
 import {MARKETS,variant} from './branches.js';
 import {purchaseQuote,freshestQuotes} from './market.js';
-import {returnRate,estimatedFame,journalEstimate,purchaseNeeded,MARKET_IMPACT} from './planner.js';
+import {returnRate,estimatedFame,journalEstimate} from './planner.js';
 const ROYALS=MARKETS.filter(c=>c!=='Black Market');
 const validPrice=value=>Number.isFinite(Number(value))&&Number(value)>0?Number(value):null;
-// Fabricas calidad 1: el impacto se mide contra la actividad Q1 (igual que Craft Planner).
-const q1Daily=h=>Number(h?.effectiveQuality1DailyUnits??h?.quality1DailyUnits??h?.averageDailyUnits)||0;
-const saleImpact=(history,units,config)=>q1Daily(history)>0
- ?Math.min(.33,units/Math.max(1,q1Daily(history)*(Number(config.saleDays)||7))*MARKET_IMPACT):0;
+const saleImpact=(history,units,config)=>history?.averageDailyUnits>0
+ ?Math.min(.33,units/Math.max(1,history.averageDailyUnits*(Number(config.saleDays)||7))*({prudent:.45,balanced:.75,dynamic:1.1}[config.style]||.75)):0;
 export function baseStem(id){return String(id).replace(/^T\d+_/, 'T_').replace(/@\d+$/,'');}
 export function variantChoices(ids,id){const stem=baseStem(id);return ids.filter(k=>baseStem(k)===stem&&variant(k));}
 export function batchCalculate({items=[],recipes={},quotes=new Map(),history=[],config={},overrides={},now=Date.now()}={}){
@@ -51,7 +49,7 @@ export function batchCalculate({items=[],recipes={},quotes=new Map(),history=[],
   if(missing.length){
    // The preview ledger helps fill the missing quotes while remaining excluded from investment totals.
    for(const m of matRows){const key=m.id+'|'+(m.city||'Sin cotización')+'|'+craftCity;
-    const prev=pendingMaterials.get(key)||{id:m.id,city:m.city,unitPrice:m.price,gross:0,net:0,returned:0,lastReturn:0,manual:m.manual,missing:!m.price,usedBy:[],pending:true};prev.lastReturn=Math.max(prev.lastReturn,m.returned);
+    const prev=pendingMaterials.get(key)||{id:m.id,city:m.city,unitPrice:m.price,gross:0,net:0,returned:0,manual:m.manual,missing:!m.price,usedBy:[],pending:true};
     prev.gross+=m.count*qty;prev.net+=m.netCount*qty;prev.returned+=m.returned*qty;
     if(!prev.usedBy.includes(id))prev.usedBy.push(id);
     pendingMaterials.set(key,prev);
@@ -64,8 +62,8 @@ export function batchCalculate({items=[],recipes={},quotes=new Map(),history=[],
   base.capital=itemCapital;base.cost=itemCost;
   capital+=itemCapital;cost+=itemCost;crafts+=qty;fame+=itemFame;
   for(const m of matRows){const key=m.id+'|'+m.city+'|'+m.craftCity;const old=materials.get(key)||{id:m.id,city:m.city,unitPrice:m.price,landedUnitPrice:m.landedUnitPrice,transportPerUnit:m.transportPerUnit||0,craftCity:m.craftCity,
-    savingsVsCraftCity:m.savingsVsCraftCity||0,riskRoute:m.riskRoute||false,gross:0,net:0,returned:0,lastReturn:0,manual:m.manual,usedBy:[]};
-   old.lastReturn=Math.max(old.lastReturn,m.returned);old.gross+=m.count*qty;old.net+=m.netCount*qty;old.returned+=m.returned*qty;if(!old.usedBy.includes(id))old.usedBy.push(id);materials.set(key,old);
+    savingsVsCraftCity:m.savingsVsCraftCity||0,riskRoute:m.riskRoute||false,gross:0,net:0,returned:0,manual:m.manual,usedBy:[]};
+   old.gross+=m.count*qty;old.net+=m.netCount*qty;old.returned+=m.returned*qty;if(!old.usedBy.includes(id))old.usedBy.push(id);materials.set(key,old);
   }
   const j=journalEstimate(id,fameInfo,qty);if(j)journals.push({...j,forId:id,estimatedQty:Math.ceil(j.fractional)});
   const feeBM=(Number(config.tax)||0)/100,feeRoyal=(Number(config.tax)+Number(config.listingFee))/100;
@@ -85,8 +83,8 @@ export function batchCalculate({items=[],recipes={},quotes=new Map(),history=[],
   if(base.profitRoyal===null)royalComplete=false;else profitRoyal+=base.profitRoyal;
   rows.push(base);
  }
- const grouped=[...materials.values()].map(m=>{const buy=purchaseNeeded(m.gross,Math.max(0,m.net),m.lastReturn);return {...m,buy,reuse:Math.max(0,Math.ceil(m.gross-1e-8)-buy),total:buy*m.landedUnitPrice};}).sort((a,b)=>a.id.localeCompare(b.id));
- const pending=[...pendingMaterials.values()].map(m=>({...m,buy:purchaseNeeded(m.gross,Math.max(0,m.net),m.lastReturn),total:null})).sort((a,b)=>a.id.localeCompare(b.id));
+ const grouped=[...materials.values()].map(m=>({...m,buy:Math.ceil(Math.max(0,m.net)),total:Math.ceil(Math.max(0,m.net))*m.landedUnitPrice})).sort((a,b)=>a.id.localeCompare(b.id));
+ const pending=[...pendingMaterials.values()].map(m=>({...m,buy:Math.ceil(Math.max(0,m.net)),total:null})).sort((a,b)=>a.id.localeCompare(b.id));
  // Journals are optional, estimates from fame. Aggregate by exact journal ID:
  // one T6 warrior journal across several T6 crafts appears once, not N separate rows.
  const journalGroups=new Map();

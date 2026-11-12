@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import {GROUPS,BRANCHES,BRANCH_BY_KEY,catalogPage} from '../src/branches.js';
-import {allocatePlan,DEFAULTS,maxCraftByDemand} from '../src/planner.js';
+import {allocatePlan,DEFAULTS} from '../src/planner.js';
 const make=(id,city='Black Market',price=200,cost=45,maxCrafts=100,daily=50)=>({
  id,city,routeKey:id+'|'+city,maxCrafts,craftAmount:1,history:{id,city,quality1DailyUnits:daily,quality1ActiveDays:7,days:7,averageDailyUnits:daily},
  grossCapitalPerCraft:100,expectedCostPerCraft:cost,materials:[],planningPrice:price,marketFee:0,
@@ -43,12 +43,8 @@ test('capital fijo y estilo cambian la asignación al cambiar parámetros reales
  const rich=allocatePlan({candidates:[row],config:c({tiers:[5],budget:4000,style:'dynamic',useBudget:true})});
  assert(limited.summary.capitalReserved<=2000&&rich.summary.capitalReserved<=4000);
  assert(rich.summary.crafts>=limited.summary.crafts);
- // v2.0.1: el estilo se aplica una sola vez, al calcular maxCrafts desde la actividad Q1.
- // Demanda acotada (5 Q1/día) para que el techo lo marque el mercado y no el presupuesto.
- const thin={...row,history:{...row.history,quality1DailyUnits:5,averageDailyUnits:5}};
- const styled=style=>({...thin,maxCrafts:maxCraftByDemand(thin.history,1,{...c({tiers:[5]}),style})});
- const prudent=allocatePlan({candidates:[styled('prudent')],config:c({tiers:[5],style:'prudent',useBudget:false,budget:10000})});
- const dynamic=allocatePlan({candidates:[styled('dynamic')],config:c({tiers:[5],style:'dynamic',useBudget:false,budget:10000})});
+ const prudent=allocatePlan({candidates:[row],config:c({tiers:[5],style:'prudent',useBudget:false,budget:10000})});
+ const dynamic=allocatePlan({candidates:[row],config:c({tiers:[5],style:'dynamic',useBudget:false,budget:10000})});
  assert(dynamic.summary.crafts>prudent.summary.crafts,`Dinámico ${dynamic.summary.crafts} > Prudente ${prudent.summary.crafts}`);
  assert.equal(dynamic.summary.style,'dynamic');assert.equal(prudent.summary.goal,'silver');
 });

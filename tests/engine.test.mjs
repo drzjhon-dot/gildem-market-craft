@@ -77,7 +77,7 @@ test('demanda + margen + presupuesto se respetan y no se rellenan con pérdidas'
  assert(out.rows.length>0);assert(out.summary.capitalReserved<=config.budget+0.001);
  assert(out.rows.every(x=>x.totalProfit>0&&x.qty>=1));
  assert(out.rows.every(x=>x.qty<=x.maxCrafts));
- assert(out.materials.every(x=>x.buy<=Math.ceil(x.gross)&&x.buy>=Math.min(Math.ceil(x.gross),x.net+x.lastReturn-1e-6)));
+ assert(out.materials.every(x=>x.buy<=Math.ceil(x.gross)&&x.buy>=x.firstCraft));
  assert(out.summary.remaining>=0);
 });
 test('diversidad T6–T8 reserva si son viables; no salta filtros de tiers',()=>{
