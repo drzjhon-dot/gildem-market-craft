@@ -1,4 +1,5 @@
 // Cliente REST único West y agregador de historial. Sin datos simulados.
+import {variant} from './branches.js';
 export const WEST='https://west.albion-online-data.com';
 export const HOUR=3600_000,DAY=86400_000;
 const memory=new Map();let previousCall=0;let blockedUntil=0;
@@ -39,7 +40,25 @@ export function summarizeHistory(rows,{days=7,now=Date.now()}={}){
   activeDays:r.activeDays.size,qualities:[...r.qualities].sort(),latestObservation:new Date(r.latestObservation).toISOString(),
   from:range.date,to:new Date(range.end-DAY).toISOString().slice(0,10),days:range.days}));
 }
-export function rankEntries(entries,sort='silver'){const field=sort==='units'?'averageDailyUnits':sort==='price'?'averageUnitPrice':'averageDailySilver';return [...entries].sort((a,b)=>b[field]-a[field]||b.averageDailyUnits-a.averageDailyUnits);}
+// Ordenación visual. No altera demanda, cantidades, beneficio ni el array original.
+// Los tiers desconocidos van al final; dentro de cada tier se agrupa .0, .1, .2...,
+// y se usa beneficio/silver como desempate estable.
+export function sortRowsByTier(entries,sort='tier-asc',tieBreaker=()=>0){
+ if(sort!=='tier-asc'&&sort!=='tier-desc')return [...entries];
+ const direction=sort==='tier-desc'?-1:1;
+ return [...entries].sort((a,b)=>{
+  const av=variant(a.id),bv=variant(b.id);
+  if(!av||!bv){if(!av&&bv)return 1;if(av&&!bv)return -1;}
+  else {if(av.tier!==bv.tier)return (av.tier-bv.tier)*direction;
+   if(av.ench!==bv.ench)return av.ench-bv.ench;}
+  return tieBreaker(a,b)||String(a.id).localeCompare(String(b.id))||String(a.city||'').localeCompare(String(b.city||''));
+ });
+}
+export function rankEntries(entries,sort='silver'){
+ if(sort==='tier-asc'||sort==='tier-desc')return sortRowsByTier(entries,sort,(a,b)=>b.averageDailySilver-a.averageDailySilver||b.averageDailyUnits-a.averageDailyUnits);
+ const field=sort==='units'?'averageDailyUnits':sort==='price'?'averageUnitPrice':'averageDailySilver';
+ return [...entries].sort((a,b)=>b[field]-a[field]||b.averageDailyUnits-a.averageDailyUnits);
+}
 export function quoteMap(rows){const q=new Map();
  for(const r of rows||[]){if(Number(r.quality)!==1||!r.item_id)continue;
   const city=r.city||r.location;const id=r.item_id;

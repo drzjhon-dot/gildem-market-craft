@@ -1,12 +1,29 @@
-# Corrección v1.9.1 · GitHub y Netlify
+# Publicación de Gildem Market & Craft v2.0.1
 
-1. Descarga el ZIP completo y descomprímelo.
-2. En `drzjhon-dot/gildem-market-craft`, sube el **contenido** de la carpeta raíz, conservando rutas como `src/`, `tests/` y `scripts/`. No subas una carpeta contenedora.
-3. **Imprescindible:** verifica que `tests/flips-v18.test.mjs` haya sido **reemplazado**. Ahora comienza con `Regression guard for v1.9` y contiene tres pruebas de tres pestañas. El test antiguo es lo que bloqueaba Netlify.
-4. Confirma los cambios en la rama `main`. Netlify ejecutará `npm run build`.
-5. Si aparece un error, revisa que se hayan sobrescrito todos los archivos y el despliegue use `main`.
-6. Limpieza opcional: elimina `src/flipping.js`, `assets/tabs/flips.svg` y `assets/tabs/refining.svg` si aún permanecen en GitHub. No son parte del sistema actual.
+## Método seguro: reemplazo integral del repositorio nuevo
 
-**Alternativa mínima:** en GitHub, elimina el viejo `tests/flips-v18.test.mjs` y vuelve a desplegar. Esto basta para corregir el fallo de las cinco pestañas si el resto de v1.9 ya está subido correctamente.
+1. Haz una copia o rama de respaldo de `https://github.com/drzjhon-dot/gildem-market-craft`.
+2. Descarga y descomprime el ZIP **v2.0.1**.
+3. **Elimina del repositorio los archivos que ya no estén en el ZIP**, especialmente restos de pestañas abandonadas y pruebas obsoletas. Subir una carpeta por encima de otra NO borra archivos viejos. En la actualización anterior eso causó un deploy fallido por un test que esperaba cinco pestañas.
+4. Sube el contenido de la carpeta extraída a la **raíz** de `main`: `index.html`, `src/`, `tests/`, `scripts/`, `netlify/`, `assets/`, `netlify.toml`, etc. No metas una carpeta `Gildem_Market_Craft_v2_0_0` dentro del repositorio.
+5. Confirma los cambios y revisa que Netlify lance `npm run build`. El resultado esperado es `100 pass`, `0 fail` y `dist/ lista para Netlify`.
+6. Abre la web con recarga completa (Ctrl/Cmd+Shift+R) si el navegador conserva archivos antiguos del Service Worker.
 
-Se conserva la prueba automática dentro de `npm run build`; desactivarla ocultaría problemas reales.
+Con Git CLI, una forma segura es descomprimir la entrega **fuera del repositorio**, hacer commit/back-up y luego copiar o sincronizar con borrado de archivos obsoletos; comprueba el diff con `git status` antes del commit.
+
+## Prueba local
+
+```bash
+npm test
+npm run build
+```
+
+Para probar AODP con Netlify functions usa Netlify Dev. `npm run dev` sirve HTML/JS local, pero **no ejecuta** las funciones `netlify/functions/`.
+
+## Controles nuevos
+
+En Craft Planner, activa **Tendencia de mercado** para contrastar la ventana reciente con 14 días. Bajo **Distribución máxima del capital** puedes limitar concentración por tier, familia y encantamiento. Los tres repartos comparados se muestran encima de la tabla de resultados. Si falta Q1, receta o precio, la ruta queda diagnosticada y no se rellena con datos imaginarios.
+
+## Importante
+
+Este paquete sustituye la lógica del plan, no la receta o los precios reales de Albion. Se usan datos observados de terceros y coberturas parciales. Antes de comprar, revisa profundidad de órdenes, coste de estaciones, transportes y caducidad de cotizaciones.

@@ -5,5 +5,5 @@ for(const file of ['index.html','styles.css','manifest.webmanifest','sw.js'])awa
 // Exclude obsolete source/assets when files remain in an incrementally updated GitHub repo.
 const deprecated=new Set(['flipping.js','flips.svg','refining.svg']);
 for(const dir of ['src','assets'])await cp(dir,`dist/${dir}`,{recursive:true,filter:path=>!deprecated.has(basename(path))});
-await writeFile('dist/version.json',JSON.stringify({name:'Gildem Market & Craft',version:'1.9.1',builtAt:new Date().toISOString()},null,2));
+await writeFile('dist/version.json',JSON.stringify({name:'Gildem Market & Craft',version:'2.0.1',builtAt:new Date().toISOString()},null,2));
 console.log('dist/ lista para Netlify');

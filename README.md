@@ -1,6 +1,17 @@
-# Gildem Market & Craft 1.9.0
+# Gildem Market & Craft 2.0.1
 
 Aplicación independiente para Albion Online **América (West)**; tres pestañas: **Top Mercado**, **Craft Planner** y **Calculadora de Craft**.
+
+## Motor de cartera 2.0
+
+- Analiza **tres repartos independientes** (`profit`, `balanced`, `spread`) de los mismos artículos y restricciones; elige el de mejor puntuación para tu objetivo.
+- Añade controles de concentración por **tier, familia y encantamiento**. Mantiene los filtros de presupuesto bruto, Focus, comisión, riesgos, cupo Q1 y coste de compra/traslado.
+- Un segundo pase revisa intercambios entre crafts para mejorar beneficio neto estimado, sin aumentar artificialmente las unidades vendidas.
+- Compara opcionalmente el historial Q1 de **14 días** con la ventana reciente, para evitar que un pico temporal sobrestime capacidad de venta.
+- Muestra **tres escenarios de profit/capital/diversidad** y diagnósticos por objeto o mercado descartado.
+- Sigue en tres pestañas: **Top Mercado, Craft Planner y Calculadora**. Refinamiento continúa dentro de las ramas, no como pestaña.
+
+Investigación, metodología y límites en [`INVESTIGACION_Y_ARQUITECTURA_MOTOR_V2.md`](./INVESTIGACION_Y_ARQUITECTURA_MOTOR_V2.md).
 
 ## Novedades
 
@@ -30,3 +41,10 @@ AODP es comunitaria: verifica precios, profundidad de libros y comisiones actual
 ## v1.9.1: arreglo de Netlify
 
 La actualización incremental desde v1.8 podía conservar `tests/flips-v18.test.mjs`, una prueba que exigía cinco pestañas. Esta entrega sobrescribe ese archivo con una comprobación actual de tres pestañas. No es necesario reintroducir Flips ni separar Refinamiento. Se mantiene `npm run build` con pruebas activas. Ver `RELEASE_NOTES_v1_9_1.md`.
+
+### Ordenar resultados por tier (v1.9.2)
+
+- Top Mercado: en **Ordenar por**, selecciona **Tier: T4 → T8** o **Tier: T8 → T4**.
+- Craft Planner: tras generar un plan, en **Plan por artículo y ciudad** selecciona el mismo orden o el orden original.
+- Las variantes se agrupan por tier y, dentro de cada tier, por encantamiento (.0, .1, etc.).
+- La ordenación es únicamente visual: no modifica los crafts, el silver, la demanda ni el beneficio calculado. Se conserva al recargar la página.
