@@ -1,9 +1,9 @@
 {
   "name": "gildem-market-craft-standalone",
-  "version": "1.7.0",
+  "version": "1.8.1",
   "private": true,
   "type": "module",
-  "description": "Top Mercado + Craft Planner + Calculadora de Craft, AODP West",
+  "description": "Top Mercado, Craft Planner, Calculadora de Craft, Refinamiento, Flips y modo móvil, AODP West",
   "scripts": {
     "dev": "node scripts/dev.mjs",
     "test": "node --test tests/*.test.mjs",

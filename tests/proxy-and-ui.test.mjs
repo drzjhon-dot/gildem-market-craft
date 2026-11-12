@@ -38,9 +38,9 @@ test('simulador individual: resultado negativo explícito, sin filtrarlo; cuotas
  assert(out.profit<0);assert.equal(out.qty,3);assert.equal(out.units,3);assert(out.capital>out.cost);
  assert.throws(()=>simulateItem({id:'T5_MAIN_AXE',city:'Black Market',qty:0,quotes:quotations,recipes}),/crafts/);
 });
-test('interfaz: tres pestañas, filtros esenciales y exportación, todas enlazadas',()=>{
+test('interfaz: cinco pestañas, filtros esenciales y exportación, todas enlazadas',()=>{
  const html=readFileSync('index.html','utf8'),js=readFileSync('src/main.js','utf8'),css=readFileSync('styles.css','utf8');
- assert.equal((html.match(/data-route=/g)||[]).length,3);
+ assert.equal((html.match(/class="nav-link[^"]*" data-route=/g)||[]).length,5);
  for(const token of ['data-route="top"','data-route="planner"','data-route="calc"','/src/main.js'])assert(html.includes(token),token);
  for(const token of ['data-group-all','data-branch','data-mark','force-top','run-plan','single-run','data-cfg="diversify"','data-cfg="focus"','data-cfg="budget"','export-plan','marketFetch(\'history\'','marketFetch(\'prices\''])assert(js.includes(token),token);
  assert(css.includes('@media(max-width:680px)'));

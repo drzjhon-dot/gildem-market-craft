@@ -454,3 +454,187 @@ body{background:#111920;color:var(--text);font-size:15px;letter-spacing:.005em}
 .source-links{display:flex;flex-wrap:wrap;gap:11px;margin-top:12px}
 .source-links a{color:#f4c887;text-decoration:underline;text-underline-offset:4px}
 @media(max-width:680px){.profit-help{grid-template-columns:1fr}.catalog-families .catalog-item{min-height:58px}}
+
+/* v1.8: portadas de ramas con items reales y panel de refinamiento */
+.branch-group summary .group-art {height:54px;width:62px;flex:0 0 62px;display:flex;align-items:center;justify-content:center;border-radius:11px;background:radial-gradient(circle at 45% 30%,rgba(230,173,98,.20),rgba(22,27,33,.93));border:1px solid rgba(201,156,100,.25);overflow:hidden}
+.branch-group summary .group-art img {width:48px;height:48px;object-fit:contain;filter:drop-shadow(0 5px 5px rgba(0,0,0,.45))}
+.branch-group.has-selection summary .group-art{border-color:rgba(223,160,87,.58)}
+.branch-group summary .group-name {min-width:0}
+.refining-type-grid {display:grid;grid-template-columns:repeat(auto-fit,minmax(175px,1fr));gap:10px;margin:16px 0 20px}
+.refining-type {color:var(--text, #efe8dc);background:linear-gradient(135deg,#29323a,#191f24);border:1px solid #4a5056;border-radius:13px;display:flex;align-items:center;gap:10px;text-align:left;padding:12px;cursor:pointer}
+.refining-type.active {border-color:#cb9554;box-shadow:inset 0 0 0 1px rgba(222,169,101,.55),0 0 18px rgba(184,111,47,.08)}
+.refining-type img {width:48px;height:48px;object-fit:contain}
+.refining-type span {display:grid;gap:5px}
+.refining-type small {font-size:11px;color:#beb9b2}
+.refining-control-grid {display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:12px}
+.refining-control-grid .config-section{min-height:0}
+.refine-destination-heading {font-size:16px;margin-top:18px;margin-bottom:9px;color:#f3dfbb}
+.refining-workbench .toolbar{margin-top:20px}
+.refining-workbench .budget-options{flex-wrap:wrap}
+@media(max-width:680px){.branch-group summary .group-art{width:48px;flex-basis:48px;height:48px}.branch-group summary .group-art img{width:39px;height:39px}.refining-type-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.refining-type{padding:8px;gap:5px}.refining-type img{width:34px;height:34px}.refining-type small{font-size:10px}}
+/* v1.8 | West Arbitrage Lab */
+.flip-workbench{border-color:rgba(190,145,83,.25)}
+.flip-intro{display:flex;gap:16px;align-items:center;background:linear-gradient(100deg,rgba(189,132,59,.10),transparent);border:1px solid rgba(197,145,76,.22);border-radius:13px;padding:17px;margin:14px 0}
+.flip-intro-icon{width:56px;height:56px;display:grid;place-items:center;border:1px solid #98754e;border-radius:12px;color:#ecc68c;background:#263036;font-size:35px;flex-shrink:0}
+.flip-intro strong{font-size:1.06rem;color:#eadac0}.flip-intro p{font-size:.87rem;color:#b6bbb7;margin:5px 0 0}
+.flip-selected-items{display:flex;flex-wrap:wrap;gap:8px;padding-top:14px;max-height:220px;overflow:auto}
+.flip-selected{display:flex;align-items:center;gap:7px;background:#252e32;border:1px solid #424b4a;border-radius:9px;padding:5px 8px;font-size:.83rem}
+.flip-selected img{width:29px;height:29px;object-fit:contain}.flip-selected button{background:transparent;color:#d0a776;border:0;cursor:pointer;font-size:1.4rem;padding:0 5px}.flip-selected span{max-width:270px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.flip-settings-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-top:12px}
+.flip-field{min-width:0;display:flex;flex-direction:column;gap:8px}
+.flip-field h3{color:#e8c493;font-size:.91rem;margin:0}.flip-field .multifield{display:flex;flex-wrap:wrap;gap:8px}.flip-field .multifield>label{flex:1;min-width:92px;font-size:.8rem}
+.flip-city-group{margin-top:18px}.flip-city-group h3{font-size:.96rem;color:#d6b98b;margin:18px 0 10px}.flip-market-chips{gap:8px}
+.flip-note{margin:18px 0 12px}.flip-table .item-primary{min-width:180px}.flip-table .city-stack{min-width:108px}.flip-rejected{margin-top:18px;border:1px solid #455152;border-radius:12px;padding:13px;color:#c1ccc7}
+.flip-rejected summary{cursor:pointer;font-weight:700;color:#d9bd8a}.flip-reasons{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:14px;font-size:.81rem}.flip-reasons span{background:#1d262b;border-radius:7px;padding:9px}
+@media(max-width:1020px){.flip-settings-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:640px){.flip-settings-grid{grid-template-columns:1fr}.flip-reasons{grid-template-columns:1fr}.flip-intro{align-items:flex-start}.flip-selected span{max-width:220px}}
+/* Eliminar restos de la paleta violeta en los paneles nuevos. */
+.flip-settings-grid .config-section,.refining-control-grid .config-section{
+ background:linear-gradient(145deg,#283238,#222a2f 80%);border-color:#48524f;color:#f0e9dc;
+}
+.flip-settings-grid .config-section h3,.refining-control-grid .config-section h3{color:#e8c493}
+.flip-settings-grid .config-section input[type=number],.flip-settings-grid .config-section select,
+.refining-control-grid .config-section input[type=number],.refining-control-grid .config-section select{
+ background:#172126;border-color:#52605c;color:#f0e9dc
+}
+.flip-settings-grid .config-section label,.refining-control-grid .config-section label{color:#c1c6c1}
+.flip-settings-grid .config-section .budget-choice,.refining-control-grid .config-section .budget-choice{
+ background:#29363a;border-color:#50635a;color:#d6dacd
+}
+.flip-settings-grid .config-section .budget-choice.active,.refining-control-grid .config-section .budget-choice.active{
+ background:#55442f;border-color:#d9ae68;color:#ffe7b7
+}
+.refining-type-grid .refining-type{background:linear-gradient(145deg,#28343a,#222b30);border-color:#495958}
+.refining-type-grid .refining-type.active{border-color:#d1a05e;background:linear-gradient(145deg,#36413b,#252e2e)}
+.flip-table .rank-sub{display:block;white-space:nowrap;font-size:.72rem;margin-top:4px;color:#b7c4c2}
+
+/* Mobile Command Deck: responsive card tables + five-tab phone navigation */
+/* Gildem Mobile Command Deck v1.8.1.
+   Breakpoint-aware presentation; data-mobile-cards enables rich card view.
+   No financial calculation or fetch behavior is modified by these styles. */
+.phone-dock,.mobile-mode-switch{display:none}
+#mobile-backdrop[hidden]{display:none!important}
+@media (max-width:800px){
+  :root{--phone-dock-height:76px}
+  body{overscroll-behavior-y:contain}
+  body.phone-menu-open{overflow:hidden}
+  .app{display:block;width:100%;min-width:0}
+  .workspace{width:100%;min-width:0;overflow:clip}
+  .sidebar{position:fixed!important;left:0!important;top:0!important;bottom:0;z-index:102!important;width:min(87vw,315px)!important;min-width:0!important;max-width:315px;height:100dvh!important;min-height:0!important;overflow-y:auto;padding:18px 14px!important;transform:translateX(-110%);transition:transform .23s ease;box-shadow:none;visibility:hidden}
+  .sidebar.mobile-open{transform:translateX(0);visibility:visible;box-shadow:20px 0 55px #000a}
+  .sidebar .brand{padding-bottom:14px}.sidebar .nav-link{min-height:62px!important;padding:8px 11px!important}
+  .sidebar .nav-link img{width:43px!important;height:43px!important}
+  .sidebar .nav-link span:nth-of-type(1),.sidebar .nav-link .nav-arrow{display:block!important}
+  .sidebar .nav-link strong{font-size:14px}.sidebar .nav-link small{font-size:11px}
+  #mobile-backdrop:not([hidden]){display:block;position:fixed;inset:0;z-index:100;background:#03090bd1;border:0;backdrop-filter:blur(4px)}
+  #mobile-nav{display:grid!important;place-items:center;border:1px solid #52635d;border-radius:10px;width:42px;height:42px;flex:0 0 42px;background:#29363b;color:#f3ddad;font-size:22px}
+  .topbar{height:64px!important;padding:8px 14px!important;gap:10px;z-index:51!important;top:0}
+  .crumb{flex:1;min-width:0}.crumb strong{font-size:17px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.crumb span{font-size:8px;letter-spacing:.08em}
+  .topbar-right{gap:7px}.topbar-right .help-link{display:none}.topbar-right .region-pill{display:none}
+  .mobile-mode-switch{display:flex;align-items:center;gap:6px;white-space:nowrap;min-height:42px;border:1px solid #596658;background:#222e31;border-radius:10px;padding:0 9px;color:#f1d3a0;font-size:11px;font-weight:750}
+  .mobile-mode-switch input{accent-color:#d9b36e;width:16px;height:16px}
+  #main{padding:13px 11px calc(var(--phone-dock-height) + 32px + env(safe-area-inset-bottom,0px))!important;min-height:calc(100dvh - 80px);max-width:100%}
+  footer{padding:13px 16px calc(98px + env(safe-area-inset-bottom,0px))!important;font-size:10px}
+  .phone-dock{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));position:fixed;bottom:0;left:0;right:0;z-index:95;min-height:var(--phone-dock-height);padding:5px 6px calc(5px + env(safe-area-inset-bottom,0px));background:linear-gradient(180deg,#182227fa,#0b1115fc);border-top:1px solid #67725a66;box-shadow:0 -10px 34px #03070999;backdrop-filter:blur(18px)}
+  .phone-tab{min-width:0;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:2px;border:1px solid transparent;border-radius:10px;background:transparent;color:#aebdbb;padding:5px 2px;min-height:60px;font-size:10px;font-weight:650;letter-spacing:-.02em}
+  .phone-tab img{width:29px;height:29px;object-fit:contain;filter:grayscale(.2)}
+  .phone-tab.is-active{color:#ffdfaa;background:linear-gradient(180deg,#5045349c,#28333772);border-color:#aa855262}
+  .phone-tab.is-active img{filter:drop-shadow(0 0 6px #dcad5985)}
+  .phone-tab:focus-visible,.mobile-mode-switch:focus-within{outline:2px solid var(--gold);outline-offset:2px}
+  .hero{padding:18px 16px!important;margin-bottom:12px;min-height:162px!important;border-radius:13px}
+  .hero .hero-copy{position:relative;z-index:2}.hero .hero-game-scene{opacity:.22!important;right:-120px!important;width:315px!important;max-width:none}
+  .hero h1{font-size:clamp(24px,7vw,30px)!important;margin:8px 0!important}.hero p{font-size:12px;line-height:1.45;max-width:80%}
+  .kicker,.eyebrow{letter-spacing:1.1px}.chips{gap:5px;margin-top:10px}.chip{font-size:9px;padding:3px 7px}
+  .panel{padding:13px!important;border-radius:12px;margin-bottom:12px}
+  .panel-heading{flex-wrap:wrap;gap:9px;margin-bottom:12px}.panel-heading h2,.panel h2{font-size:16px}.panel-heading>div:last-child:not(:first-child){width:100%}
+  .panel-heading .btn-group{width:100%}.panel-heading .btn-group .btn{flex:1;min-width:0}
+  .toolbar{flex-wrap:wrap;gap:9px}.toolbar>.btn-group{width:100%}.toolbar>.btn-group .btn{flex:1;min-width:min(140px,100%)}
+  .btn{min-height:42px;padding:9px 11px}.btn-small{min-height:40px;padding:7px 9px;font-size:11px}
+  input:not([type=checkbox]):not([type=radio]),select,textarea{font-size:16px!important;max-width:100%}
+  .field{min-width:min(100%,165px);flex:1 1 150px}
+  .market-chips{gap:7px!important}.market-toggle{min-height:40px;display:inline-flex;align-items:center}
+  .branch-picker-panel{padding:12px!important}.selector-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:8px!important}
+  .branch-group summary .group-art{width:42px;height:42px;flex:0 0 42px}.branch-group summary .group-art img{width:37px;height:37px}
+  .group-name strong{font-size:11.5px!important}.branch-items{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+  .catalog-item-grid{grid-template-columns:1fr!important}.catalog-controls{gap:9px}.catalog-selector{padding:12px!important}
+  .catalog-families .catalog-item{min-height:58px}.selected-branches{max-height:130px;overflow:auto}
+  .config-grid,.planner-shell .config-grid,.flip-settings-grid,.refining-control-grid{grid-template-columns:1fr!important}
+  .planner-shell .config-half,.planner-shell .risk-section,.planner-shell .focus-section.expanded{grid-column:auto!important}
+  .metric-strip{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:8px}
+  .metric{min-width:0!important;padding:10px!important}.metric strong{font-size:clamp(15px,5vw,22px);overflow-wrap:anywhere}
+  .flip-intro{padding:12px;gap:9px}.flip-intro-icon{width:43px;height:43px;flex:0 0 43px;font-size:27px}.flip-intro strong{font-size:13px}.flip-intro p{font-size:11px}
+  .flip-selected{max-width:100%}.flip-selected span{max-width:calc(100vw - 128px)!important}
+  #toast{bottom:calc(var(--phone-dock-height) + 16px + env(safe-area-inset-bottom,0px))!important;max-width:calc(100vw - 24px)}
+}
+@media (max-width:800px){
+ html[data-mobile-cards="1"] .result-table,
+ html[data-mobile-cards="1"] .batch-table-wrap{overflow:visible!important;width:100%;max-width:100%;border:0!important;background:transparent!important}
+ html[data-mobile-cards="1"] .result-table table,
+ html[data-mobile-cards="1"] .batch-table-wrap table{display:block!important;width:100%!important;min-width:0!important;max-width:100%!important;background:transparent!important;border:0!important;border-collapse:separate}
+ html[data-mobile-cards="1"] .result-table thead,
+ html[data-mobile-cards="1"] .batch-table-wrap thead{display:none!important}
+ html[data-mobile-cards="1"] .result-table tbody,
+ html[data-mobile-cards="1"] .batch-table-wrap tbody{display:grid!important;grid-template-columns:1fr!important;gap:10px;width:100%}
+ html[data-mobile-cards="1"] .result-table tbody tr,
+ html[data-mobile-cards="1"] .batch-table-wrap tbody tr{display:block!important;width:100%;max-width:100%;min-width:0!important;background:linear-gradient(140deg,#28353a,#1c252c)!important;border:1px solid #4c5c59!important;border-radius:13px;box-shadow:0 5px 16px #04080c42;overflow:hidden}
+ html[data-mobile-cards="1"] .market-ranking tbody tr{border-left:3px solid #d0a66d!important}
+ html[data-mobile-cards="1"] .result-table td,
+ html[data-mobile-cards="1"] .batch-table-wrap td{display:flex!important;align-items:center;justify-content:space-between;gap:10px;width:100%!important;max-width:100%!important;min-width:0!important;min-height:43px!important;padding:9px 12px!important;text-align:right!important;white-space:normal!important;border:0!important;border-bottom:1px solid #3d4b4b8c!important;box-sizing:border-box;overflow-wrap:anywhere}
+ html[data-mobile-cards="1"] .result-table tbody tr td:last-child,
+ html[data-mobile-cards="1"] .batch-table-wrap tbody tr td:last-child{border-bottom:0!important}
+ html[data-mobile-cards="1"] .result-table td::before,
+ html[data-mobile-cards="1"] .batch-table-wrap td::before{content:attr(data-mobile-label);color:#a9b8b4;font-size:10px;font-weight:700;letter-spacing:.012em;text-transform:none;flex:0 0 34%;text-align:left;max-width:34%;line-height:1.35}
+ html[data-mobile-cards="1"] .result-table td:first-child:has(.item-cell),
+ html[data-mobile-cards="1"] .result-table td:nth-child(2):has(.item-cell),
+ html[data-mobile-cards="1"] .batch-table-wrap td:first-child:has(.item-cell){justify-content:flex-start!important;gap:0;flex-wrap:wrap}
+ html[data-mobile-cards="1"] .result-table td:has(.game-item-cell)::before,
+ html[data-mobile-cards="1"] .batch-table-wrap td:has(.game-item-cell)::before{content:none}
+ html[data-mobile-cards="1"] .result-table td:has(.game-item-cell),
+ html[data-mobile-cards="1"] .batch-table-wrap td:has(.game-item-cell){padding:12px!important;background:#34403850}
+ html[data-mobile-cards="1"] .result-table td:has(.game-item-cell)>.rank-sub,
+ html[data-mobile-cards="1"] .batch-table-wrap td:has(.game-item-cell)>.rank-sub{width:100%;text-align:left}
+ html[data-mobile-cards="1"] .item-cell,
+ html[data-mobile-cards="1"] .game-item-cell{min-width:0!important;max-width:100%;flex:1;text-align:left}
+ html[data-mobile-cards="1"] .game-item-cell .item-primary{display:flex;flex-wrap:wrap;gap:5px}
+ html[data-mobile-cards="1"] .game-item-cell strong{max-width:100%!important;white-space:normal!important;font-size:13px!important;overflow-wrap:break-word}
+ html[data-mobile-cards="1"] .result-table td .rank-sub,
+ html[data-mobile-cards="1"] .batch-table-wrap td .rank-sub{white-space:normal!important}
+ html[data-mobile-cards="1"] .result-table td .city-stack{margin-left:auto;align-items:flex-end}
+ html[data-mobile-cards="1"] .result-table td .city-label{white-space:normal}
+ html[data-mobile-cards="1"] .market-ranking td.rank-number{font-size:12px;font-weight:900;color:#f4d59e}
+ html[data-mobile-cards="1"] .market-ranking td.rank-number::before{content:"Posición"}
+ html[data-mobile-cards="1"] .market-ranking .rank-buttons{display:flex;gap:7px;width:100%;justify-content:flex-end;flex-wrap:wrap}
+ html[data-mobile-cards="1"] .market-ranking .rank-add{flex:1}
+ html[data-mobile-cards="1"] .rank-mark{min-width:43px;min-height:43px}
+ html[data-mobile-cards="1"] .batch-table .game-item-cell img{width:43px;height:43px;flex-basis:43px}
+ html[data-mobile-cards="1"] .batch-table td input[type=number]{max-width:110px;width:100%}
+ html[data-mobile-cards="1"] .batch-table td .batch-price input{max-width:105px}
+ html[data-mobile-cards="1"] .batch-table td .variant-row{margin-left:0}
+ html[data-mobile-cards="1"] .result-table td .rank-metric{font-size:15px}
+ html[data-mobile-cards="1"] .result-table td .activity-meter{max-width:44px}
+ html[data-mobile-cards="1"] .result-table td:has(.rank-buttons)::before{display:none}
+ html[data-mobile-cards="1"] .result-table td:has(.rank-buttons){width:100%;justify-content:stretch}
+}
+@media(max-width:380px){
+  .phone-tab{font-size:9px}.phone-tab img{width:26px;height:26px}
+  .mobile-mode-switch{padding:0 7px;font-size:10px}
+  .crumb span{display:none}.crumb strong{font-size:15px}
+  .hero p{max-width:100%}
+  .branch-items{grid-template-columns:1fr!important}
+}
+@media(prefers-reduced-motion:reduce){.phone-tab,.sidebar{transition:none!important}}
+
+/* Teléfono: cifras de actividad sin salto de dígitos. */
+@media(max-width:800px){
+ html[data-mobile-cards="1"] .market-ranking td:nth-child(4),
+ html[data-mobile-cards="1"] .market-ranking td:nth-child(5){display:grid!important;grid-template-columns:minmax(0,40%) minmax(0,60%);column-gap:6px;row-gap:3px;align-items:center}
+ html[data-mobile-cards="1"] .market-ranking td:nth-child(4)::before,
+ html[data-mobile-cards="1"] .market-ranking td:nth-child(5)::before{grid-column:1;grid-row:1/span 3;max-width:100%;text-align:left;align-self:center}
+ html[data-mobile-cards="1"] .market-ranking td:nth-child(4) .rank-metric,
+ html[data-mobile-cards="1"] .market-ranking td:nth-child(5) .rank-metric{grid-column:2;grid-row:1;justify-self:end;white-space:nowrap;font-size:18px}
+ html[data-mobile-cards="1"] .market-ranking td:nth-child(4) .rank-sub,
+ html[data-mobile-cards="1"] .market-ranking td:nth-child(5) .rank-sub{grid-column:2;justify-self:end;text-align:right;max-width:100%;font-size:10px}
+ html[data-mobile-cards="1"] .market-ranking td:nth-child(4) .rank-sub{grid-row:2}
+ html[data-mobile-cards="1"] .market-ranking td:nth-child(5) .activity-meter{grid-column:2;grid-row:2;justify-self:end;width:110px;max-width:100%}
+ html[data-mobile-cards="1"] .market-ranking td:nth-child(5) .rank-sub{grid-row:3}
+}

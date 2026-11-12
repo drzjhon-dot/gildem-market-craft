@@ -27,7 +27,7 @@ export function settings(cfg={}){const c={...DEFAULTS,...cfg};
 }
 export function returnRate({bonusCity=true,recipe={},dailyBonus=0,focus=false,focusBonus=59}={}){
  const daily=recipe.dailyEnabled===false?0:Number(dailyBonus)||0;
- const bonus=18+(bonusCity&&recipe.city&&recipe.specialtyEnabled!==false?15:0)+daily+(focus?Number(focusBonus):0);
+ const bonus=18+(bonusCity&&recipe.city&&recipe.specialtyEnabled!==false?Number(recipe.specialtyBonus??15):0)+daily+(focus?Number(focusBonus):0);
  return {productionBonus:bonus,returnPct:100*bonus/(100+bonus)};
 }
 export function estimatedFame(id,recipe,premium=true){
@@ -57,7 +57,7 @@ function observationCheck(history,config){
  return config.diversify||config.goal==='fame'||config.style==='dynamic'||gradeOneDays(history)>=Math.min(2,history.days||7);
 }
 function maxCraftByDemand(history,amount,config){
- const fraction={prudent:.06,balanced:.13,dynamic:.22}[config.style];
+ const fraction={prudent:.04,balanced:.12,dynamic:.23}[config.style];
  const volumeFraction=config.volume?Math.min(.30,fraction*1.35):fraction;
  const reliability=trafficSignal(history).confidence;
  const units=gradeOneDaily(history)*Number(config.saleDays)*volumeFraction*reliability;
@@ -165,7 +165,7 @@ export function allocatePlan({candidates=[],config={},recipes={}}={}){
   if(!previous||score(candidate,c)>score(previous,c))unique.set(key,{...candidate,routeKey:key,qty:0});
  }
  const routes=[...unique.values()].sort((a,b)=>score(b,c)-score(a,c)||b.estimatedProfitPerCraft-a.estimatedProfitPerCraft);
- const maxLines=c.volume?52:40,fameMode=c.goal==='fame',lossCap=fameMode?c.budget*c.fameLossBudgetPct/100:0;
+ const maxLines=c.style==='prudent'?24:c.style==='balanced'?40:c.volume?70:55,fameMode=c.goal==='fame',lossCap=fameMode?c.budget*c.fameLossBudgetPct/100:0;
  let available=c.budget,focusRemaining=c.focus?Number(c.focusAvailable):Infinity,allocatedLoss=0;
  const picked=new Map(),capitalBySku=new Map();
  const reasonFor=new Map();
@@ -177,7 +177,7 @@ export function allocatePlan({candidates=[],config={},recipes={}}={}){
   if(c.focus&&focusRemaining<row.focusPerCraft){reasonFor.set(key,'Focus insuficiente');return false;}
   const combinedSku=(capitalBySku.get(row.id)||0)+row.grossCapitalPerCraft;
   const skuCap=c.budget*c.maxCapitalSharePct/100;
-  if(!tierReserve&&combinedSku>skuCap+1e-6){reasonFor.set(key,'Límite de inversión acumulada por artículo, incluso entre ciudades');return false;}
+  if(combinedSku>skuCap+1e-6){reasonFor.set(key,'Límite de inversión acumulada por artículo, incluso entre ciudades');return false;}
   const before=previewLine(row,row.qty,c),after=previewLine(row,row.qty+1,c);
   const newLoss=Math.max(0,-after.profit),oldLoss=Math.max(0,-before.profit);
   const lossNext=allocatedLoss+newLoss-oldLoss;
@@ -191,8 +191,6 @@ export function allocatePlan({candidates=[],config={},recipes={}}={}){
   }
   row.qty++;available-=row.grossCapitalPerCraft;focusRemaining-=row.focusPerCraft;
   allocatedLoss=lossNext;picked.set(key,row);capitalBySku.set(row.id,combinedSku);reasonFor.delete(key);
-  if(tierReserve&&combinedSku>skuCap+1e-6)
-   warnings.push(`T${variant(row.id)?.tier}: un craft supera el límite por artículo, pero respeta presupuesto y actividad Q1 de ${row.city}.`);
   return true;
  }
  const prioritize=c.diversify||fameMode;
@@ -210,7 +208,7 @@ export function allocatePlan({candidates=[],config={},recipes={}}={}){
  }
  // Diversity is SKU+city breadth first. Market activity is never assumed executable.
  for(const route of routes)if(!route.qty)addOne(route);
- const caps=new Map(routes.map(r=>[r.routeKey,c.useBudget?r.maxCrafts:Math.min(r.maxCrafts,Math.max(1,Math.ceil(r.maxCrafts*(c.style==='prudent'?.55:.75))))]));
+ const caps=new Map(routes.map(r=>[r.routeKey,c.useBudget?r.maxCrafts:Math.min(r.maxCrafts,Math.max(1,Math.ceil(r.maxCrafts*({prudent:.35,balanced:.70,dynamic:1}[c.style]))))]));
  for(let round=0;round<250;round++){
   let progressed=false;
   for(const row of routes){if(!row.qty||row.qty>=caps.get(row.routeKey))continue;
