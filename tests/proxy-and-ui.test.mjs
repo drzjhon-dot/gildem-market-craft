@@ -45,3 +45,19 @@ test('interfaz: exclusivamente dos pestañas, filtros esenciales y exportación,
  for(const token of ['data-group-all','data-branch','data-mark','force-top','run-plan','single-run','data-cfg="diversify"','data-cfg="focus"','data-cfg="budget"','export-plan','marketFetch(\'history\'','marketFetch(\'prices\''])assert(js.includes(token),token);
  assert(css.includes('@media(max-width:680px)'));
 });
+
+test('estilo Albion v1.2 mantiene números enteros, ranking y shortcuts de copia',async()=>{
+ const {readFile}=await import('node:fs/promises');
+ const main=await readFile(new URL('../src/main.js',import.meta.url),'utf8');
+ const css=await readFile(new URL('../styles.css',import.meta.url),'utf8');
+ assert.match(main,/class="result-table market-ranking"/);
+ assert.match(main,/data-copy-name=/);
+ assert.match(main,/e\.shiftKey\?b\.dataset\.copyId:b\.dataset\.copyName/);
+ assert.match(main,/function displayedInt\(n\)/);
+ assert.match(main,/class="batch-table game-craft-table"/);
+ assert.match(main,/class="batch-table materials-table game-materials-table"/);
+ assert.match(main,/Sin cotización verificable/);
+ assert.match(css,/\.city--fort-sterling/);
+ assert.match(css,/\.city--black-market/);
+ assert.match(css,/\.tier-ench-4/);
+});

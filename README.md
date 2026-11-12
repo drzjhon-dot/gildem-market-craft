@@ -1,6 +1,6 @@
 # Gildem Albion Lab | Market & Craft
 
-**Proyecto nuevo e independiente (v1.1.0)** para Albion Online, servidor **América / West**.
+**Proyecto nuevo e independiente (v1.2.0)** para Albion Online, servidor **América / West**.
 
 Tiene **solamente dos pestañas**: `Top Mercado` y `Calculadora de Craft`. No modifica ni importa el motor de la aplicación anterior. La fuente única de **estadísticas y precios de mercado** es **Albion Online Data Project (AODP) REST West**. Las recetas y traducciones se obtienen de archivos públicos derivados de los datos oficiales del juego; esos archivos **no** aportan cifras del mercado.
 
@@ -52,7 +52,7 @@ No hay variables de entorno secretas obligatorias. La app no necesita claves AOD
 
 ### Límites importantes
 
-Este v1.0 **no calcula** el precio real por tramos al barrer el libro de órdenes, costes de transporte, ni tarifas particulares de fabricación salvo la que introduzcas. Debes revisar manualmente la profundidad de compras de materiales y ventas finales antes de comprometer silver. El dato de `History` tampoco equivale a demanda ejecutable.
+Esta versión **no calcula** el precio real por tramos al barrer el libro de órdenes, costes de transporte, ni tarifas particulares de fabricación salvo la que introduzcas. Debes revisar manualmente la profundidad de compras de materiales y ventas finales antes de comprometer silver. El dato de `History` tampoco equivale a demanda ejecutable.
 
 **Recetas especiales:** monturas, comidas, pociones y herramientas dependen de descargar los `craftingrequirements` del catálogo público `ao-bin-dumps`; pueden fallar por tamaño o disponibilidad temporal de esa fuente. En ese caso el Top puede mostrar los IDs que consiga identificar, pero la calculadora **no fabrica una receta ficticia**. Las especialidades no verificadas de recetas especiales no reciben automáticamente el +15%.
 
@@ -105,7 +105,7 @@ assets/                      Elementos de marca, banners e iconos
 
 ---
 
-**Versión:** 1.0.0 · **Independiente de Gildem Albion Lab anterior** · **Servidor de mercado:** West.
+**Versión:** 1.2.0 · **Independiente de Gildem Albion Lab anterior** · **Servidor de mercado:** West.
 
 
 ## Actualización visual v1.1.0 · estilo Albion Lab clásico
@@ -123,3 +123,22 @@ El capital inicial bruto, la compra neta con retornos y el coste efectivo son ca
 El Focus de la calculadora manual exige datos verificados de Focus por fabricación y Focus disponible. La estimación de diarios no entra en los costes de materiales. El calculador manual no necesita un historial Top previo, pero no estima automáticamente la demanda si no existe.
 
 La interfaz se comprobó también con navegación funcional automatizada en navegador (Top Mercado → búsqueda → lote → cantidad → ajustes), usando respuestas de mercado simuladas. El despliegue y la disponibilidad de AODP deben verificarse también en Netlify.
+
+
+## Actualización v1.2.0 · «Ranking Albion» y calculadora más inmersiva
+
+Se mantienen los **dos tabs** y todas las consultas al AODP REST de **América/West**; no hay nuevas APIs de mercado ni claves secretas. El generador automático sigue en su sección desplegable.
+
+- **Top Mercado:** ranking numérico desde `#1`, tabla compacta con iconos originales del juego en la web publicada, tier y encantamiento con insignias, emblemas luminosos y colores para las ocho ubicaciones; unidades/día y precio unitario redondeados a números enteros, silver/día abreviado. Los días activos aparecen debajo de unidades/día.
+- **Copiar nombres:** pulsa el pequeño botón dorado junto a cualquier objeto para copiar el nombre mostrado en español. **Shift + clic** en ese botón copia el ID de Albion, por ejemplo `T5_MAIN_AXE`. Incluye confirmación en pantalla y un método de respaldo para navegadores sin Clipboard API.
+- **Acciones del ranking:** estrella para marcar para el plan; **Agregar a Calculadora** envía el ítem directamente al lote manual; «Enviar marcados» y el motor automático siguen funcionando.
+- **Calculadora visual:** ítems con imagen, badges, selector de tier/encantamiento, cantidad, ciudad de fabricación coloreada, retorno, coste neto, profit Mercado Negro/Royal y fama. Los importes de cada fila se muestran como enteros.
+- **Materiales:** filas con imagen de recurso, objeto al que pertenece representado con iconos, ciudad de compra coloreada, cantidades enteras, precio editable y coste. Diarios orientativos aparecen como fichas con imagen en su sección, siempre **excluidos del coste**.
+- **Cotizaciones ausentes:** los materiales de un lote incompleto **no desaparecen**: aparecen con campo rojo de precio manual. Hasta que haya todas las cotizaciones necesarias, el lote tiene beneficio **no calculable**, no beneficio cero. La compra pendiente no entra como capital verificable hasta resolver el precio.
+- **Responsive:** tablas con desplazamiento horizontal local y diseño adaptado a móvil; los 10 grupos y 105 opciones del selector compacto se conservan.
+
+### Nota sobre datos y pruebas v1.2
+
+El ranking usa días UTC completos con calidades 1–5, y la calculadora usa precios de compra y venta sujetos al umbral de antigüedad. Las pruebas de navegador utilizaron un catálogo simulado deliberadamente: **las capturas de vista previa no son cotizaciones reales ni iconos reales del mercado**. Los nombres/recetas y las imágenes de los objetos vienen de las fuentes de juego cuando el sitio está conectado.
+
+La versión 1.2 pasó **27/27 pruebas automatizadas** y un recorrido completo de navegador: Top → copia de nombre → agregar → precios faltantes → precio manual → profit → modo móvil. La API externa y el despliegue deben comprobarse en producción.

@@ -36,3 +36,21 @@ test('sin historial no se simula impacto; con historial sí aplica el volumen',(
 test('Focus insuficiente para la cantidad del lote se rechaza, sin descuento ficticio',()=>{
  assert.throws(()=>batchCalculate({...base,config:{...base.config,focus:true,focusPerCraft:500,focusAvailable:600}}),/Focus insuficiente/);
 });
+
+test('material sin cotización sigue visible y editable sin contabilizar cero silver',()=>{
+ const recipe={T5_MAIN_AXE:{city:'Martlock',materials:[{id:'T5_METALBAR',count:12,ret:true},{id:'T5_MISSING_ARTIFACT',count:1,ret:false}]}};
+ const q=new Map([quote('T5_METALBAR','Martlock',100),quote('T5_MAIN_AXE','Black Market',0,2000)]);
+ const cfg={...base.config};
+ const before=batchCalculate({items:[{id:'T5_MAIN_AXE',qty:3}],recipes:recipe,quotes:q,now:t,config:cfg});
+ assert.ok(before.rows[0].reason?.includes('T5_MISSING_ARTIFACT'));
+ assert.equal(before.materials.length,2);
+ assert.equal(before.materials.find(m=>m.id==='T5_MISSING_ARTIFACT')?.missing,true);
+ assert.equal(before.materials.find(m=>m.id==='T5_MISSING_ARTIFACT')?.total,null);
+ assert.equal(before.totals.buyCapital,0);
+ assert.equal(before.totals.profitBM,null);
+ const after=batchCalculate({items:[{id:'T5_MAIN_AXE',qty:3}],recipes:recipe,quotes:q,overrides:{buy:{T5_MISSING_ARTIFACT:350}},now:t,config:cfg});
+ assert.equal(after.rows[0].reason,undefined);
+ assert.equal(after.materials.find(m=>m.id==='T5_MISSING_ARTIFACT').unitPrice,350);
+ assert.ok(after.totals.buyCapital>0);
+ assert.ok(Number.isFinite(after.totals.profitBM));
+});

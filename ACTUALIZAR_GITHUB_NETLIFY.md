@@ -1,45 +1,42 @@
-# Actualizar Gildem Market & Craft a v1.1
+# Actualizar Gildem Market & Craft a v1.2.0
 
-Repositorio exclusivo del proyecto: https://github.com/drzjhon-dot/gildem-market-craft
-Sitio actual: https://gildemcraft.netlify.app/
+**Solo este repositorio:** https://github.com/drzjhon-dot/gildem-market-craft  
+**Solo este sitio:** https://gildemcraft.netlify.app/
 
-## Método recomendado: GitHub Desktop
+No necesitas crear otra web ni modificar el antiguo Gildem Albion Lab. La v1.2 se basa en la v1.1 y conserva las dos pestañas, el motor de generación de planes y todas las funciones de Netlify.
 
-1. Clona `drzjhon-dot/gildem-market-craft` con GitHub Desktop.
-2. Descomprime el ZIP de v1.1. Copia su **contenido** (no la carpeta contenedora) encima de la carpeta clonada, conservando `.git`.
-3. Comprueba que `src/main.js`, `src/batch-calculator.js`, `styles.css`, `index.html` y `tests/batch-calculator.test.mjs` estén en sus rutas correctas.
-4. En GitHub Desktop revisa los cambios, crea el commit `v1.1: interfaz clásica y calculadora por lotes` y pulsa **Push origin**.
-5. Si Netlify está conectado a `main`, espera el estado **Published** en Netlify; abre tu sitio y recarga con Ctrl+F5.
+## Actualización desde GitHub Desktop (recomendada)
 
-## Método por terminal
+1. Abre GitHub Desktop y clona el repositorio `drzjhon-dot/gildem-market-craft` si aún no lo tienes local.
+2. Descomprime `Gildem_Market_Craft_v1_2_0_GITHUB_NETLIFY.zip`.
+3. Copia **los archivos y las carpetas del interior del ZIP** a la raíz del repositorio clonado; confirma reemplazar los existentes. **No borres la carpeta `.git`**.
+4. En GitHub Desktop comprueba los archivos modificados (principalmente `styles.css`, `src/main.js`, `src/batch-calculator.js`, pruebas y documentación).
+5. Escribe el commit `v1.2: ranking Albion, colores por ciudad y calculadora visual`, pulsa **Commit to main** y después **Push origin**.
+6. Si Netlify sigue conectado a la rama `main`, revisa el despliegue y recarga https://gildemcraft.netlify.app/ con `Ctrl + F5` cuando esté publicado.
+
+## Alternativa con terminal
 
 ```bash
 git clone https://github.com/drzjhon-dot/gildem-market-craft.git
-# Copia el contenido del ZIP descomprimido a la carpeta gildem-market-craft, reemplazando archivos existentes.
+# Copiar encima el contenido descomprimido del ZIP
 cd gildem-market-craft
 npm run build
 git add .
-git commit -m "v1.1: interfaz clásica y calculadora por lotes"
+git commit -m "v1.2: ranking Albion y calculadora visual"
 git push origin main
 ```
 
-## Qué cambió
+## Verificación de producción tras subirlo
 
-- `styles.css`: paleta clásica, selector compacto, tabla y paneles de calculadora.
-- `src/main.js`: nueva interfaz, botones y flujo de transferencia de Top Mercado a Calculadora.
-- `src/batch-calculator.js`: cálculos manuales de varios objetos sin tocar el generador automático.
-- `index.html`: versión y tema visual.
-- `tests/batch-calculator.test.mjs`: pruebas de Focus, materiales, cotizaciones y rentabilidad manual.
-- `package.json`, `scripts/build.mjs`, `README.md`: versión 1.1 y documentación.
+1. En Top Mercado, consulta **Hachas** o **Arcos** en Mercado Negro y comprueba que aparece el ranking `#`, ciudad con su color, unidades/día y precio unitario redondeado al entero.
+2. Pulsa el icono dorado de **copiar** junto a un objeto; usa **Shift + clic** para copiar su ID interno.
+3. Pulsa **Agregar a Calculadora**, cambia cantidad, tier o encantamiento y comprueba que las cifras se recalculan.
+4. Revisa los materiales: cada ciudad Royal usa su color; si falta una cotización, se muestra y puede introducirse manualmente.
+5. Comprueba el botón **Copiar compras**, los diarios estimados, CSV, y el **Generador automático de planes** plegable.
+6. Prueba con un teléfono o una ventana estrecha: las tablas se desplazan lateralmente dentro del panel, sin desbordar toda la web.
 
-El ZIP conserva `netlify.toml`, `netlify/functions` y el motor del proyecto anterior. No subas este paquete al repositorio antiguo de Gildem Albion Lab.
+## Límites de validación
 
-## Verificación después de publicar
+Se han superado **27 pruebas automatizadas** y pruebas de interfaz mediante un navegador con respuestas AODP **simuladas**. Son pruebas de comportamiento, no precios actuales. **Todavía no se han verificado las solicitudes reales a AODP ni un despliegue de producción en Netlify.**
 
-- Comprueba que Top Mercado muestre las 10 tarjetas de categoría, con una selección por defecto y los grupos cerrados.
-- Abre Armas, marca/desmarca dos ramas y comprueba el contador.
-- Busca un objeto en Calculadora, añade 1, comprueba precios y lista de materiales; verifica el aviso si alguna cotización no existe.
-- Cambia crafts, tier, encantamiento, Focus y bono diario; prueba CSV.
-- Abre el Generador automático y comprueba que sigue ofreciendo los mismos controles y límites.
-
-**Nota:** La integración GitHub de este chat permitió lectura pero devolvió 403 en operaciones de escritura; por eso la subida del ZIP no está hecha por el asistente. Las pruebas automatizadas y el navegador usaron respuestas de mercado simuladas y no equivalen a validar cotizaciones AODP reales después del despliegue.
+La integración de GitHub disponible en este chat devolvió `403 Resource not accessible by integration` al intentar escribir en el repositorio; por eso se entrega el ZIP para subir los cambios manualmente. El sitio en producción no se ha alterado desde aquí.

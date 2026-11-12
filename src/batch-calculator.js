@@ -10,7 +10,7 @@ const saleImpact=(history,units,config)=>history?.averageDailyUnits>0
 export function baseStem(id){return String(id).replace(/^T\d+_/, 'T_').replace(/@\d+$/,'');}
 export function variantChoices(ids,id){const stem=baseStem(id);return ids.filter(k=>baseStem(k)===stem&&variant(k));}
 export function batchCalculate({items=[],recipes={},quotes=new Map(),history=[],config={},overrides={},now=Date.now()}={}){
- const rows=[],materials=new Map(),journals=[],warnings=[];
+ const rows=[],materials=new Map(),pendingMaterials=new Map(),journals=[],warnings=[];
  const buy=overrides.buy||{},sellBM=overrides.sellBM||{},sellRoyal=overrides.sellRoyal||{};
  if(config.focus&&(!(Number(config.focusPerCraft)>0)||!(Number(config.focusAvailable)>0)))throw Error('Focus activado: indica Focus por fabricación y Focus disponible antes de calcular.');
  if(config.focus&&items.reduce((n,item)=>n+Number(item.qty||0),0)*Number(config.focusPerCraft)>Number(config.focusAvailable))throw Error('Focus insuficiente para todas las fabricaciones del lote. Reduce las cantidades o desactiva Focus.');
@@ -26,16 +26,32 @@ export function batchCalculate({items=[],recipes={},quotes=new Map(),history=[],
   for(const m of recipe.materials){const count=Number(m.count),manual=validPrice(buy[m.id]);
    const observed=cheapestMaterial(quotes,m.id,ROYALS,Number(config.maxQuoteHours)||48,now);
    const price=manual||observed?.price,city=manual?'Manual':observed?.city;
-   if(!m.id||!(count>0)||!Number.isFinite(count)||!(price>0)){missing.push(m.id||'Material inválido');continue;}
+   if(!m.id||!(count>0)||!Number.isFinite(count)){missing.push(m.id||'Material inválido');continue;}
    const maxReturn=(m.maxReturn===null||m.maxReturn===undefined)?Infinity:Number(m.maxReturn);
    const returned=m.ret===false?0:Math.min(count*rr,Number.isFinite(maxReturn)?maxReturn:Infinity);
    const effective=count-returned;
+   // Preserve unquoted materials for manual pricing. Never treat an unknown price as zero.
+   if(!(price>0)){
+    missing.push(m.id);
+    matRows.push({id:m.id,count,returned,price:null,city:null,observedAt:null,manual:false,netCount:effective,missing:true});
+    continue;
+   }
    gross+=count*price;net+=effective*price;
    matRows.push({id:m.id,count,returned,price,city,observedAt:manual?null:new Date(observed.time).toISOString(),manual:!!manual,netCount:effective});
   }
   const fameInfo=estimatedFame(id,recipe,config.premium!==false),itemFame=(fameInfo?.value||0)*qty;
   const base={id,qty,craftAmount,units:qty*craftAmount,craftCity:config.bonusCity!==false&&!item.noBonus?recipe.city||'Sin ciudad de especialidad':'Sin bono',returnPct:rr*100,fame:itemFame,fameEstimated:fameInfo?.estimated||false,materials:matRows};
-  if(missing.length){rows.push({...base,reason:'Sin precios de materiales: '+missing.slice(0,5).join(', ')});bmComplete=false;royalComplete=false;continue;}
+  if(missing.length){
+   // The preview ledger helps fill the missing quotes while remaining excluded from investment totals.
+   for(const m of matRows){const key=m.id+'|'+(m.city||'Sin cotización');
+    const prev=pendingMaterials.get(key)||{id:m.id,city:m.city,unitPrice:m.price,gross:0,net:0,returned:0,manual:m.manual,missing:!m.price,usedBy:[],pending:true};
+    prev.gross+=m.count*qty;prev.net+=m.netCount*qty;prev.returned+=m.returned*qty;
+    if(!prev.usedBy.includes(id))prev.usedBy.push(id);
+    pendingMaterials.set(key,prev);
+   }
+   rows.push({...base,reason:'Sin precios de materiales: '+missing.slice(0,5).join(', ')});
+   bmComplete=false;royalComplete=false;continue;
+  }
   const itemCapital=(gross+(Number(config.stationFee)||0))*qty;
   const itemCost=(net+(Number(config.stationFee)||0))*qty;
   base.capital=itemCapital;base.cost=itemCost;
@@ -62,8 +78,9 @@ export function batchCalculate({items=[],recipes={},quotes=new Map(),history=[],
   rows.push(base);
  }
  const grouped=[...materials.values()].map(m=>({...m,buy:Math.ceil(Math.max(0,m.net)),total:Math.ceil(Math.max(0,m.net))*m.unitPrice})).sort((a,b)=>a.id.localeCompare(b.id));
+ const pending=[...pendingMaterials.values()].map(m=>({...m,buy:Math.ceil(Math.max(0,m.net)),total:null})).sort((a,b)=>a.id.localeCompare(b.id));
  const hasMissing=rows.some(r=>r.reason);
  if(hasMissing)warnings.push('Algunos artículos no tienen materiales o recetas verificadas; no se incluyen en los totales.');
  if(rows.some(r=>r.capital&&!r.bmHistorical&&!r.royalHistorical))warnings.push('Sin historial en el destino de algunos artículos: no se estima impacto de precio para esas ventas.');
- return {rows,materials:grouped,journals,warnings,totals:{capital,cost,fame,crafts,units:rows.filter(r=>!r.reason).reduce((n,r)=>n+r.units,0),profitBM:bmComplete&&!hasMissing?profitBM:null,profitRoyal:royalComplete&&!hasMissing?profitRoyal:null,buyCapital:grouped.reduce((n,m)=>n+m.total,0),incomplete:rows.filter(r=>r.reason).length}};
+ return {rows,materials:[...grouped,...pending],journals,warnings,totals:{capital,cost,fame,crafts,units:rows.filter(r=>!r.reason).reduce((n,r)=>n+r.units,0),profitBM:bmComplete&&!hasMissing?profitBM:null,profitRoyal:royalComplete&&!hasMissing?profitRoyal:null,buyCapital:grouped.reduce((n,m)=>n+m.total,0),incomplete:rows.filter(r=>r.reason).length}};
 }

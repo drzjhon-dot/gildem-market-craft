@@ -28,3 +28,133 @@ body{background:var(--bg);color:var(--text)}
 @media(max-width:680px){.sidebar{left:-285px;width:268px;min-width:268px}.sidebar.mobile-open{left:0;padding:22px 14px}.hero{padding:19px;min-height:159px}.hero img{opacity:.22}.hero h1{font-size:27px}.selector-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}.branch-picker-panel{padding:13px}.group-name strong{font-size:10.5px}.group-icon{height:24px;width:24px;font-size:14px}.group-name small{font-size:9px}.group-carret{font-size:12px}.branch-group summary{padding:6px;min-height:44px;gap:5px}.branch-items{grid-template-columns:repeat(2,minmax(0,1fr));max-height:290px}.branch-choice{font-size:10px;min-height:39px}.branch-choice img{width:22px;height:22px}.selected-branch-pill{max-width:180px}.selected-branch-pill span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.batch-kpis{gap:7px}.batch-kpi{padding:9px}.batch-kpi strong{font-size:17px}.batch-toolbar .btn-group{flex-wrap:wrap}.batch-toolbar .btn{padding:7px}.manual-calculator{padding:13px}.plan-drawer>summary{padding:12px}.drawer-content{padding:0 7px}}
 @media(max-width:420px){.selector-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.branch-items{grid-template-columns:1fr}.group-name strong{font-size:9.5px}.group-icon{width:23px;height:23px}.batch-kpis{grid-template-columns:1fr 1fr}}
 @media(prefers-reduced-motion:reduce){.workspace::before{animation:none}}
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ * v1.2 — Albion-inspired ranking + crafting tables.
+ * Visual-only classes do not alter AODP observations or the underlying math.
+ * ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+:root{--bg:#0f0a19;--surface:#1a1228;--card:#201631;--card2:#281c38;--edge:#473354;--line:#3e2d50;--text:#f0e8f7;--muted:#b2a2c5;--gold:#f0c377;--gold2:#dba75f;--teal:#70e6c0;--red:#ff989f;--blue:#9ec5fc;--shadow:0 18px 48px #0a071799}
+body{background:#0d0918;font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif}
+.workspace{background:radial-gradient(ellipse at 30% -10%,#70367620,transparent 48%),radial-gradient(ellipse at 98% 55%,#77305d14,transparent 42%),#110c1b}
+.workspace::before{opacity:.22}
+.panel,.manual-calculator{background:linear-gradient(125deg,#20152f 0%,#170f25 75%);border:1px solid #4b345e;box-shadow:0 12px 40px #0805133d}
+.panel h2{letter-spacing:-.02em}
+.hero{background:radial-gradient(ellipse at 36% 85%,#532b6440,transparent 65%),linear-gradient(100deg,#2a183b,#1b132b);border-color:#6c486c}
+.hero p{color:#c6b3d0}
+.btn-ghost{color:#e7d9ed;background:#24192d;border-color:#644970}
+.btn-ghost:hover:not(:disabled){background:#392541;border-color:#bb895d}
+.btn-gold{color:#27172a;background:linear-gradient(120deg,#f3d398,#dda963);border-color:#edc27f}
+:focus-visible{outline:2px solid #e4b96e;outline-offset:2px}
+
+/* Consistent city-colored game emblems. Source market strings remain untouched. */
+.city--black-market{--city:#ff594c;--city-fade:#ff594c16}
+.city--caerleon{--city:#ff594c;--city-fade:#ff594c16}
+.city--bridgewatch{--city:#ffaf43;--city-fade:#ffaf4319}
+.city--fort-sterling{--city:#e6f2ff;--city-fade:#e6f2ff18}
+.city--lymhurst{--city:#68d98d;--city-fade:#68d98d19}
+.city--martlock{--city:#6eaffc;--city-fade:#6eaffc18}
+.city--thetford{--city:#bc82ff;--city-fade:#bc82ff18}
+.city--brecilien{--city:#de86d5;--city-fade:#de86d516}
+.city-label{display:inline-flex;align-items:center;gap:8px;color:var(--city,#d0bedc);font-weight:750;font-size:12px;white-space:nowrap;max-width:100%;text-shadow:0 0 20px var(--city-fade,transparent)}
+.city-gem{display:inline-block;font-size:14px;line-height:1;color:var(--city,#a69ab8);filter:drop-shadow(0 0 4px var(--city));transform:rotate(0deg)}
+.city-small{font-size:10px;gap:5px}
+.city-small .city-gem{font-size:10px}
+.city-unverified{font-size:11px;color:#aa9cbb}
+.city-stack{display:flex;flex-direction:column;gap:3px;align-items:flex-start}
+.city-stack small{color:#aaa0c1;font-size:10px}
+.market-toggle.city-control{display:inline-flex;align-items:center;gap:6px;white-space:nowrap;background:#20152c;color:#bfb0c9;border:1px solid #4f395f;transition:background .15s,border-color .15s,transform .15s}
+.market-toggle.city-control .city-gem{font-size:11px;opacity:.85}
+.market-toggle.city-control.active{color:var(--city);border-color:var(--city);background:linear-gradient(125deg,var(--city-fade),#24172e)}
+.market-toggle.city-control:hover{transform:translateY(-1px)}
+
+/* Compact game-item cell, tier/enchantment rarity tags and quick copy. */
+.game-item-cell{display:flex;align-items:center;gap:11px;min-width:0}
+.game-item-cell img{height:39px;width:39px;flex:0 0 39px;border-radius:8px;object-fit:contain;border:1px solid #735679;background:#32233d;filter:drop-shadow(0 2px 5px #0005)}
+.game-item-cell .item-text{min-width:0;flex:1}
+.item-primary{display:flex;align-items:center;gap:7px;min-width:0;flex-wrap:wrap}
+.item-primary strong{font-size:12.5px;line-height:1.25;font-weight:750;color:#f6ecf5;max-width:300px;white-space:normal}
+.item-id{font-size:9px;color:#867794;word-break:break-all;display:block;margin-top:5px}
+.copy-name-btn{border:1px solid #5d4839;background:#352922;color:#e6b770;width:29px;height:29px;border-radius:8px;display:inline-flex;align-items:center;justify-content:center;flex:0 0 29px;transition:.15s;padding:6px}
+.copy-name-btn:hover{color:#ffe0a2;background:#59442a;border-color:#c69a5f;transform:translateY(-1px)}
+.copy-name-btn svg{width:16px;height:16px}
+.tier-badge{display:inline-flex;align-items:center;justify-content:center;border:1px solid #645570;color:#e8d6f4;background:#352941;border-radius:6px;min-height:23px;padding:1px 7px;white-space:nowrap;font-size:10.5px;font-weight:750;letter-spacing:.02em}
+.tier-ench-1{border-color:#327d75;background:#123833;color:#7be6d1}
+.tier-ench-2{border-color:#477ac4;background:#1b2d4d;color:#a3c8ff}
+.tier-ench-3{border-color:#9a6ad8;background:#3e2456;color:#dfb3ff}
+.tier-ench-4{border-color:#b98b43;background:#483321;color:#ffe1a1}
+
+/* New ranking follows the requested seven-column, compact editorial layout. */
+.market-ranking{border:1px solid #4c365c;border-radius:13px;background:#191226;overflow-x:auto;max-width:100%;box-shadow:inset 0 1px #644a7133}
+.market-ranking table{border-collapse:collapse;min-width:1000px;background:transparent!important;font-size:12px}
+.market-ranking th{font-size:10.5px!important;font-weight:700!important;text-transform:none!important;letter-spacing:0!important;background:#20162e!important;color:#b9a4cd!important;padding:12px 13px!important;white-space:nowrap;border-bottom:1px solid #4a355a!important}
+.market-ranking td{padding:9px 13px!important;min-height:60px;vertical-align:middle!important;border-color:#362742!important;color:#f0e5f3!important}
+.market-ranking tr:hover{background:#3d24503d!important}
+.market-ranking .game-item-cell{min-width:300px}
+.market-ranking .item-primary strong{font-size:12px}
+.market-ranking .rank-number{color:#b9acd1!important;font-weight:800;width:48px;text-align:center;font-variant-numeric:tabular-nums}
+.market-ranking .rank-metric{font-size:13.5px;font-weight:850;color:#f8edf7;font-variant-numeric:tabular-nums;display:block}
+.market-ranking .rank-sub{font-size:10px;color:#a99abc;display:block;margin-top:4px;font-weight:450}
+.market-ranking .ranking-actions{min-width:196px}
+.market-ranking .rank-buttons{display:flex;align-items:center;justify-content:flex-end;gap:7px;white-space:nowrap}
+.rank-add{border-color:#5b426e!important;background:#251831!important;border-radius:20px!important;min-height:31px!important;padding:5px 14px!important;font-size:10.5px!important;color:#efe4f4!important;font-weight:750}
+.rank-add:hover{background:#432954!important;border-color:#bd9168!important;color:#ffe2b0!important}
+.rank-mark{height:31px;min-width:31px;border:1px solid #5b426e;color:#a38bb6;background:#23172f;border-radius:9px;font-size:19px;line-height:1}
+.rank-mark:hover,.rank-mark.is-marked{color:#f4c67b;border-color:#cba266;background:#3b292d}
+
+/* Rich batch calculator, complete with city flags and correctly labeled missing quotes. */
+.manual-calculator{border-color:#705080;background:linear-gradient(135deg,#211530 0%,#170e25 80%)}
+.batch-kpis .batch-kpi{border:1px solid #4b355d;border-radius:11px;background:linear-gradient(135deg,#2a1c3a,#1a1328);box-shadow:0 8px 20px #09061335}
+.batch-kpi strong{font-variant-numeric:tabular-nums}
+.section-heading{display:flex;justify-content:space-between;align-items:center;gap:14px;margin:18px 0 10px}
+.section-heading h3{font-size:14px;font-weight:800;margin:0;color:#f6e9f4}
+.section-heading span{font-size:11px;color:#a895ba}
+.section-heading.materials-heading{margin-top:24px}
+.batch-table-wrap{border-color:#4a365e;background:#160f25;border-radius:12px;scrollbar-width:thin;scrollbar-color:#64456f #20162c}
+.game-craft-table{min-width:1150px}
+.game-materials-table{min-width:880px}
+.batch-table th{background:#251934!important;border-color:#4c3760!important;color:#c9b6d7!important;text-transform:none;letter-spacing:0;font-weight:700;font-size:10.5px;padding:11px 12px}
+.batch-table td{padding:12px 11px;min-height:60px;border-color:#382747;font-size:11px;color:#f4eaf6}
+.batch-table tbody tr:hover{background:#4227503a}
+.batch-table td.numeric>strong{font-size:13px;color:#f4e9f4;white-space:nowrap;font-variant-numeric:tabular-nums}
+.batch-table .game-item-cell{min-width:280px}
+.batch-table .game-item-cell strong{font-size:12px;max-width:205px}
+.batch-table .game-item-cell img{width:36px;height:36px;flex-basis:36px}
+.batch-table .tier-badge{min-height:21px;padding:2px 5px;font-size:10px}
+.batch-table .copy-name-btn{width:25px;height:25px;flex-basis:25px;padding:5px}
+.batch-table .copy-name-btn svg{width:14px;height:14px}
+.batch-table .variant-row{margin:6px 0 0 47px}
+.variant-row select{height:26px;padding:2px 5px;color:#e8d5fa;background:#261a35;border:1px solid #655075;font-size:10px;font-weight:750;cursor:pointer}
+.batch-qty{width:76px!important;padding:5px 7px!important;height:36px;min-height:36px!important;text-align:center;font-weight:800;font-size:13px!important;color:#f2e4fa!important;border-color:#644d82!important}
+.batch-no-bonus{display:flex;align-items:center;gap:4px;color:#ad9dba;font-size:9px;margin-top:6px;max-width:130px;line-height:1.3}
+.batch-no-bonus input{margin:0;flex:none}
+.profit-cell{display:flex;align-items:flex-end;flex-direction:column;gap:5px}
+.profit-cell .batch-price{margin:0}
+.profit-cell .batch-price input{height:28px;min-width:96px;text-align:center;border-radius:16px;background:#191125;color:#e9dff2;border-color:#5b4570;font-variant-numeric:tabular-nums}
+.missing-profit{color:#cab4d0;font-size:11px;white-space:nowrap;font-weight:700}
+.batch-subtext{color:#ae99be!important;max-width:195px;line-height:1.4}
+.batch-invalid .numeric>strong{color:#bca5c9}
+.remove-object{border:1px solid #624b75;background:#1c132c;color:#dac9df;width:31px;height:31px;border-radius:50%;font-size:19px;line-height:1}
+.remove-object:hover{background:#66334c;color:#fff;border-color:#d66a88}
+.used-by-items{display:flex;align-items:center;gap:4px}
+.used-by-items img{width:30px;height:30px;object-fit:contain;background:#31253b;border:1px solid #5f4d6c;border-radius:6px}
+.game-materials-table .game-item-cell{min-width:220px}
+.game-materials-table .game-item-cell strong{max-width:240px}
+.material-warning{display:inline-block;margin:4px 0 0 46px;font-size:9px!important;color:#ffaaa4!important}
+.material-pending{background:#31203644}
+.batch-table .material-price{height:28px;min-height:28px;border-radius:18px;max-width:105px;width:98px;text-align:center;background:#1a1128;cursor:text}
+.batch-table input.quote-missing{border-color:#ef6f65;background:#34171f;color:#ffd4d4;box-shadow:0 0 0 1px #d24c5340}
+.price-hint{display:block;font-size:9px;color:#ff9287;margin-top:4px}
+.batch-table input:focus{border-color:#e5b77a!important;outline:2px solid #e5b77a55;outline-offset:1px}
+.batch-journals{background:linear-gradient(140deg,#261833,#1c1329);border-color:#59466a}
+.batch-journals summary{font-size:12px;color:#f4ca86}
+.journal-count{margin-left:6px;border:1px solid #695480;border-radius:7px;padding:2px 6px;color:#c7b3d1;font-size:9px}
+.journal-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:8px;margin:10px 0 4px}
+.journal-card{display:flex;align-items:center;gap:9px;padding:7px 9px;border:1px solid #4b365f;background:#1b1329;border-radius:9px;min-width:0}
+.journal-card>img{width:36px;height:36px;object-fit:contain}
+.journal-card>div{flex:1;min-width:0}
+.journal-card strong{display:block;font-size:11px;color:#eee0f5}
+.journal-card small{display:block;font-size:9px;color:#b2a0c7;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.journal-amount{font-size:13px;color:#f4c980;font-weight:800;white-space:nowrap}
+@media(max-width:1100px){.market-ranking table{min-width:1040px}.game-craft-table{min-width:1130px}}
+@media(max-width:680px){.market-ranking{margin:0 -3px}.game-item-cell img{width:35px;height:35px;flex-basis:35px}.city-label{font-size:11px}.market-toggle.city-control{padding:6px 8px}.market-ranking th{padding:9px!important}.batch-table td{padding:9px}.section-heading h3{font-size:13px}.journal-grid{grid-template-columns:1fr}.batch-kpis .batch-kpi{min-width:0}}
+@media(prefers-reduced-motion:reduce){.copy-name-btn,.rank-add,.market-toggle.city-control{transition:none}}
