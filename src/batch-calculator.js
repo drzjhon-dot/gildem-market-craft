@@ -3,7 +3,9 @@
 import {MARKETS,variant} from './branches.js';
 import {purchaseQuote,freshestQuotes} from './market.js';
 import {demandSignals} from './demand-signals.js';
-import {returnRate,estimatedFame,journalEstimate,purchaseNeeded,MARKET_IMPACT} from './planner.js';
+import {bestFullJournalSale,fullJournalId,assessPurchases,purchaseSummary} from './economics.js';
+import {bookEntry,walkBids} from './orderbook.js';
+import {returnRate,estimatedFame,journalEstimate,purchaseNeeded,MARKET_IMPACT,JOURNAL_CAP_SHARE,focusCostFactor} from './planner.js';
 const ROYALS=MARKETS.filter(c=>c!=='Black Market');
 const validPrice=value=>Number.isFinite(Number(value))&&Number(value)>0?Number(value):null;
 // Fabricas calidad 1: el impacto se mide contra la actividad Q1 (igual que Craft Planner).
@@ -12,11 +14,27 @@ const saleImpact=(history,units,config)=>q1Daily(history)>0
  ?Math.min(.33,units/Math.max(1,q1Daily(history)*(Number(config.saleDays)||7))*MARKET_IMPACT):0;
 export function baseStem(id){return String(id).replace(/^T\d+_/, 'T_').replace(/@\d+$/,'');}
 export function variantChoices(ids,id){const stem=baseStem(id);return ids.filter(k=>baseStem(k)===stem&&variant(k));}
-export function batchCalculate({items=[],recipes={},quotes=new Map(),history=[],config={},overrides={},now=Date.now()}={}){
+/** Reparto del Focus en la Calculadora: puntos por craft del juego y ahorro estimado por punto. */
+function allocateBatchFocus(items,recipes,quotes,config,manualBuy,now){
+ const out=new Map();let left=Number(config.focusAvailable)||0;const factor=focusCostFactor(config);
+ const options=items.map(item=>{const recipe=recipes[item.id];if(!recipe?.materials?.length)return null;
+  const points=Number(recipe.focusPerCraft)>0?Number(recipe.focusPerCraft)*factor:Number(config.focusPerCraft)>0?Number(config.focusPerCraft):0;if(!(points>0))return null;
+  const noBonus=config.bonusCity===false||item.noBonus,craftCity=!noBonus?(recipe.city||config.craftFallbackCity||'Lymhurst'):(config.craftFallbackCity||'Lymhurst');
+  const rr=returnRate({...config,focus:false,recipe,bonusCity:!noBonus}).returnPct/100,rrF=returnRate({...config,focus:true,recipe,bonusCity:!noBonus}).returnPct/100;
+  const value=recipe.materials.reduce((n,m)=>{if(m.ret===false)return n;const price=validPrice(manualBuy[m.id])||purchaseQuote(quotes,m.id,craftCity,config,now)?.landedUnitPrice||0;return n+Number(m.count)*price;},0);
+  // Planner decide cuántos crafts usan Focus; si no viene del plan, todos los del lote son candidatos.
+  const wanted=Number(item.focusQty)>0?Math.min(item.qty,Math.round(item.focusQty)):Number(item.qty);
+  return {id:item.id,points,wanted,ratio:value*(rrF-rr)/points};}).filter(Boolean).sort((a,b)=>b.ratio-a.ratio);
+ for(const o of options){const crafts=Math.min(o.wanted,Math.floor((left+1e-7)/o.points));if(crafts>0){out.set(o.id,{crafts,points:o.points});left-=crafts*o.points;}}
+ out.left=left;out.spent=(Number(config.focusAvailable)||0)-left;return out;
+}
+export function batchCalculate({items=[],recipes={},quotes=new Map(),history=[],materialHistory=[],orderbook=null,config={},overrides={},now=Date.now()}={}){
  const rows=[],materials=new Map(),pendingMaterials=new Map(),journals=[],warnings=[],craftCityByItem=new Map();
  const buy=overrides.buy||{},sellBM=overrides.sellBM||{},sellRoyal=overrides.sellRoyal||{};
- if(config.focus&&(!(Number(config.focusPerCraft)>0)||!(Number(config.focusAvailable)>0)))throw Error('Focus activado: indica Focus por fabricación y Focus disponible antes de calcular.');
- if(config.focus&&items.reduce((n,item)=>n+Number(item.qty||0),0)*Number(config.focusPerCraft)>Number(config.focusAvailable))throw Error('Focus insuficiente para todas las fabricaciones del lote. Reduce las cantidades o desactiva Focus.');
+ if(config.focus&&!(Number(config.focusAvailable)>0))throw Error('Focus activado: indica tu Focus disponible antes de calcular.');
+ // v2.5: el Focus se reparte por artículo (coste del juego × tu eficiencia FCE), primero donde más
+ // silver ahorra por punto. Si no alcanza para todo el lote, el resto se fabrica sin Focus.
+ const focusPlan=config.focus?allocateBatchFocus(items,recipes,quotes,config,overrides.buy||{},now):null;
  let capital=0,cost=0,fame=0,crafts=0,profitBM=0,profitRoyal=0,bmComplete=true,royalComplete=true;
  for(const item of items){
   const {id}=item,recipe=recipes[id],qty=Number(item.qty);
@@ -24,7 +42,10 @@ export function batchCalculate({items=[],recipes={},quotes=new Map(),history=[],
   if(!Number.isSafeInteger(qty)||qty<1||qty>100000){rows.push({id,qty,reason:'Cantidad inválida (1 a 100.000)'});bmComplete=false;royalComplete=false;continue;}
   const craftAmount=Number(recipe.amountCrafted||recipe.amount||1);
   if(!Number.isSafeInteger(craftAmount)||craftAmount<1){rows.push({id,qty,reason:'Salida por fabricación sin verificar'});bmComplete=false;royalComplete=false;continue;}
-  const rr=returnRate({...config,recipe,bonusCity:config.bonusCity!==false&&!item.noBonus}).returnPct/100;
+  const rr=returnRate({...config,focus:false,recipe,bonusCity:config.bonusCity!==false&&!item.noBonus}).returnPct/100;
+  // v2.5: crafts con Focus decididos por el Planner (solo si no activas Focus para todo el lote).
+  const focusCrafts=focusPlan?Math.min(qty,focusPlan.get(id)?.crafts||0):Math.min(qty,Math.max(0,Math.round(Number(item.focusQty)||0))),focusShare=focusCrafts/qty;
+  const rrF=focusCrafts?returnRate({...config,focus:true,recipe,bonusCity:config.bonusCity!==false&&!item.noBonus}).returnPct/100:rr;
   const craftCity=config.bonusCity!==false&&!item.noBonus?(recipe.city||config.craftFallbackCity||'Lymhurst'):(config.craftFallbackCity||'Lymhurst');
   craftCityByItem.set(id,craftCity);
   const matRows=[],missing=[];let gross=0,net=0;
@@ -34,25 +55,26 @@ export function batchCalculate({items=[],recipes={},quotes=new Map(),history=[],
    const transportPerUnit=manual?0:observed?.transportPerUnit||0;const landedUnitPrice=price?price+transportPerUnit:null;
    if(!m.id||!(count>0)||!Number.isFinite(count)){missing.push(m.id||'Material inválido');continue;}
    const maxReturn=(m.maxReturn===null||m.maxReturn===undefined)?Infinity:Number(m.maxReturn);
-   const returned=m.ret===false?0:Math.min(count*rr,Number.isFinite(maxReturn)?maxReturn:Infinity);
+   const back=r=>m.ret===false?0:Math.min(count*r,Number.isFinite(maxReturn)?maxReturn:Infinity);
+   const returned=back(rr)*(1-focusShare)+back(rrF)*focusShare,returnedMax=Math.max(back(rr),focusCrafts?back(rrF):0);
    const effective=count-returned;
    // Preserve unquoted materials for manual pricing. Never treat an unknown price as zero.
    if(!(price>0)){
     missing.push(m.id);
-    matRows.push({id:m.id,count,returned,price:null,city:null,observedAt:null,manual:false,netCount:effective,missing:true});
+    matRows.push({id:m.id,count,returned,returnedMax,price:null,city:null,observedAt:null,manual:false,netCount:effective,missing:true});
     continue;
    }
    gross+=count*landedUnitPrice;net+=effective*landedUnitPrice;
-   matRows.push({id:m.id,count,returned,price,landedUnitPrice,transportPerUnit,city,craftCity,
+   matRows.push({id:m.id,count,returned,returnedMax,price,landedUnitPrice,transportPerUnit,city,craftCity,
     savingsVsCraftCity:manual?null:observed?.savingsVsCraftCity,riskRoute:manual?false:observed?.riskRoute,
     observedAt:manual?null:new Date(observed.time).toISOString(),manual:!!manual,netCount:effective});
   }
   const fameInfo=estimatedFame(id,recipe,config.premium!==false),itemFame=(fameInfo?.value||0)*qty;
-  const base={id,qty,craftAmount,units:qty*craftAmount,craftCity,returnPct:rr*100,fame:itemFame,fameEstimated:fameInfo?.estimated||false,materials:matRows};
+  const base={id,qty,craftAmount,units:qty*craftAmount,craftCity,returnPct:(rr*(1-focusShare)+rrF*focusShare)*100,focusCrafts,fame:itemFame,fameEstimated:fameInfo?.estimated||false,materials:matRows};
   if(missing.length){
    // The preview ledger helps fill the missing quotes while remaining excluded from investment totals.
    for(const m of matRows){const key=m.id+'|'+(m.city||'Sin cotización')+'|'+craftCity;
-    const prev=pendingMaterials.get(key)||{id:m.id,city:m.city,unitPrice:m.price,gross:0,net:0,returned:0,lastReturn:0,manual:m.manual,missing:!m.price,usedBy:[],pending:true};prev.lastReturn=Math.max(prev.lastReturn,m.returned);
+    const prev=pendingMaterials.get(key)||{id:m.id,city:m.city,unitPrice:m.price,gross:0,net:0,returned:0,lastReturn:0,manual:m.manual,missing:!m.price,usedBy:[],pending:true};prev.lastReturn=Math.max(prev.lastReturn,m.returnedMax??m.returned);
     prev.gross+=m.count*qty;prev.net+=m.netCount*qty;prev.returned+=m.returned*qty;
     if(!prev.usedBy.includes(id))prev.usedBy.push(id);
     pendingMaterials.set(key,prev);
@@ -65,8 +87,8 @@ export function batchCalculate({items=[],recipes={},quotes=new Map(),history=[],
   base.capital=itemCapital;base.cost=itemCost;
   capital+=itemCapital;cost+=itemCost;crafts+=qty;fame+=itemFame;
   for(const m of matRows){const key=m.id+'|'+m.city+'|'+m.craftCity;const old=materials.get(key)||{id:m.id,city:m.city,unitPrice:m.price,landedUnitPrice:m.landedUnitPrice,transportPerUnit:m.transportPerUnit||0,craftCity:m.craftCity,
-    savingsVsCraftCity:m.savingsVsCraftCity||0,riskRoute:m.riskRoute||false,gross:0,net:0,returned:0,lastReturn:0,manual:m.manual,usedBy:[]};
-   old.lastReturn=Math.max(old.lastReturn,m.returned);old.gross+=m.count*qty;old.net+=m.netCount*qty;old.returned+=m.returned*qty;if(!old.usedBy.includes(id))old.usedBy.push(id);materials.set(key,old);
+    savingsVsCraftCity:m.savingsVsCraftCity||0,riskRoute:m.riskRoute||false,observedAt:m.observedAt||null,gross:0,net:0,returned:0,lastReturn:0,manual:m.manual,usedBy:[]};
+   old.lastReturn=Math.max(old.lastReturn,m.returnedMax??m.returned);old.gross+=m.count*qty;old.net+=m.netCount*qty;old.returned+=m.returned*qty;if(!old.usedBy.includes(id))old.usedBy.push(id);materials.set(key,old);
   }
   const j=journalEstimate(id,fameInfo,qty);if(j)journals.push({...j,forId:id,estimatedQty:Math.ceil(j.fractional)});
   const feeBM=(Number(config.tax)||0)/100,feeRoyal=(Number(config.tax)+Number(config.listingFee))/100;
@@ -77,7 +99,12 @@ export function batchCalculate({items=[],recipes={},quotes=new Map(),history=[],
   const impactBM=saleImpact(bmHist,base.units,config);
   base.bmPrice=bm?.price??null;base.bmManual=!!manualBM;base.bmObserved=bm&&!manualBM?new Date(bm.time).toISOString():null;
   base.bmHistorical=!!bmHist;base.impactBM=impactBM*100;
-  base.profitBM=bm?base.units*bm.price*(1-feeBM)*(1-impactBM)-itemCost:null;
+  // v2.6: con libro del Mercado Negro, se recorren las pujas reales; el resto va al modelo de impacto.
+  const bmBook=!manualBM&&orderbook?.available?bookEntry(orderbook,id,'Black Market',1,now)?.r:null;
+  if(bm&&bmBook?.length){const w=walkBids(bmBook,base.units,bm.price),restImpact=saleImpact(bmHist,w.remaining,config);
+   base.bmBookUnits=w.units;base.profitBM=(w.revenue+w.remaining*bm.price*(1-restImpact))*(1-feeBM)-itemCost;
+   base.impactBM=base.units?(1-(w.revenue+w.remaining*bm.price*(1-restImpact))/(base.units*bm.price))*100:0;}
+  else base.profitBM=bm?base.units*bm.price*(1-feeBM)*(1-impactBM)-itemCost:null;
   const royalCandidates=manualRoyal?[{city:'Royal (precio manual)',price:manualRoyal,time:now,manual:true}]:ROYALS.flatMap(city=>freshestQuotes(quotes,id,city,'ask',Number(config.maxQuoteHours)||48,now).map(q=>({city,price:q.price,time:q.time,manual:false})));
   const best=royalCandidates.map(q=>{const h=history.find(x=>x.id===id&&x.city===q.city),impact=saleImpact(h,base.units,config);return {...q,impact,historical:!!h,profit:base.units*q.price*(1-feeRoyal)*(1-impact)-itemCost};}).sort((a,b)=>b.profit-a.profit)[0];
   base.royalCity=best?.city||null;base.royalPrice=best?.price??null;base.royalManual=!!best?.manual;base.royalObserved=best&&!best.manual?new Date(best.time).toISOString():null;
@@ -86,7 +113,7 @@ export function batchCalculate({items=[],recipes={},quotes=new Map(),history=[],
   if(base.profitRoyal===null)royalComplete=false;else profitRoyal+=base.profitRoyal;
   rows.push(base);
  }
- const grouped=[...materials.values()].map(m=>{const buy=purchaseNeeded(m.gross,Math.max(0,m.net),m.lastReturn);return {...m,buy,reuse:Math.max(0,Math.ceil(m.gross-1e-8)-buy),total:buy*m.landedUnitPrice};}).sort((a,b)=>a.id.localeCompare(b.id));
+ const grouped=assessPurchases([...materials.values()].map(m=>{const buy=purchaseNeeded(m.gross,Math.max(0,m.net),m.lastReturn);return {...m,buy,reuse:Math.max(0,Math.ceil(m.gross-1e-8)-buy),total:buy*m.landedUnitPrice};}).sort((a,b)=>a.id.localeCompare(b.id)),materialHistory,now,orderbook);
  const pending=[...pendingMaterials.values()].map(m=>({...m,buy:purchaseNeeded(m.gross,Math.max(0,m.net),m.lastReturn),total:null})).sort((a,b)=>a.id.localeCompare(b.id));
  // Journals are optional, estimates from fame. Aggregate by exact journal ID:
  // one T6 warrior journal across several T6 crafts appears once, not N separate rows.
@@ -105,12 +132,23 @@ export function batchCalculate({items=[],recipes={},quotes=new Map(),history=[],
   const price=manual||observed?.price||null,city=manual?'Manual':observed?.city||null;
   const transferCost=manual?0:target?observed?.transportPerUnit||0:(config.inboundTransportPerUnit||0);
   const landedUnitPrice=price?price+transferCost:null;
-  return {id:j.id,city,unitPrice:price,landedUnitPrice,transportPerUnit:transferCost,craftCity:target||'Varias ciudades',
+  const full=bestFullJournalSale(quotes,fullJournalId(j.id),config,now),manualFull=validPrice(overrides.sellJournal?.[fullJournalId(j.id)]);
+  const fullNet=manualFull?manualFull*(1-(Number(config.tax)||0)/100):full?.net??null;
+  const value=landedUnitPrice&&fullNet?Math.max(0,fullNet-landedUnitPrice)*j.fractional:null;
+  return {id:j.id,fullId:fullJournalId(j.id),fullNet,fullCity:manualFull?'Manual':full?.city||null,fullMode:manualFull?'precio manual':full?.mode||null,journalValue:value,city,unitPrice:price,landedUnitPrice,transportPerUnit:transferCost,craftCity:target||'Varias ciudades',
    savingsVsCraftCity:observed?.savingsVsCraftCity||0,riskRoute:observed?.riskRoute||false,
    buy:j.estimatedQty,total:landedUnitPrice?landedUnitPrice*j.estimatedQty:null,
    gross:j.estimatedQty,net:j.estimatedQty,returned:0,manual:!!manual,usedBy:j.usedBy,displayName:`${j.name} T${j.tier}`,
    missing:!price,pending:!price,journal:true,tier:j.tier,estimated:true};
  });
+ // Mismo tope que el Planner: los diarios no cuentan más del 25 % de la venta del lote en Mercado Negro.
+ const bmSales=rows.filter(r=>!r.reason&&r.bmPrice).reduce((n,r)=>n+r.units*r.bmPrice,0);
+ const rawJournal=journalRows.reduce((n,j)=>n+(j.journalValue||0),0);
+ const journalValue=config.journalProfit===false?0:Math.min(rawJournal,bmSales*JOURNAL_CAP_SHARE);
+ if(config.journalProfit!==false&&rawJournal>journalValue+1)warnings.push(`Diarios llenos limitados al 25 % de la venta del lote (+${Math.round(journalValue).toLocaleString('es-ES')} de ${Math.round(rawJournal).toLocaleString('es-ES')}).`);
+ const purchase=purchaseSummary(grouped);
+ if(purchase.hard)warnings.push(`${purchase.hard} materiales necesitan más de 3 días de mercado para comprarlos: el precio real subirá.`);
+ if(purchase.inflated)warnings.push(`${purchase.inflated} materiales cotizan ≥25 % por encima de su media reciente: quizá convenga esperar.`);
  const hasMissing=rows.some(r=>r.reason);
  if(hasMissing)warnings.push('Algunos artículos no tienen materiales o recetas verificadas; no se incluyen en los totales.');
  if(rows.some(r=>r.capital&&!r.bmHistorical&&!r.royalHistorical))warnings.push('Sin historial en el destino de algunos artículos: no se estima impacto de precio para esas ventas.');
@@ -119,10 +157,11 @@ export function batchCalculate({items=[],recipes={},quotes=new Map(),history=[],
  if(journalRows.some(m=>m.missing))warnings.push('Diarios opcionales sin cotización: no forman parte del coste de crafting ni del profit.');
  return {rows,materials:[...grouped,...pending,...journalRows],journals:combinedJournals,warnings,
   totals:{capital,cost,fame,crafts,units:rows.filter(r=>!r.reason).reduce((n,r)=>n+r.units,0),
-   profitBM:bmComplete&&!hasMissing?profitBM:null,profitRoyal:royalComplete&&!hasMissing?profitRoyal:null,
+   profitBM:bmComplete&&!hasMissing?profitBM+journalValue:null,profitRoyal:royalComplete&&!hasMissing?profitRoyal+journalValue:null,journalValue,
+   purchaseExtraCost:purchase.extraCost,purchaseLarge:purchase.large,purchaseHard:purchase.hard,purchaseInflated:purchase.inflated,
    buyCapital:grouped.reduce((n,m)=>n+m.total,0),journalCost:journalRows.reduce((n,m)=>n+(m.total||0),0),
    purchaseTransportEstimated:grouped.reduce((n,m)=>n+m.buy*(m.transportPerUnit||0),0),
    journalTransportEstimated:journalRows.reduce((n,m)=>n+m.buy*(m.transportPerUnit||0),0),
    royaltyPurchaseCities:[...new Set(grouped.filter(m=>!m.manual).map(m=>m.city))],
-   journalsUnpriced:journalRows.filter(m=>m.missing).length,incomplete:rows.filter(r=>r.reason).length}};
+   journalsUnpriced:journalRows.filter(m=>m.missing).length,focusSpent:focusPlan?focusPlan.spent:null,focusCrafts:rows.reduce((n,r)=>n+(r.focusCrafts||0),0),incomplete:rows.filter(r=>r.reason).length}};
 }

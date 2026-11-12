@@ -8,6 +8,7 @@
  * focus, per-SKU exposure, group exposure and the observed Q1 volume cap.
  */
 import {variant} from './branches.js';
+import {walkBids} from './orderbook.js';
 const finite=x=>Number.isFinite(Number(x))?Number(x):0;
 const cap=(x,a,b)=>Math.min(b,Math.max(a,x));
 const family=id=>String(id||'').replace(/^T[1-8]_/,'').replace(/@[1-4]$/,'');
@@ -17,10 +18,25 @@ function marginalImpact(r,qty,c){const units=qty*finite(r.craftAmount||1),daily=
  // Mismo coeficiente que planner.deriveImpact: el impacto depende del mercado, no del estilo.
  return cap(units/Math.max(1,daily*finite(c.saleDays||7))*.75,0,.33);
 }
-export function estimateRoute(r,qty,c){const units=qty*finite(r.craftAmount||1),impact=marginalImpact(r,qty,c);
- const revenue=finite(r.planningPrice)*units*(1-finite(c.sellHaircutPct)/100)*(1-finite(r.marketFee))*(1-impact);
- const cost=finite(r.expectedCostPerCraft)*qty;
- return {revenue,cost,profit:revenue-cost,stressProfit:revenue*.9-cost,impact:impact*100,units};
+/**
+ * Venta bruta (antes de comisiones) de N unidades.
+ * v2.6: con libro de órdenes del Mercado Negro, las primeras unidades se venden recorriendo las pujas
+ * reales (sin superar el precio de planificación); el resto, a órdenes futuras con el modelo de impacto.
+ */
+export function grossSale(r,units,c){
+ if(!(units>0))return {gross:0,impact:0,bookUnits:0};
+ const price=finite(r.planningPrice),daily=finite(r.history?.effectiveQuality1DailyUnits??r.history?.quality1DailyUnits??r.history?.averageDailyUnits);
+ const impactOf=u=>cap(u/Math.max(1,daily*finite(c.saleDays||7))*.75,0,.33);
+ if(Array.isArray(r.bookBids)&&r.bookBids.length){const w=walkBids(r.bookBids,units,price);const rest=w.remaining,impact=impactOf(rest);
+  const gross=w.revenue+price*rest*(1-impact);return {gross,impact:units?1-gross/(price*units):0,bookUnits:w.units};}
+ const impact=impactOf(units);return {gross:price*units*(1-impact),impact,bookUnits:0};
+}
+/** fq: crafts de la ruta que usan Focus (coste neto menor por más retorno). */
+export function estimateRoute(r,qty,c,fq=0){const units=qty*finite(r.craftAmount||1),sale=grossSale(r,units,c),impact=Math.max(0,sale.impact);
+ const revenue=sale.gross*(1-finite(c.sellHaircutPct)/100)*(1-finite(r.marketFee));
+ const focused=Math.min(qty,Math.max(0,fq)),withFocus=Number.isFinite(r.costWithFocus)?r.costWithFocus:finite(r.expectedCostPerCraft);
+ const cost=finite(r.expectedCostPerCraft)*(qty-focused)+withFocus*focused;
+ return {revenue,cost,profit:revenue-cost,stressProfit:revenue*.9-cost,impact:impact*100,units,bookUnits:sale.bookUnits};
 }
 function exposures(routes,c){const enabled=routes.filter(r=>r.maxCrafts>=1&&finite(r.grossCapitalPerCraft)<=c.budget);
  const tiers=new Set(enabled.map(r=>variant(r.id)?.tier)),enchants=new Set(enabled.map(r=>variant(r.id)?.ench));
@@ -31,7 +47,7 @@ function exposures(routes,c){const enabled=routes.filter(r=>r.maxCrafts>=1&&fini
   city:markets.size>1?Number(c.maxMarketSharePct??100):100};
 }
 function freshState(routes,c){return {budgetLeft:c.budget,focusLeft:c.focus?Number(c.focusAvailable):Infinity,loss:0,
-  qty:new Map(),byItem:new Map(),tier:new Map(),ench:new Map(),family:new Map(),city:new Map(),rejections:new Map(),
+  qty:new Map(),focusQty:new Map(),byItem:new Map(),tier:new Map(),ench:new Map(),family:new Map(),city:new Map(),rejections:new Map(),
   routes,activeCount:0};
 }
 const sum=(map,k)=>map.get(k)||0;
@@ -44,13 +60,14 @@ function evalNext(s,r,c,limit,exposure){const key=keyOf(r),qty=sum(s.qty,key),ou
  if(used>=styleLimit)return out('Límite de volumen de calidad 1 / estilo');
  if(!used&&s.activeCount>=limit)return out('Límite de variantes del estilo');
  if(gross>s.budgetLeft+1e-7)return out('Presupuesto bruto agotado');
- if(c.focus&&finite(r.focusPerCraft)>s.focusLeft+1e-7)return out('Focus agotado');
+ // v2.5: el Focus es opcional por craft; si no queda, el craft se hace sin Focus.
+ const fq=sum(s.focusQty,key),useFocus=!!(c.focus&&finite(r.focusPerCraft)>0&&Number.isFinite(r.costWithFocus)&&r.costWithFocus<finite(r.expectedCostPerCraft)&&finite(r.focusPerCraft)<=s.focusLeft+1e-7);
  const byItem=sum(s.byItem,r.id)+gross;
  if(byItem>c.budget*c.maxCapitalSharePct/100+1e-7)return out('Capital máximo por artículo');
  const v=variant(r.id)||{tier:0,ench:0};
  const groups=[['tier',v.tier,s.tier],['ench',v.ench,s.ench],['family',familyGroup(r.id),s.family],['city',r.city,s.city]];
  if(c.diversify){for(const [field,k,map] of groups){if(sum(map,k)+gross>c.budget*exposure[field]/100+1e-7)return out(`Concentración máxima por ${field}`);}}
- const before=estimateRoute(r,qty,c),after=estimateRoute(r,qty+1,c);
+ const before=estimateRoute(r,qty,c,fq),after=estimateRoute(r,qty+1,c,fq+(useFocus?1:0));
  const marginal=after.profit-before.profit;
  const balanceLoss=s.loss-Math.max(0,-before.profit)+Math.max(0,-after.profit);
  if(c.goal==='fame'){
@@ -61,19 +78,22 @@ function evalNext(s,r,c,limit,exposure){const key=keyOf(r),qty=sum(s.qty,key),ou
   if(after.profit<=0||after.profit/((qty+1)*gross)*100<c.minRoiPct)return out('Beneficio / ROI insuficiente');
   if(c.stressGuard&&(c.style==='prudent'||!c.diversify)&&after.stressProfit<0)return out('Escenario de estrés negativo');
  }
- return {ok:true,marginal,before,after,balanceLoss,gross,byItem,groups};
+ return {ok:true,marginal,before,after,balanceLoss,gross,byItem,groups,useFocus};
 }
 function apply(s,r,c,check){const key=keyOf(r),first=!s.qty.has(key),v=variant(r.id)||{tier:0,ench:0};
- increase(s.qty,key,1);s.budgetLeft-=check.gross;s.focusLeft-=finite(r.focusPerCraft);s.loss=check.balanceLoss;
+ increase(s.qty,key,1);s.budgetLeft-=check.gross;if(check.useFocus){increase(s.focusQty,key,1);s.focusLeft-=finite(r.focusPerCraft);}s.loss=check.balanceLoss;
  increase(s.byItem,r.id,check.gross);increase(s.tier,v.tier,check.gross);increase(s.ench,v.ench,check.gross);
  increase(s.family,familyGroup(r.id),check.gross);increase(s.city,r.city,check.gross);if(first)s.activeCount++;
 }
 function removeOne(s,r,c){
  const key=keyOf(r),oldQty=sum(s.qty,key),gross=finite(r.grossCapitalPerCraft);
  if(oldQty<1)throw Error('Intento de retirar un craft no asignado');
- const before=estimateRoute(r,oldQty,c),after=estimateRoute(r,oldQty-1,c);
+ // Retira primero un craft sin Focus; si todos usan Focus, devuelve su Focus.
+ const fq=sum(s.focusQty,key),dropFocus=fq>=oldQty;
+ const before=estimateRoute(r,oldQty,c,fq),after=estimateRoute(r,oldQty-1,c,dropFocus?fq-1:fq);
  if(oldQty===1){s.qty.delete(key);s.activeCount--;}else s.qty.set(key,oldQty-1);
- s.budgetLeft+=gross;s.focusLeft+=finite(r.focusPerCraft);
+ if(dropFocus){if(fq===1)s.focusQty.delete(key);else s.focusQty.set(key,fq-1);s.focusLeft+=finite(r.focusPerCraft);}
+ s.budgetLeft+=gross;
  s.loss=s.loss-Math.max(0,-before.profit)+Math.max(0,-after.profit);
  const v=variant(r.id)||{tier:0,ench:0};
  for(const [map,k] of [[s.byItem,r.id],[s.tier,v.tier],[s.ench,v.ench],[s.family,familyGroup(r.id)],[s.city,r.city]]){
@@ -150,12 +170,30 @@ function solve(routes,c,mode,exposure){const s=freshState(routes,c),caplines=c.s
   if(!best)break;apply(s,best,c,bestCheck);
  }
  polish(s,routes,c,caplines,exposure);
- const chosen=routes.filter(r=>sum(s.qty,keyOf(r))>0).map(r=>({row:r,qty:sum(s.qty,keyOf(r))}));
- const profit=chosen.reduce((v,{row,qty})=>v+estimateRoute(row,qty,c).profit,0);
+ reassignFocus(s,routes,c);
+ // Tras reasignar el Focus ninguna ruta puede quedar en pérdida (objetivo silver/equilibrado):
+ // se retiran crafts de esa ruta y se vuelve a repartir el Focus.
+ if(c.goal!=='fame')for(let round=0;round<4;round++){let changed=false;
+  for(const r of routes){let q=sum(s.qty,keyOf(r));
+   while(q>0&&estimateRoute(r,q,c,sum(s.focusQty,keyOf(r))).profit<=0){removeOne(s,r,c);q--;changed=true;}}
+  if(!changed)break;reassignFocus(s,routes,c);}
+ const chosen=routes.filter(r=>sum(s.qty,keyOf(r))>0).map(r=>({row:r,qty:sum(s.qty,keyOf(r)),focusQty:sum(s.focusQty,keyOf(r))}));
+ const profit=chosen.reduce((v,{row,qty,focusQty})=>v+estimateRoute(row,qty,c,focusQty).profit,0);
  const fame=chosen.reduce((v,{row,qty})=>v+finite(row.expectedFamePerCraft)*qty,0);
  const diversity={tiers:new Set(chosen.map(x=>variant(x.row.id)?.tier)).size,enchants:new Set(chosen.map(x=>variant(x.row.id)?.ench)).size,
   families:new Set(chosen.map(x=>familyGroup(x.row.id))).size,variants:new Set(chosen.map(x=>x.row.id)).size,cities:new Set(chosen.map(x=>x.row.city)).size};
  return {...s,mode,profit,fame,diversity,chosen,capital:c.budget-s.budgetLeft};
+}
+/**
+ * v2.5 · Reparto final del Focus: con las cantidades ya decididas, el Focus se asigna
+ * a los crafts que más silver ahorran por punto de Focus (mochila fraccional, greedy por ratio).
+ */
+function reassignFocus(s,routes,c){if(!c.focus)return;
+ const total=Number(c.focusAvailable)||0;s.focusQty=new Map();s.focusLeft=total;
+ const chosen=routes.filter(r=>sum(s.qty,keyOf(r))>0&&finite(r.focusPerCraft)>0&&Number.isFinite(r.costWithFocus)&&r.costWithFocus<finite(r.expectedCostPerCraft))
+  .map(r=>({r,ratio:(finite(r.expectedCostPerCraft)-r.costWithFocus)/finite(r.focusPerCraft)})).sort((a,b)=>b.ratio-a.ratio);
+ for(const {r} of chosen){const units=Math.min(sum(s.qty,keyOf(r)),Math.floor((s.focusLeft+1e-7)/finite(r.focusPerCraft)));
+  if(units>0){s.focusQty.set(keyOf(r),units);s.focusLeft-=units*finite(r.focusPerCraft);}}
 }
 /** Pure engine interface. The caller converts the chosen route quantities into a shopping ledger. */
 export function optimizePortfolio(candidates,config){const c=config,keys=new Map();
@@ -165,7 +203,7 @@ export function optimizePortfolio(candidates,config){const c=config,keys=new Map
  const value=s=>c.goal==='fame'?s.fame+Math.min(0,s.profit)*.02:
   c.goal==='silver'?s.profit:s.profit+(s.fame*Math.max(0,Math.min(1,s.profit/Math.max(1,s.capital)))*.001);
  const ordered=solutions.sort((a,b)=>value(b)-value(a)||b.profit-a.profit||b.diversity.variants-a.diversity.variants);
- const best=ordered[0];const selected=best.chosen.map(x=>({...x.row,qty:x.qty}));
+ const best=ordered[0];const selected=best.chosen.map(x=>({...x.row,qty:x.qty,focusQty:x.focusQty||0}));
  const warnings=[];
  if(c.diversify){const availableTiers=new Set(routes.filter(x=>x.maxCrafts>0&&x.grossCapitalPerCraft<=c.budget).map(x=>variant(x.id)?.tier));
   for(const tier of c.tiers.filter(t=>Number(t)>=6))if(availableTiers.has(Number(tier))&&!selected.some(r=>variant(r.id)?.tier===Number(tier)))warnings.push(`T${tier}: no encajó en límites conjuntos de beneficio, liquidez, capital o diversidad.`);

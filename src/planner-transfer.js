@@ -13,12 +13,12 @@ export function markedItemsForPlanner(rows=[],marks=new Set(),recipes={},existin
 }
 export function transferPlanRows(rows=[],{maxItems=150,maxCrafts=100000}={}){
  if(!Array.isArray(rows)||!rows.length)throw Error('Genera primero un plan con rutas rentables.');
- const grouped=new Map(),cities=new Map();
+ const grouped=new Map(),cities=new Map(),focus=new Map();
  for(const row of rows){if(!validId(row?.id))throw Error('ID de artículo no válido');const qty=Number(row.qty);
   if(!Number.isSafeInteger(qty)||qty<1)throw Error('Cantidad inválida en el plan');
-  grouped.set(row.id,(grouped.get(row.id)||0)+qty);
+  grouped.set(row.id,(grouped.get(row.id)||0)+qty);focus.set(row.id,(focus.get(row.id)||0)+Math.max(0,Math.min(qty,Math.round(Number(row.focusQty)||0))));
   if(!cities.has(row.id))cities.set(row.id,new Set());if(row.city)cities.get(row.id).add(row.city);}
  if(grouped.size>maxItems)throw Error('Demasiadas variantes para Calculadora');
  if([...grouped.values()].some(q=>q>maxCrafts))throw Error('La cantidad supera 100.000 fabricaciones');
- return {items:[...grouped].map(([id,qty])=>({id,qty,noBonus:false})),summary:[...grouped].map(([id,qty])=>({id,qty,cities:[...cities.get(id)]})),totalCrafts:[...grouped.values()].reduce((a,b)=>a+b,0)};
+ return {items:[...grouped].map(([id,qty])=>({id,qty,noBonus:false,...(focus.get(id)?{focusQty:focus.get(id)}:{})})),summary:[...grouped].map(([id,qty])=>({id,qty,cities:[...cities.get(id)]})),totalCrafts:[...grouped.values()].reduce((a,b)=>a+b,0)};
 }

@@ -855,3 +855,39 @@ select:focus-visible,input:focus-visible,button:focus-visible,summary:focus-visi
 .manual-calculator .calculator-buy-settings select,.manual-calculator .calculator-buy-settings input[type=number]{padding:6px 9px!important;min-height:34px!important;border:1px solid #243040!important;background:#05070a!important;color:#eef3f8!important;border-radius:4px!important}
 .calculator-buy-settings>label{color:#b9c4d1!important}
 .market-ranking th,.result-table th,.batch-table th{text-transform:uppercase!important;letter-spacing:.09em!important;font-family:var(--hud-font)!important}
+
+/* v2.5 · ganancias extra, compras y diario de planes (HUD) */
+.plan-extras{display:flex;flex-wrap:wrap;gap:8px;margin:4px 0 12px}
+.extra-chip{display:inline-flex;align-items:center;gap:6px;font-size:12px;padding:6px 10px;border:1px solid #243040;border-radius:4px;background:#0b0f14;color:#c9d3df}
+.extra-chip b{color:#fff;font-family:var(--hud-font);font-size:14px}
+.extra-chip.good{border-color:#1f6b42;background:#07150e;color:#a8f0c6}.extra-chip.good b{color:#3ddc84}
+.extra-chip.warn{border-color:#8a5f16;background:#1a1204;color:#ffd27a}.extra-chip.warn b{color:#ffc24d}
+.row-extras{display:inline-block;margin-top:3px;color:#ffd27a;font-weight:600}
+.buy-tags{display:flex;flex-wrap:wrap;justify-content:flex-end;gap:4px;margin:4px 0 2px}
+.buy-tag{font-size:9.5px;font-weight:700;padding:1px 6px;border-radius:3px;border:1px solid #2c3a4a;color:#b9c4d1;background:#0b0f14;white-space:nowrap;font-family:var(--hud-font);letter-spacing:.04em;text-transform:uppercase}
+.buy-tag.good{color:#8ff0b8;border-color:#1f6b42;background:#07150e}.buy-tag.mid{color:#ffd27a;border-color:#6b4d16;background:#140e04}
+.buy-tag.warn{color:#ff9d9d;border-color:#7a2626;background:#1c0808}.buy-tag.plain{color:#7f8ea0}
+.journal-sale{display:block;color:#8ff0b8;font-size:10px;margin-top:3px}.journal-sale b{color:#3ddc84}
+.advanced-config{margin-top:14px;border:1px solid #1f2a36;border-radius:6px;background:#080b0f;padding:10px 14px}
+.advanced-config>summary{list-style:none;cursor:pointer;display:flex;justify-content:space-between;align-items:center;gap:10px}
+.advanced-config>summary::-webkit-details-marker{display:none}
+.advanced-config>summary strong{font-family:var(--hud-font);text-transform:uppercase;letter-spacing:.08em;color:#fff}
+.advanced-config>summary small{color:#7f8ea0;margin-left:8px}
+.advanced-config[open]>summary{margin-bottom:12px}.advanced-config[open] .drawer-arrow{transform:rotate(180deg)}
+.quality-probs{grid-template-columns:repeat(5,minmax(0,1fr))!important}
+.plan-log{display:grid;gap:10px}
+.plan-log-entry{border:1px solid #1f2a36;border-radius:6px;background:#080b0f;padding:12px 14px}
+.plan-log-head{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+.plan-log-head strong{font-family:var(--hud-font);font-size:15px;letter-spacing:.05em;color:#fff;display:block}
+.plan-log-head small{color:#8a97a8}
+.plan-log-result{margin-top:10px;border-top:1px solid #18212b;padding-top:10px}
+.plan-log-kpis{display:flex;flex-wrap:wrap;gap:16px;align-items:center;font-size:12px;color:#b9c4d1;margin-bottom:6px}
+.plan-log-kpis b{font-family:var(--hud-font);font-size:17px;margin-left:4px}
+.plan-log-result details summary{cursor:pointer;color:#ffd27a;font-size:12px;margin:6px 0}
+@media(max-width:700px){.quality-probs{grid-template-columns:repeat(2,minmax(0,1fr))!important}}
+.batch-focus-input{width:92px;margin-left:4px;background:#05070a!important;border:1px solid #243040!important;border-radius:4px;color:#eef3f8;padding:4px 6px}
+/* v2.6 · libro de órdenes */
+.ob-status{display:flex;flex-wrap:wrap;align-items:center;gap:6px;font-size:12px;padding:8px 12px;margin:10px 0;border:1px solid #1f2a36;border-left:3px solid #3a4b5e;border-radius:4px;background:#080b0f;color:#b9c4d1}
+.ob-status b{font-family:var(--hud-font);text-transform:uppercase;letter-spacing:.07em;color:#fff}
+.ob-on{border-left-color:var(--ok)}.ob-on b{color:#8ff0b8}
+.ob-old{border-left-color:var(--hud)}.ob-off{border-left-color:#3a4b5e}

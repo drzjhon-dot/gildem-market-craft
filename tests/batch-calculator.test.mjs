@@ -33,8 +33,12 @@ test('sin historial no se simula impacto; con historial sí aplica el volumen',(
  assert.ok(withHistory.rows[0].profitBM<without.rows[0].profitBM);
 });
 
-test('Focus insuficiente para la cantidad del lote se rechaza, sin descuento ficticio',()=>{
- assert.throws(()=>batchCalculate({...base,config:{...base.config,focus:true,focusPerCraft:500,focusAvailable:600}}),/Focus insuficiente/);
+test('v2.5 Focus insuficiente: solo los crafts que alcanzan usan Focus, sin descuento ficticio',()=>{
+ const all=batchCalculate({...base,config:{...base.config,focus:true,focusPerCraft:500,focusAvailable:100000}});
+ const part=batchCalculate({...base,config:{...base.config,focus:true,focusPerCraft:500,focusAvailable:600}});
+ assert.equal(part.rows[0].focusCrafts,1);assert.equal(part.totals.focusSpent,500);
+ assert(all.rows[0].focusCrafts>=part.rows[0].focusCrafts);
+ assert(part.rows[0].cost>=all.rows[0].cost,'menos Focus nunca abarata el lote');
 });
 
 test('material sin cotización sigue visible y editable sin contabilizar cero silver',()=>{

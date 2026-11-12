@@ -61,7 +61,8 @@ test('formula de retorno 18+15=>24.812% y Focus obligatorio verificado',()=>{
  const r=returnRate({recipe:{city:'Martlock'},bonusCity:true});
  assert(Math.abs(r.returnPct-24.81203)<0.001);
  assert(returnRate({recipe:{city:'Martlock'},focus:true}).returnPct>r.returnPct);
- assert.throws(()=>settings({...DEFAULTS,focus:true,focusPerCraft:0,focusAvailable:10000}),/Focus/);
+ assert.throws(()=>settings({...DEFAULTS,focus:true,focusPerCraft:0,focusAvailable:0}),/Focus/);
+ assert.doesNotThrow(()=>settings({...DEFAULTS,focus:true,focusPerCraft:0,focusAvailable:10000}),'v2.5: el coste de Focus puede venir de la receta del juego');
  assert.doesNotThrow(()=>settings({...DEFAULTS,focus:true,focusPerCraft:120,focusAvailable:1000}));
 });
 test('ningún plan sin historial, sin receta o sin precios reales',()=>{

@@ -1,12 +1,12 @@
 {
   "name": "gildem-market-craft-standalone",
-  "version": "2.4.0",
+  "version": "2.6.0",
   "private": true,
   "type": "module",
   "description": "Top Mercado (craft y refinamiento), Craft Planner optimizado, Calculadora y modo móvil, AODP West",
   "scripts": {
     "dev": "node scripts/dev.mjs",
-    "test": "node --test tests/*.test.mjs",
+    "test": "node --test tests/*.test.mjs collector/orderbook-core.test.mjs",
     "build": "npm test && node scripts/build.mjs"
   },
   "engines": {

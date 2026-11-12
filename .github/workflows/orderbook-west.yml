@@ -1,0 +1,66 @@
+# Gildem · Libro de órdenes de AODP West
+# Cada 3 horas escucha el canal público de órdenes de AODP West y publica un resumen
+# en la rama «orderbook-data». La web lo lee desde ahí (raw.githubusercontent.com).
+# La rama se reescribe en un único commit para que el repositorio no crezca.
+name: Libro de órdenes West
+
+on:
+  schedule:
+    - cron: '23 */3 * * *'   # cada 3 horas, minuto 23 (UTC)
+  workflow_dispatch:
+    inputs:
+      minutes:
+        description: 'Minutos escuchando a AODP'
+        required: false
+        default: '25'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: orderbook-west
+  cancel-in-progress: false
+
+jobs:
+  collect:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - name: Código del proyecto
+        uses: actions/checkout@v4
+
+      - name: Node 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Dependencias del recolector
+        run: npm ci --prefix collector --no-audit --no-fund
+
+      - name: Pruebas del recolector
+        run: npm test --prefix collector
+
+      - name: Estado anterior (rama orderbook-data)
+        run: |
+          mkdir -p orderbook-data
+          if git ls-remote --exit-code --heads origin orderbook-data >/dev/null 2>&1; then
+            git fetch --depth 1 origin orderbook-data
+            git --work-tree=orderbook-data checkout origin/orderbook-data -- . || true
+            git reset -q
+          fi
+          ls -la orderbook-data || true
+
+      - name: Escuchar AODP West
+        run: node collector/collect.mjs --dir orderbook-data --minutes "${{ github.event.inputs.minutes || '25' }}"
+
+      - name: Publicar resumen en orderbook-data
+        run: |
+          cd orderbook-data
+          git init -q
+          git config user.name "gildem-orderbook-bot"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          printf '# Gildem · libro de órdenes AODP West\nGenerado automáticamente por .github/workflows/orderbook-west.yml. No editar.\n' > README.md
+          git checkout -q -b orderbook-data
+          git add -A
+          git commit -q -m "Libro de órdenes West $(date -u +'%Y-%m-%d %H:%M') UTC"
+          git push -f "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git" orderbook-data
