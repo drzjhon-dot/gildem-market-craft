@@ -1,144 +1,80 @@
-# Gildem Albion Lab | Market & Craft
+# Gildem Market & Craft v1.3.0
 
-**Proyecto nuevo e independiente (v1.2.0)** para Albion Online, servidor **América / West**.
+Proyecto **independiente** para Albion Online (servidor **América / West**), preparado para el repositorio [`drzjhon-dot/gildem-market-craft`](https://github.com/drzjhon-dot/gildem-market-craft) y Netlify. Mantiene **solo dos pestañas**.
 
-Tiene **solamente dos pestañas**: `Top Mercado` y `Calculadora de Craft`. No modifica ni importa el motor de la aplicación anterior. La fuente única de **estadísticas y precios de mercado** es **Albion Online Data Project (AODP) REST West**. Las recetas y traducciones se obtienen de archivos públicos derivados de los datos oficiales del juego; esos archivos **no** aportan cifras del mercado.
+- **Top Mercado:** ranking con datos AODP History y **generador automático de planes en la misma pestaña**, con selección de ciudades de venta independiente del ranking.
+- **Calculadora de Craft:** calculadora manual por lotes que conserva la comparación de Mercado Negro / Royal, variantes de tier y encantamiento, tabla de materiales, cotizaciones editables y diarios estimados.
 
-## 1. Crear un GitHub diferente y un nuevo Netlify
+## Qué se añadió a Top Mercado
 
-1. **Descomprime** el ZIP entregado. No necesitas copiar archivos de tu proyecto anterior.
-2. En GitHub, crea un **repositorio nuevo y vacío**, por ejemplo `gildem-market-craft`. No reutilices el antiguo repositorio.
-3. Sube **el contenido de esta carpeta** a la raíz del repositorio nuevo: `index.html`, `src/`, `netlify/`, `assets/`, `package.json`, `netlify.toml`, etc. No subas la carpeta contenedora como un único nivel adicional.
-4. En Netlify crea un **sitio nuevo**, selecciona `Add new project` → importar desde GitHub y elige **el nuevo repositorio**. No vincules el repositorio viejo ni sobrescribas el sitio viejo.
-5. Netlify leerá `netlify.toml` automáticamente. La configuración es:
-   - Comando de build: `npm run build`
-   - Directorio publicado: `dist`
-   - Directorio de functions: `netlify/functions`
-   - Node: 22
-6. Publica el sitio. Comprueba que carga las dos pestañas, que el catálogo de nombres/recetas no da error y que la consulta de Top regresa datos o un diagnóstico explícito.
+Tras consultar una o más ramas, baja a **Mi plan desde Top Mercado** o usa **Configurar plan** en el encabezado del ranking.
 
-**Importante:** para que `/api/market` y `/api/catalog` funcionen, publica mediante **Git conectado con Netlify** o usando la CLI de Netlify con el soporte de functions. Arrastrar solamente `dist/` a Netlify Drop no despliega las funciones serverless.
+1. **Seleccionar dónde VENDER.** Puedes elegir una o varias entre Bridgewatch, Fort Sterling, Lymhurst, Martlock, Thetford, Caerleon, Brecilien y Mercado Negro. Esta selección es **independiente** de los mercados usados para explorar el ranking. Ejemplo: Top en Mercado Negro y plan de venta en Lymhurst + Martlock. El motor consulta *History* adicional en esos destinos; no reutiliza datos de un mercado como demanda de otro.
+2. **Seleccionar objetos.** Las estrellas `☆` del ranking limitan la consulta a los artículos marcados, pero las ciudades de venta las decide la configuración. Si no marcas ninguno, se evalúa un subconjunto ordenado de artículos del Top (máximo 150 IDs por ejecución). Para ampliar el universo, usa **Ampliar cobertura** en el ranking.
+3. **Configurar fabricación.** Ciudad de bono de cada receta, tiers, encantamientos, bono diario, Focus (con coste/craft y saldo introducidos por ti), silver, días hasta la siguiente fabricación, estilo, objetivo (silver/fama), diversidad T6–T8, inversión máxima y volumen.
+4. **Protección de rentabilidad.** Por defecto: **8%** de colchón en compras, **2%** de rebaja de venta, **5%** de ROI mínimo, **40%** de capital por tipo de artículo y prueba de estrés de -10% en el precio de venta. Estos porcentajes son configurables, no cotizaciones del libro de órdenes.
+5. **Logística y anomalías.** Puedes ingresar silver de transporte **por unidad de salida** y limitar precios de venta atípicamente altos con respecto a la media histórica de calidad 1. Por defecto se capan al **110%** de la media Q1, sin sobrepasar la cotización observada.
+6. Pulsa **Generar plan por ciudades**. Resultados: inversión bruta reservada, beneficio **estimado**, ROI, fama, resumen por ciudad de venta, lotes, efecto supuesto del volumen, estrés, compra de materias primas, diarios orientativos, exportación CSV y copia de lista de compras.
 
-No hay variables de entorno secretas obligatorias. La app no necesita claves AODP. No se ha creado por sí sola una cuenta, repositorio ni sitio Netlify.
+### Por qué la estimación es más prudente
 
-## 2. Cómo usar
+**El ranking y el plan no miden lo mismo:** el ranking agrega calidades **1–5** en días UTC completos, mientras que los precios de referencia de la calculadora son para **calidad 1**. En v1.3, **la asignación de cantidades y la media histórica del motor usan actividad Q1**. No se infiere demanda de calidad 1 a partir de ventas observadas en calidad 2–5.
 
-### Top Mercado
+El motor también:
 
-1. Elige de una a **seis ramas** en los diez grupos, con sus imágenes.
-2. Marca Bridgewatch, Fort Sterling, Lymhurst, Martlock, Thetford, Caerleon, Brecilien y/o Mercado Negro.
-3. Selecciona **1 / 3 / 7 / 14 días UTC completos**, ordenación y si quieres forzar una nueva consulta.
-4. Pulsa **Consultar top**. La primera página cubre **hasta 240 IDs reales** distribuidos por rama, tier y encantamiento. Si aparecen más IDs, pulsa **Ampliar cobertura**. La aplicación indica la cobertura, nunca presenta una muestra como un catálogo completo.
-5. Marca productos concretos, o deja todos los resultados observados como candidatos, y abre la Calculadora.
+- Comprueba receta existente, actividad histórica Q1 en la ciudad de venta, cotización de salida y materias primas con fecha válida (hasta 48 horas por defecto).
+- Usa la puja de compra observada para el Mercado Negro y la oferta de venta mínima observada para las Royal, con la advertencia de que una oferta Royal **no es una orden de compra ejecutable**.
+- Reserva material **bruto** y aplica colchón de compra al capital y coste; no depende de retornos futuros para mantenerse dentro del presupuesto.
+- Proyecta retorno con la fórmula `RRR = bono / (100 + bono)`; un bono de producción del 33% equivale al **24,81% de retorno**. Los retornos de materiales no reutilizables no se aplican cuando la receta lo marca.
+- Penaliza en escenarios el impacto potencial de tus ventas, la caída de precio, el transporte introducido y costes de comercialización.
+- Rechaza rutas sin margen esperado positivo, por debajo del ROI mínimo o con pérdida en estrés cuando está activada la protección. La diversidad T6–T8 puede permitir estrés negativo **solo si el beneficio esperado sigue siendo positivo** y hay observación Q1.
+- Limita exposición y unidades por artículo, sin fabricar cantidades extras para consumir el presupuesto disponible.
 
-### Calculadora de Craft
+### Límites reales de datos
 
-1. Configura **ciudades de venta**, tiers, encantamientos, ciudad de fabricación con bono, bono diario, Focus (con coste real por craft), presupuesto, días de venta, estilo, objetivo y diversidad T6–T8.
-2. Pulsa **Generar mi plan**. El motor intenta obtener cotizaciones recientes AODP y recetas existentes; no rellena el presupuesto con rutas de pérdida esperada.
-3. Examina la **inversión bruta**, beneficio neto **estimado**, impacto **estimado** de tus propias ventas, escenario de estrés, lista de compras y diarios **orientativos**.
-4. Usa la **calculadora individual** para simular una cantidad concreta incluso si sale a pérdida, o exporta el plan a CSV.
+**Ni AODP History ni Prices ofrecen garantía de venta, inventario comprable por tramos o profundidad ejecutable del libro.** El colchón por compra y el impacto de venta son supuestos prudentes, no cálculos de orderbook. La aplicación no conoce los costes logísticos de una ruta ni tu tarifa de estación hasta que los introduces. Verifica profundidad de compra/venta, comisiones y tarifas reales antes de invertir.
 
-## 3. Cálculos y criterios
+La fama y los diarios son **estimaciones** cuando no hay valores verificables; la compra opcional de diarios no está incluida en el beneficio. Focus/craft es un valor que debes obtener del propio juego; la app **no puede comprobar automáticamente** el consumo individual en tu Destiny Board. Las recetas y traducciones se descargan de archivos públicos del juego; las cifras de mercado se obtienen de AODP REST West.
 
-- Historial: `/api/v2/stats/history`, calidades 1–5, días UTC completos, ponderación por unidades y deduplicación básica de entradas repetidas. El historial AODP se basa en órdenes de **venta**, no confirma ejecución real.
-- Cotizaciones: `/api/v2/stats/prices`, calidad normal (1) para un cálculo comparable. Se excluyen precios sin fecha o de más de **48 horas** (umbral configurable).
-- Venta: para Mercado Negro usa la **mejor puja de compra observada**; para Royal usa la **oferta de venta mínima observada**. Son dos escenarios diferentes, ninguno garantiza que el lote se venda.
-- Fórmula de retorno ilustrativa: `33 / (100 + 33) = 24,812%` cuando corresponde **18% Royal + 15% especialidad**, sin bono diario ni Focus. El retorno se recalcula individualmente según la receta.
-- Presupuesto: reserva hasta el coste **bruto** de materiales por craft, aunque el retorno previsto reduzca su coste neto después.
-- Satisfacción de demanda: límites por proporción prudente del volumen **histórico observado**. El impacto de venta se calcula por escenario; **no** es un simulador verificado de libro de órdenes.
-- Diversidad: intenta incluir T6, T7 y T8 cuando hay historial y margen esperado positivo; un resultado negativo bajo estrés se señala. **Nunca** fuerza un craft sin historial, receta, precio o margen esperado positivo.
-- Diarios: solo como **estimación señalizada** (no se les atribuye una exactitud oficial ni se agregan automáticamente al coste).
-- Caché cliente y función: hasta una hora cuando la instancia conserva memoria. Forzar datos frescos ignora la caché de la aplicación, pero **no obliga a los jugadores a subir nuevas observaciones** a AODP.
+## Actualizar tu sitio existente
 
-### Límites importantes
+1. Descomprime el ZIP y abre [tu repositorio GitHub](https://github.com/drzjhon-dot/gildem-market-craft).
+2. Sustituye los archivos correspondientes en la **raíz** de `main`: `src/`, `tests/`, `styles.css`, `index.html`, `scripts/`, `README.md` y `package.json` (y conserva `netlify/functions/` y `assets/`, incluidas en el ZIP).
+3. Confirma con **Commit changes**. Netlify, si está vinculado a `main`, compilara con `npm run build` y publicará `dist/`. No arrastres solo `dist/`: la API requiere las funciones de Netlify.
+4. Comprueba en `https://gildemcraft.netlify.app/` que aparecen los dos tabs, que puedes consultar un Top y después generar un plan para una ciudad de venta distinta de la consultada.
 
-Esta versión **no calcula** el precio real por tramos al barrer el libro de órdenes, costes de transporte, ni tarifas particulares de fabricación salvo la que introduzcas. Debes revisar manualmente la profundidad de compras de materiales y ventas finales antes de comprometer silver. El dato de `History` tampoco equivale a demanda ejecutable.
+La conexión de GitHub disponible para esta sesión ha permitido lectura pero anteriormente devolvió `403` al intentar escribir; este paquete **no ha sido desplegado automáticamente**.
 
-**Recetas especiales:** monturas, comidas, pociones y herramientas dependen de descargar los `craftingrequirements` del catálogo público `ao-bin-dumps`; pueden fallar por tamaño o disponibilidad temporal de esa fuente. En ese caso el Top puede mostrar los IDs que consiga identificar, pero la calculadora **no fabrica una receta ficticia**. Las especialidades no verificadas de recetas especiales no reciben automáticamente el +15%.
+### Configuración Netlify
 
-La cobertura del Top es **paginada** para respetar las cuotas del servicio. AODP limita solicitudes y puede responder HTTP 429. La UI informa los lotes que fallen, en lugar de sustituirlos con cifras inventadas.
+Se mantiene `netlify.toml`:
 
-## 4. Pruebas locales
+```toml
+[build]
+  command = "npm run build"
+  publish = "dist"
+  functions = "netlify/functions"
+[build.environment]
+  NODE_VERSION = "22"
+```
 
-Requiere **Node.js 20+**, recomendado Node 22.
+`/api/market` dirige a la función `netlify/functions/market.mjs`, validada para `west.albion-online-data.com`; `/api/catalog` apunta a su función de catálogo.
+
+## Pruebas
 
 ```bash
 npm test
 npm run build
 ```
 
-El build genera `dist/` y ejecuta primero el conjunto de pruebas automatizadas. Para una vista **solo de interfaz** en local:
+- **34 pruebas automatizadas** en Node 22: historial Q1/Q2–Q5, retorno, quote freshness, riesgo, presupuesto, Focus, filtros, motor, proxy y estructura de pestañas.
+- Recorrido **en navegador con AODP simulado**: consulta Top en Mercado Negro, cambio de ciudad de venta a Lymhurst, generación de plan con ciudad de fabricación y lista de materiales; navegación a Calculadora manual y revisión de desbordamiento horizontal en escritorio y móvil.
+- **No se han validado** cotizaciones AODP en vivo, profundidad de órdenes o la compilación de Netlify en producción. Verifica con datos reales después de publicar.
 
-```bash
-npm run dev
-```
+## Fuentes de datos
 
-Visita `http://localhost:8787`. Este servidor local ligero **no ejecuta functions**, por lo que la consulta real a AODP requiere **Netlify CLI** (`netlify dev`) o el despliegue en Netlify. No confundas una prueba local sin funciones con una consulta fallida de AODP.
+- AODP West: https://www.albion-online-data.com/api/ y https://west.albion-online-data.com/api-docs
+- Fórmula de retorno: https://wiki.albiononline.com/wiki/Resource_return_rate
+- Catálogo de recetas: derivado de archivos del juego, sin usar fuentes alternativas para precios.
 
-Las pruebas automatizadas verifican motor, presupuesto, retornos, calidades/días, Focus, selección, rechazo de escenarios imposibles, proxy West y estados de interfaz. **No equivalen a una prueba de integración con precios reales**. La API y Netlify deben validarse en el sitio publicado.
-
-## 5. Estructura
-
-```text
-index.html                    Estructura visual de las dos pestañas
-styles.css                   Diseño adaptable oscuro
-src/main.js                  Interfaz, selección y flujo de consulta/plan
-src/branches.js              105 opciones de 10 grupos y filtros por ID
-src/branch-reference.js      Patrones base de ramas del juego
-src/market.js                Cliente West, agregación UTC, caché y cotizaciones
-src/planner.js               Motor de simulación y asignación totalmente nuevo
-src/recipe-extractor.js      Intérprete de recetas oficiales especiales
-netlify/functions/market.mjs Proxy AODP West validado con caché
-netlify/functions/catalog.mjs Descarga de nombres/recetas desde fuentes públicas
-netlify.toml                 Build y rutas de functions
-scripts/                     Build y servidor estático de prueba
-assets/                      Elementos de marca, banners e iconos
- tests/                      Pruebas automatizadas
-```
-
-### Fuentes documentadas
-
-- AODP West API: https://west.albion-online-data.com/api-docs
-- Documentación del proyecto: https://www.albion-online-data.com/developer
-- Metadatos de recetas y nombres: https://github.com/vkorne-web/albion-market
-- Información del juego (`items.json`): https://github.com/ao-data/ao-bin-dumps
-
----
-
-**Versión:** 1.2.0 · **Independiente de Gildem Albion Lab anterior** · **Servidor de mercado:** West.
-
-
-## Actualización visual v1.1.0 · estilo Albion Lab clásico
-
-- **Top Mercado**: selector de ramas en 10 categorías plegables compactas (5 columnas en PC), selección rápida mediante etiquetas con imagen, contador por categoría y opción «Contraer todo». No se eliminó ninguna de las 105 opciones.
-- **Calculadora de Craft**: ahora la primera sección es una calculadora manual de hasta 30 artículos, inspirada en la calculadora antigua de Gildem Albion Lab. Permite buscar y añadir por nombre/ID, editar cantidades, cambiar Tier y encantamiento cuando la receta existe, marcar fabricación sin bono, comparar beneficio BM/Royal y consultar compras agrupadas y diarios estimados. Puedes cambiar precios manualmente, exportar CSV y copiar la lista de compras.
-- **Desde Top a Calculadora**: «↗ Calc» añade un artículo a la calculadora y «Enviar marcados» transfiere los artículos seleccionados con recetas reales. Los marcados para el plan siguen separados.
-- **Generador automático**: se conserva con el motor independiente v1.0, bajo una sección expandible para que la pantalla principal siga siendo la calculadora manual. No se modificaron sus límites de beneficio/demanda/retorno.
-- **Diseño**: recupera la paleta violeta, dorado y jade, con paneles oscuros y controles compactos. Estilos responsive.
-
-### Importante sobre el profit manual
-
-El capital inicial bruto, la compra neta con retornos y el coste efectivo son cantidades diferentes. Las ediciones manuales de precios se identifican, no se presentan como cotizaciones verificadas. Si no existe precio utilizable, el resultado queda en `s/d` en lugar de inventarse. El profit de BM usa el **precio máximo de compra observado** y Royal el **menor precio de venta observado** con ajustes de comisiones. El efecto de tus propias ventas solo se descuenta cuando hay historial del destino; sin él, se indica la limitación.
-
-El Focus de la calculadora manual exige datos verificados de Focus por fabricación y Focus disponible. La estimación de diarios no entra en los costes de materiales. El calculador manual no necesita un historial Top previo, pero no estima automáticamente la demanda si no existe.
-
-La interfaz se comprobó también con navegación funcional automatizada en navegador (Top Mercado → búsqueda → lote → cantidad → ajustes), usando respuestas de mercado simuladas. El despliegue y la disponibilidad de AODP deben verificarse también en Netlify.
-
-
-## Actualización v1.2.0 · «Ranking Albion» y calculadora más inmersiva
-
-Se mantienen los **dos tabs** y todas las consultas al AODP REST de **América/West**; no hay nuevas APIs de mercado ni claves secretas. El generador automático sigue en su sección desplegable.
-
-- **Top Mercado:** ranking numérico desde `#1`, tabla compacta con iconos originales del juego en la web publicada, tier y encantamiento con insignias, emblemas luminosos y colores para las ocho ubicaciones; unidades/día y precio unitario redondeados a números enteros, silver/día abreviado. Los días activos aparecen debajo de unidades/día.
-- **Copiar nombres:** pulsa el pequeño botón dorado junto a cualquier objeto para copiar el nombre mostrado en español. **Shift + clic** en ese botón copia el ID de Albion, por ejemplo `T5_MAIN_AXE`. Incluye confirmación en pantalla y un método de respaldo para navegadores sin Clipboard API.
-- **Acciones del ranking:** estrella para marcar para el plan; **Agregar a Calculadora** envía el ítem directamente al lote manual; «Enviar marcados» y el motor automático siguen funcionando.
-- **Calculadora visual:** ítems con imagen, badges, selector de tier/encantamiento, cantidad, ciudad de fabricación coloreada, retorno, coste neto, profit Mercado Negro/Royal y fama. Los importes de cada fila se muestran como enteros.
-- **Materiales:** filas con imagen de recurso, objeto al que pertenece representado con iconos, ciudad de compra coloreada, cantidades enteras, precio editable y coste. Diarios orientativos aparecen como fichas con imagen en su sección, siempre **excluidos del coste**.
-- **Cotizaciones ausentes:** los materiales de un lote incompleto **no desaparecen**: aparecen con campo rojo de precio manual. Hasta que haya todas las cotizaciones necesarias, el lote tiene beneficio **no calculable**, no beneficio cero. La compra pendiente no entra como capital verificable hasta resolver el precio.
-- **Responsive:** tablas con desplazamiento horizontal local y diseño adaptado a móvil; los 10 grupos y 105 opciones del selector compacto se conservan.
-
-### Nota sobre datos y pruebas v1.2
-
-El ranking usa días UTC completos con calidades 1–5, y la calculadora usa precios de compra y venta sujetos al umbral de antigüedad. Las pruebas de navegador utilizaron un catálogo simulado deliberadamente: **las capturas de vista previa no son cotizaciones reales ni iconos reales del mercado**. Los nombres/recetas y las imágenes de los objetos vienen de las fuentes de juego cuando el sitio está conectado.
-
-La versión 1.2 pasó **27/27 pruebas automatizadas** y un recorrido completo de navegador: Top → copia de nombre → agregar → precios faltantes → precio manual → profit → modo móvil. La API externa y el despliegue deben comprobarse en producción.
+No está afiliado a Sandbox Interactive.

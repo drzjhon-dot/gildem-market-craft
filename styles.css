@@ -158,3 +158,46 @@ body{background:#0d0918;font-family:Inter,ui-sans-serif,system-ui,-apple-system,
 @media(max-width:1100px){.market-ranking table{min-width:1040px}.game-craft-table{min-width:1130px}}
 @media(max-width:680px){.market-ranking{margin:0 -3px}.game-item-cell img{width:35px;height:35px;flex-basis:35px}.city-label{font-size:11px}.market-toggle.city-control{padding:6px 8px}.market-ranking th{padding:9px!important}.batch-table td{padding:9px}.section-heading h3{font-size:13px}.journal-grid{grid-template-columns:1fr}.batch-kpis .batch-kpi{min-width:0}}
 @media(prefers-reduced-motion:reduce){.copy-name-btn,.rank-add,.market-toggle.city-control{transition:none}}
+
+/* v1.3 · planning directly in Top Mercado, city-first workflow */
+.plan-drawer{margin-top:24px;border:1px solid #806147;background:linear-gradient(140deg,#25152f,#1b1028);box-shadow:0 0 35px #dd9d2f14;scroll-margin-top:100px;overflow:hidden}
+.plan-drawer>summary{min-height:79px;background:linear-gradient(90deg,#4c2c38a1,#23152d 72%);border-bottom:1px solid #6b4b582f}
+.plan-drawer>summary strong{font-size:16px;color:#ffdc9e}
+.plan-drawer[open]>summary{border-bottom-color:#80553b}
+.plan-drawer .drawer-symbol{height:39px;width:39px;border-radius:10px;display:grid;place-items:center;background:#7046234b;border:1px solid #b0825090;box-shadow:0 0 16px #df9b4240}
+.plan-drawer .drawer-content{padding:8px 17px 12px}
+.plan-drawer .drawer-content>.panel{background:linear-gradient(145deg,#241630,#1a1229);border-color:#5b3c62}
+.plan-drawer .config-grid{gap:11px}
+.plan-drawer .config-section{background:linear-gradient(150deg,#281a36,#1c132a);border-color:#523b65;transition:border-color .16s}
+.plan-drawer .config-section:hover{border-color:#936b81}
+.plan-drawer .config-section h3{color:#f0d6a6;font-size:12.5px}
+.plan-drawer .config-section select,.plan-drawer .config-section input[type=number]{background:#1b1228;border-color:#654d74}
+.plan-drawer .config-section select:focus,.plan-drawer .config-section input:focus{outline:2px solid #ebba74a8}
+.plan-step-title{display:flex;align-items:center;gap:11px;margin:16px 0 12px;color:#f9ecf6;font-weight:800;font-size:14px}
+.plan-step-title b{display:grid;place-items:center;font-size:12px;width:32px;height:32px;color:#ffdb9f;background:#593728;border-radius:9px;border:1px solid #b18350}
+.plan-step-title small{font-size:10px;font-weight:650;color:#ceb7d5;padding:4px 8px;background:#3d2850;border-radius:8px}
+.plan-drawer .market-chips{gap:8px}
+.plan-drawer .city-control{padding:10px 13px;border-radius:10px}
+.plan-drawer .risk-section{border:1px solid #9b7351;background:linear-gradient(145deg,#37243d,#211529)}
+.plan-drawer .risk-section .multifield{grid-template-columns:repeat(4,minmax(0,1fr))}
+.plan-drawer .toolbar .muted{flex:1;line-height:1.6}
+.plan-drawer #run-plan{font-size:13px;font-weight:850;min-height:44px;padding:11px 21px}
+#top-results{scroll-margin-top:99px}
+#plan-results{scroll-margin-top:99px}
+#plan-results .game-item-cell strong{font-size:11px}
+#plan-results .city-stack{gap:7px}
+#plan-results .result-table{border-color:#6d4d74}
+#plan-results .result-table th{background:#2d1c3d!important;color:#d6badb!important}
+#plan-results .rank-sub{display:block;max-width:340px;margin:5px 0 0 48px;white-space:normal;line-height:1.35;font-size:10px;color:#b99dc4}
+@media(max-width:1120px){.plan-drawer .risk-section .multifield{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:680px){.plan-drawer .drawer-content{padding:4px 7px 8px}.plan-drawer .risk-section .multifield{grid-template-columns:repeat(2,minmax(0,1fr))}.plan-step-title{flex-wrap:wrap;font-size:12px}.plan-drawer>summary strong{font-size:13px}.plan-drawer .toolbar{align-items:flex-start}}
+@media(max-width:420px){.plan-drawer .risk-section .multifield{grid-template-columns:1fr}}
+/* City-by-city outcome cards for multi-market plans */
+.plan-city-summary{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px;margin:10px 0 20px}
+.plan-city-card{border:1px solid #674574;border-radius:12px;background:linear-gradient(145deg,#2a1a39,#1b1228);padding:13px 12px;min-width:0}
+.plan-city-card>.city-label{font-size:13px}
+.plan-city-stats{display:grid;grid-template-columns:1fr 1fr 70px;gap:8px;margin-top:13px}
+.plan-city-stats small{display:block;font-size:9px;color:#ae96c1;margin-bottom:4px}
+.plan-city-stats strong{font-size:12px;color:#f1e9f7;font-weight:800;white-space:nowrap}
+.plan-city-stats .green{color:#77debb}
+@media(max-width:680px){.plan-city-summary{grid-template-columns:1fr}.plan-city-stats{grid-template-columns:1fr 1fr 70px}}

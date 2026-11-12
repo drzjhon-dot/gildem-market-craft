@@ -26,13 +26,16 @@ export function summarizeHistory(rows,{days=7,now=Date.now()}={}){
   for(const point of row.data){const ms=toUtcMs(point.timestamp),count=pos(point.item_count),avg=pos(point.avg_price);
    if(!(ms>=range.start&&ms<range.end&&count>0&&avg>0))continue;
    const sig=[key,quality,ms,count,avg].join('|');if(unique.has(sig))continue;unique.add(sig);
-   const item=map.get(key)||{id,city,units:0,silver:0,observations:0,qualities:new Set(),activeDays:new Set(),latestObservation:0};
+   const item=map.get(key)||{id,city,units:0,silver:0,observations:0,qualities:new Set(),activeDays:new Set(),latestObservation:0,quality1Units:0,quality1Silver:0,quality1ActiveDays:new Set()};
    item.units+=count;item.silver+=count*avg;item.observations++;item.qualities.add(quality);
+   if(quality===1){item.quality1Units+=count;item.quality1Silver+=count*avg;item.quality1ActiveDays.add(new Date(ms).toISOString().slice(0,10));}
    item.activeDays.add(new Date(ms).toISOString().slice(0,10));item.latestObservation=Math.max(item.latestObservation,ms);map.set(key,item);
   }
  }
  return [...map.values()].map(r=>({id:r.id,city:r.city,units:r.units,averageDailyUnits:r.units/range.days,
   averageDailySilver:r.silver/range.days,averageUnitPrice:r.silver/r.units,observations:r.observations,
+  quality1Units:r.quality1Units,quality1DailyUnits:r.quality1Units/range.days,quality1ActiveDays:r.quality1ActiveDays.size,
+  quality1AveragePrice:r.quality1Units?r.quality1Silver/r.quality1Units:null,
   activeDays:r.activeDays.size,qualities:[...r.qualities].sort(),latestObservation:new Date(r.latestObservation).toISOString(),
   from:range.date,to:new Date(range.end-DAY).toISOString().slice(0,10),days:range.days}));
 }
