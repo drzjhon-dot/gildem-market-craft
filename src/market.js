@@ -27,9 +27,9 @@ export function summarizeHistory(rows,{days=7,now=Date.now()}={}){
   for(const point of row.data){const ms=toUtcMs(point.timestamp),count=pos(point.item_count),avg=pos(point.avg_price);
    if(!(ms>=range.start&&ms<range.end&&count>0&&avg>0))continue;
    const sig=[key,quality,ms,count,avg].join('|');if(unique.has(sig))continue;unique.add(sig);
-   const item=map.get(key)||{id,city,units:0,silver:0,observations:0,qualities:new Set(),activeDays:new Set(),latestObservation:0,quality1Units:0,quality1Silver:0,quality1ActiveDays:new Set()};
+   const item=map.get(key)||{id,city,units:0,silver:0,observations:0,qualities:new Set(),activeDays:new Set(),latestObservation:0,quality1Units:0,quality1Silver:0,quality1ActiveDays:new Set(),q1ByDay:new Map()};
    item.units+=count;item.silver+=count*avg;item.observations++;item.qualities.add(quality);
-   if(quality===1){item.quality1Units+=count;item.quality1Silver+=count*avg;item.quality1ActiveDays.add(new Date(ms).toISOString().slice(0,10));}
+   if(quality===1){const day=Math.floor((ms-range.start)/DAY),d=item.q1ByDay.get(day)||[0,0];d[0]+=count;d[1]+=count*avg;item.q1ByDay.set(day,d);item.quality1Units+=count;item.quality1Silver+=count*avg;item.quality1ActiveDays.add(new Date(ms).toISOString().slice(0,10));}
    item.activeDays.add(new Date(ms).toISOString().slice(0,10));item.latestObservation=Math.max(item.latestObservation,ms);map.set(key,item);
   }
  }
@@ -37,6 +37,8 @@ export function summarizeHistory(rows,{days=7,now=Date.now()}={}){
   averageDailySilver:r.silver/range.days,averageUnitPrice:r.silver/r.units,observations:r.observations,
   quality1Units:r.quality1Units,quality1DailyUnits:r.quality1Units/range.days,quality1ActiveDays:r.quality1ActiveDays.size,
   quality1AveragePrice:r.quality1Units?r.quality1Silver/r.quality1Units:null,
+  // v2.1: serie diaria Q1 [unidades, precio medio] del día más antiguo al más reciente.
+  quality1Series:Array.from({length:range.days},(_,i)=>{const d=r.q1ByDay.get(i);return d?[d[0],Math.round(d[1]/d[0])]:[0,0];}),
   activeDays:r.activeDays.size,qualities:[...r.qualities].sort(),latestObservation:new Date(r.latestObservation).toISOString(),
   from:range.date,to:new Date(range.end-DAY).toISOString().slice(0,10),days:range.days}));
 }

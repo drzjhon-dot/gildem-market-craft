@@ -50,7 +50,7 @@ test('estilo Albion v1.2 mantiene números enteros, ranking y shortcuts de copia
  const {readFile}=await import('node:fs/promises');
  const main=await readFile(new URL('../src/main.js',import.meta.url),'utf8');
  const css=await readFile(new URL('../styles.css',import.meta.url),'utf8');
- assert.match(main,/class="result-table market-ranking"/);
+ assert.match(main,/class="result-table market-ranking /);
  assert.match(main,/data-copy-name=/);
  assert.match(main,/e\.shiftKey\?b\.dataset\.copyId:b\.dataset\.copyName/);
  assert.match(main,/function displayedInt\(n\)/);

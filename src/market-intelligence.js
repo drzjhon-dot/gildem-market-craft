@@ -20,6 +20,7 @@ export function captureMarketSignals(rows=[],marks=new Set(),prior=[],capturedAt
   allActiveDays:safeNum(row.activeDays),q1ActiveDays:safeNum(row.quality1ActiveDays),
   allAvgPrice:safeNum(row.averageUnitPrice),q1AvgPrice:safeNum(row.quality1AveragePrice),
   latestObservation:row.latestObservation||null,capturedAt,
+  q1Series:Array.isArray(row.quality1Series)?row.quality1Series.slice(0,14).map(x=>[safeNum(x?.[0]),safeNum(x?.[1])]):null,
   // only carry source evidence; no constructed orders, prices or future sales
   source:'AODP History · Top Mercado'
  });
@@ -108,7 +109,7 @@ export function reconcileMarketEvidence({snapshots=[],queried=[],ids=[],markets=
    averageDailyUnits:s.allDaily,quality1DailyUnits:s.q1Daily,
    activeDays:s.allActiveDays,quality1ActiveDays:s.q1ActiveDays,
    averageUnitPrice:s.allAvgPrice,quality1AveragePrice:s.q1AvgPrice||null,
-   latestObservation:s.latestObservation,topReference:s.allDaily,
+   latestObservation:s.latestObservation,topReference:s.allDaily,quality1Series:Array.isArray(s.q1Series)&&s.q1Series.length===s.days?s.q1Series:null,
    evidenceSource:'Top Mercado · selección',snapshotMatch:true};
   if(other&&Math.abs(other.quality1DailyUnits-s.q1Daily)>.05)
     discrepancies.push({id:s.id,city:s.city,topQ1:s.q1Daily,queryQ1:other.quality1DailyUnits});

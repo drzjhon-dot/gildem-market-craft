@@ -2,11 +2,12 @@
 // El plan automático conserva su propio motor. Este módulo no lo modifica.
 import {MARKETS,variant} from './branches.js';
 import {purchaseQuote,freshestQuotes} from './market.js';
+import {demandSignals} from './demand-signals.js';
 import {returnRate,estimatedFame,journalEstimate,purchaseNeeded,MARKET_IMPACT} from './planner.js';
 const ROYALS=MARKETS.filter(c=>c!=='Black Market');
 const validPrice=value=>Number.isFinite(Number(value))&&Number(value)>0?Number(value):null;
 // Fabricas calidad 1: el impacto se mide contra la actividad Q1 (igual que Craft Planner).
-const q1Daily=h=>Number(h?.effectiveQuality1DailyUnits??h?.quality1DailyUnits??h?.averageDailyUnits)||0;
+const q1Daily=h=>{const base=Number(h?.effectiveQuality1DailyUnits??h?.quality1DailyUnits??h?.averageDailyUnits)||0;const sig=demandSignals(h);return sig?Math.min(base,sig.demandDaily):base;};
 const saleImpact=(history,units,config)=>q1Daily(history)>0
  ?Math.min(.33,units/Math.max(1,q1Daily(history)*(Number(config.saleDays)||7))*MARKET_IMPACT):0;
 export function baseStem(id){return String(id).replace(/^T\d+_/, 'T_').replace(/@\d+$/,'');}

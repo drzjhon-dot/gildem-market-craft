@@ -62,11 +62,12 @@ test('consultas individuales de muchos tipos pueden ampliarse por lotes sin perd
 test('interfaz incluye modo por familias, frescura activada de entrada y ayuda sencilla',()=>{
  const source=readFileSync(new URL('../src/main.js',import.meta.url),'utf8');
  assert(source.includes('forceFresh:persisted.forceFresh!==false'));
- assert(source.includes('Forzar datos frescos <span class="small-print">(activado por defecto)'));
+ assert(source.includes('id="force-top" ${state.forceFresh?\'checked\':\'\'}> Forzar datos frescos'));
  assert(source.includes('data-catalog-family='));
  assert(source.includes('expandSelectedFamilies({ids:pool()'));
  assert(!source.includes('data-catalog-pick='));
  assert(!source.includes('Escudo de rentabilidad'));
  for(const word of ['Compra +%','Venta -%','ROI mínimo','Capital por objeto','Protección del beneficio'])assert(source.includes(word),word);
- assert(source.includes('West Orderbook'));
+ // v2.2: la ayuda de datos queda plegada en «Sobre los datos» (sin anunciar Orderbook, no documentado en la API pública).
+ assert(source.includes('ℹ Sobre los datos'));
 });

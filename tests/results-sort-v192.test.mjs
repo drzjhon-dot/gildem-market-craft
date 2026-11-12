@@ -35,7 +35,7 @@ test('Craft Planner: ordenar el resultado no cambia crafts, presupuesto ni profi
 });
 test('Interfaz: selector en ambos resultados, persistencia y tres pestañas',()=>{
  const js=readFileSync('src/main.js','utf8'),html=readFileSync('index.html','utf8');
- assert(js.includes('id="top-sort"')&&js.includes('id="plan-result-sort"'));
+ assert(js.includes('id="top-sort-inline"')&&js.includes('id="plan-result-sort"'));
  assert(js.includes('planResultSort:state.planResultSort'));
  assert(js.includes("x.id==='plan-result-sort'"));
  assert.equal((html.match(/class="nav-link[^"]*" data-route=/g)||[]).length,3);

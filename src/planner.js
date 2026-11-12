@@ -4,6 +4,7 @@ import {purchaseQuote,freshestQuotes} from './market.js';
 import {MARKETS,variant} from './branches.js';
 import {trafficSignal,marketKey} from './market-intelligence.js';
 import {optimizePortfolio} from './portfolio-engine.js';
+import {demandSignals} from './demand-signals.js';
 const n=x=>Number.isFinite(Number(x))?Number(x):NaN;
 const clamp=(x,a,b)=>Math.max(a,Math.min(b,x));
 const positive=x=>Number.isFinite(n(x))&&n(x)>0;
@@ -14,7 +15,7 @@ export const DEFAULTS=Object.freeze({budget:10_000_000,tiers:[4,5,6,7,8],enchant
  focus:false,focusPerCraft:0,focusAvailable:0,focusBonus:59,premium:true,trendAnalysis:true,tax:4,listingFee:2.5,
  stationFee:0,maxQuoteHours:48,buyBufferPct:8,sellHaircutPct:2,minRoiPct:5,
  purchaseMode:'best-royal',inboundTransportPerUnit:0,includeCaerleonPurchases:false,craftFallbackCity:'Lymhurst',
- maxCapitalSharePct:40,maxTierSharePct:72,maxEnchantSharePct:78,maxFamilySharePct:68,maxMarketSharePct:100,stressGuard:true,deliveryCostPerUnit:0,historyPriceCapPct:10,fameLossBudgetPct:10});
+ maxCapitalSharePct:40,maxTierSharePct:72,maxEnchantSharePct:78,maxFamilySharePct:68,maxMarketSharePct:100,stressGuard:true,deliveryCostPerUnit:0,historyPriceCapPct:10,fameLossBudgetPct:10,marketSignals:true});
 export function settings(cfg={}){const c={...DEFAULTS,...cfg};
  if(!Number.isSafeInteger(n(c.budget))||n(c.budget)<1000||n(c.budget)>1e12)throw Error('Presupuesto: entero entre 1.000 y un billón de silver.');
  if(!Array.isArray(c.tiers)||!c.tiers.length||c.tiers.some(x=>![4,5,6,7,8].includes(Number(x))))throw Error('Selecciona al menos un Tier válido.');
@@ -103,7 +104,10 @@ export function buildCandidates({top=[],recipes={},quotes=new Map(),config={},se
  const record=(h,category,reason)=>{rejected[category]++;if(rejectedSamples.length<350)rejectedSamples.push({id:h.id,city:h.city,code:category,reason,
   q1UnitsDaily:gradeOneDaily(h),allQualitiesDaily:h.averageDailyUnits||0});};
  // One statistical row per item+city; history groups qualities 1–5, sale quote quality 1 only.
- for(const h of top){if(!markets.has(h.city)||allowed.size&&!allowed.has(h.id))continue;
+ for(const raw of top){if(!markets.has(raw.city)||allowed.size&&!allowed.has(raw.id))continue;
+  // v2.1: la serie diaria Q1 puede reducir (nunca ampliar) la demanda y el precio usados.
+  const signals=c.marketSignals===false?null:demandSignals(raw);
+  const h=signals?{...raw,demandSignals:signals,effectiveQuality1DailyUnits:Math.min(Number(raw.effectiveQuality1DailyUnits??gradeOneDaily(raw)),signals.demandDaily)}:raw;
   const variantInfo=variant(h.id);if(!variantInfo||!c.tiers.map(Number).includes(variantInfo.tier)||!c.enchants.map(Number).includes(variantInfo.ench)){record(h,'fueraFiltros','Tier o encantamiento no seleccionado');continue;}
   const recipe=recipes[h.id];if(!recipe||!Array.isArray(recipe.materials)||!recipe.materials.length){record(h,'sinReceta','No hay receta verificable');continue;}
   if(!observationCheck(h,c)){record(h,'sinHistorial','Sin actividad suficiente de calidad 1 en este destino');continue;}
@@ -118,7 +122,9 @@ export function buildCandidates({top=[],recipes={},quotes=new Map(),config={},se
   const marketFee=(Number(c.tax)+ (h.city==='Black Market'?0:Number(c.listingFee)))/100;
   // Prevent a one-off quote spike from being accepted as an executable clearing price.
   // Qualities must match: history Q1 for selling Q1. Q2-5 do not influence the cap.
-  const histQ1=Number(h.stabilizedQuality1Price??h.quality1AveragePrice)||0;
+  const baseQ1=Number(h.stabilizedQuality1Price??h.quality1AveragePrice)||0,recentQ1=Number(signals?.recentPrice)||0;
+  // Si el precio Q1 de los últimos 3 días está por debajo del de la ventana, se planifica con el reciente.
+  const histQ1=baseQ1>0&&recentQ1>0?Math.min(baseQ1,recentQ1):baseQ1||recentQ1;
   const cap=histQ1>0?histQ1*(1+Number(c.historyPriceCapPct)/100):sale.price;
   const planningPrice=Math.min(sale.price,cap);
   const salePerCraft=planningPrice*amount*(1-Number(c.sellHaircutPct)/100);
@@ -134,7 +140,7 @@ export function buildCandidates({top=[],recipes={},quotes=new Map(),config={},se
   }
   const fame=estimatedFame(h.id,recipe,c.premium);
   const row={id:h.id,city:h.city,routeKey:marketKey(h.id,h.city),evidenceSource:h.evidenceSource||'AODP History Q1',confidence:trafficSignal(h).confidence,craftCity:c.bonusCity?(recipe.city||c.craftFallbackCity):c.craftFallbackCity,
-   maxCrafts:upper,craftAmount:amount,history:h,trend:h.trend||'sin referencia',trendRatio:h.trendRatio??null,returnPct:returnRate({...c,recipe}).returnPct,
+   maxCrafts:upper,craftAmount:amount,history:h,trend:h.trend||'sin referencia',trendRatio:h.trendRatio??null,demandSignals:signals,returnPct:returnRate({...c,recipe}).returnPct,
    grossCapitalPerCraft:gross,expectedCostPerCraft:net,materials:mats.materials,marketQuote:sale.price,planningPrice,historyQuality1Price:histQ1||null,
    saleObservedAt:new Date(sale.time).toISOString(),marketFee,priceImpactPct:impactOne*100,
    estimatedProfitPerCraft:profit,stressProfitPerCraft:stressProfit,expectedFamePerCraft:fame?.value||0,

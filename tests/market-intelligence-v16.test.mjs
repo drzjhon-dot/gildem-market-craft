@@ -62,5 +62,5 @@ test('planner retains separate city routes for one SKU and respects shared budge
 });
 test('ranking and planner surfaces show Q1 and individual catalogue controls',()=>{
  const src=readFileSync(new URL('../src/main.js',import.meta.url),'utf8');
- for(const x of ['catalog-search','catalog-select-visible','catalog-only-selected','catalog-mode','Calidad 1/día','state.plannerSignals','reconcileMarketEvidence'])assert(src.includes(x),x);
+ for(const x of ['catalog-search','catalog-select-visible','catalog-only-selected','catalog-mode','Vendidos Q1/día','state.plannerSignals','reconcileMarketEvidence'])assert(src.includes(x),x);
 });
