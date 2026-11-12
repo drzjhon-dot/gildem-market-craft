@@ -1,5 +1,6 @@
 // Catálogo de ramas, independiente del motor de planes. Cada opción filtra IDs reales.
 import {BRANCHES as ORIGINAL} from './branch-reference.js';
+import {REFINING_TYPES,refiningVariant} from './refining.js';
 const base=Object.fromEntries(ORIGINAL.map(x=>[x.key,x]));
 const one=(key,label,iconId,matcher)=>({key,label,iconId,test:matcher||base[key]?.test||(()=>false),city:base[key]?.city||null});
 const make=(key,icon)=>one(key,base[key]?.label||key,icon);
@@ -27,6 +28,7 @@ export const GROUPS=[
    ['armored_expert','Caballo blindado del experto','ARMORED_HORSE'],['stag','Ciervo gigante del iniciado','STAG'],['moose','Alce','MOOSE'],['direwolf','Huargo','DIREWOLF'],['boar','Jabalí ensillado','BOAR'],['swampdragon','Dragón de pantano ensillado','SWAMPDRAGON'],['bear','Oso gigante ensillado','BEAR'],['mammoth','Mamut de transporte del anciano','MAMMOTH'],['moabird','Ave moa ensillada','MOABIRD'],['winterbear','Oso de invierno ensillado','WINTERBEAR'],['wildboar','Jabalí salvaje ensillado','WILDBOAR'],['bighorn','Carnero cimarrón ensillado','BIGHORN'],['swampsalamander','Salamandra de pantano ensillada','SWAMPSALAMANDER'],['greywolf','Lobo gris ensillado','GREYWOLF'],['owl','Búho místico ensillado','OWL'],['elite_moa','Ave de terror de élite','MOABIRD_ELITE'],['elite_bear','Oso de invierno de élite','WINTERBEAR_ELITE'],['elite_boar','Jabalí salvaje de élite','WILDBOAR_ELITE'],['elite_bighorn','Carnero cimarrón de élite','BIGHORN_ELITE'],['elite_salamander','Salamandra de pantano de élite','SWAMPSALAMANDER_ELITE'],['elite_wolf','Lobo gris de élite','GREYWOLF_ELITE'],['elite_owl','Búho místico de élite','OWL_ELITE'],['hellweaver','Tejedor de Infiernos','HELLWEAVER'],['firedrake','DRAKE FIRE','DRAKE_FIRE'],['battle_mammoth','MAMMOTH BATTLE','MAMMOTH_BATTLE'],['fire_basilisk','Basilisco de fuego','BASILISK_FIRE'],['poison_basilisk','Basilisco venenoso','BASILISK_POISON'],['ballista','Balista de asedio','BALLISTA'],['undead_horse','HORSE UNDEAD','HORSE_UNDEAD'],['keeper_cougar','COUGAR KEEPER','COUGAR_KEEPER'],['morgana_horse','ARMORED HORSE MORGANA','ARMORED_HORSE_MORGANA'],['spring_rabbit','Conejo primaveral','RABBIT_SPRING'],['dark_rabbit','RABBIT EASTER DARK','RABBIT_EASTER_DARK'],['avalon_basilisk','Basilisco avaloniano','BASILISK_AVALON']
   ].map(([k,label,stem])=>one('mount_'+k,'Monturas · '+label,'T6_MOUNT_'+stem,id=>/^T[3-8]_MOUNT_/.test(id)&&id.toUpperCase().includes(stem) && !/SKIN/.test(id)))
  ]},
+ {key:'refining',title:'Refinamiento',icon:'▦',items:REFINING_TYPES.map(type=>one('refine_'+type.key.toLowerCase(),type.label,type.icon,id=>refiningVariant(id)?.kind===type.key))},
  {key:'siege',title:'Asedio',icon:'⚒',items:[make('siege','T4_2H_TOOL_SIEGEHAMMER'),make('siege_banner','T4_SIEGE_BANNER')]}
 ];
 export const BRANCHES=GROUPS.flatMap(g=>g.items.map(i=>({...i,group:g.key})));

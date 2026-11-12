@@ -62,10 +62,10 @@ test('Top conserva los objetos sin receta inicial para verificarlos en Planner',
  const out=markedItemsForPlanner(rows,marks,{},[],150,[],true);
  assert.deepEqual(out.items,['T8_MAIN_MACE']);assert.equal(out.signals.length,1);
 });
-test('cuarta pestaña, imagen de portada por rama, controles y endpoint de recetas están enlazados',()=>{
+test('refinamiento como grupo del Top, portadas y endpoint de recetas enlazados',()=>{
  const html=readFileSync('index.html','utf8'),main=readFileSync('src/main.js','utf8'),server=readFileSync('netlify/functions/catalog.mjs','utf8');
- assert(html.includes('data-route="refine"'));assert(main.includes('function refinePage()'));
- assert(main.includes('data-refine-market'));assert(main.includes('group-art'));
+ assert(!html.includes('data-route="refine"'));assert(main.includes('referenceRefiningRecipes()')); 
+ assert(!main.includes('data-refine-market'));assert(main.includes('group-art'));
  assert(main.includes('file=verify&items='));assert(server.includes("type==='refining'"));
  assert(server.includes("type==='verify'"));
 });

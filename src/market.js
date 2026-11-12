@@ -51,11 +51,38 @@ export function quoteMap(rows){const q=new Map();
  }return q;
 }
 export function freshestQuotes(quotes,id,market,kind='ask',maxAgeHours=48,now=Date.now()){
- return [...quotes.values()].filter(q=>q.id===id&&q.city===market&&q[kind]&&q[kind].time<=now+HOUR&&now-q[kind].time<=maxAgeHours*HOUR).map(q=>({...q[kind],city:q.city}));
+ // quoteMap is indexed by item+city. Avoid scanning the entire West quote list
+ // for every ingredient of every candidate when many market branches are selected.
+ const candidate=quotes instanceof Map ? quotes.get(id+'|'+market) : null;
+ const rows=quotes instanceof Map ? (candidate?[candidate]:[]) : [...quotes.values()];
+ return rows.filter(q=>q.id===id&&q.city===market&&q[kind]&&q[kind].time<=now+HOUR&&now-q[kind].time<=maxAgeHours*HOUR).map(q=>({...q[kind],city:q.city}));
 }
 export function cheapestMaterial(quotes,id,markets,maxAgeHours=48,now=Date.now()){
  const valid=markets.flatMap(city=>freshestQuotes(quotes,id,city,'ask',maxAgeHours,now));
  return valid.sort((a,b)=>a.price-b.price||b.time-a.time)[0]||null;
+}
+// Inputs may be purchased in a different Royal city from the recipe's crafting city.
+// These prices are quotes, NOT verified order-book depth or executable transport routes.
+export const SAFE_ROYAL_PURCHASE_CITIES=Object.freeze(['Bridgewatch','Fort Sterling','Lymhurst','Martlock','Thetford']);
+export function purchaseQuote(quotes,id,craftCity,options={},now=Date.now()){
+ const mode=options.purchaseMode||'best-royal';
+ const safe=[...SAFE_ROYAL_PURCHASE_CITIES];
+ const markets=mode==='craft-city' ? [craftCity].filter(Boolean) :
+  [...safe,...(options.includeCaerleonPurchases?['Caerleon']:[])];
+ // Even when Caerleon shopping is off, an item manufactured IN Caerleon may be
+ // purchased locally, avoiding compulsory transport along red-zone roads.
+ if(craftCity==='Caerleon'&&!markets.includes(craftCity))markets.push(craftCity);
+ const transportUnitPrice=Number(options.inboundTransportPerUnit||0);
+ const candidates=[...new Set(markets)].flatMap(city=>freshestQuotes(quotes,id,city,'ask',Number(options.maxQuoteHours)||48,now)
+  .map(q=>({ ...q, unitPrice:q.price,transportPerUnit:city===craftCity?0:transportUnitPrice,
+    landedUnitPrice:q.price+(city===craftCity?0:transportUnitPrice),craftCity,
+    riskRoute:(city==='Caerleon'||craftCity==='Caerleon')&&city!==craftCity })));
+ candidates.sort((a,b)=>a.landedUnitPrice-b.landedUnitPrice||b.time-a.time);
+ const chosen=candidates[0]||null;
+ if(!chosen)return null;
+ const local=freshestQuotes(quotes,id,craftCity,'ask',Number(options.maxQuoteHours)||48,now)[0];
+ return {...chosen,savingsVsCraftCity:local?Math.max(0,local.price-chosen.landedUnitPrice):null,
+  localPrice:local?.price??null};
 }
 function split(ids,limit=45){const u=[...new Set(ids)].filter(x=>/^[A-Z0-9_@-]{3,100}$/.test(x));const out=[];for(let i=0;i<u.length;i+=limit)out.push(u.slice(i,i+limit));return out;}
 export async function marketFetch(kind,ids,{cities,qualities='1',days=7,force=false,onProgress=()=>{}}={}){

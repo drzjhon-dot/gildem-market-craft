@@ -535,7 +535,7 @@ body{background:#111920;color:var(--text);font-size:15px;letter-spacing:.005em}
   .mobile-mode-switch input{accent-color:#d9b36e;width:16px;height:16px}
   #main{padding:13px 11px calc(var(--phone-dock-height) + 32px + env(safe-area-inset-bottom,0px))!important;min-height:calc(100dvh - 80px);max-width:100%}
   footer{padding:13px 16px calc(98px + env(safe-area-inset-bottom,0px))!important;font-size:10px}
-  .phone-dock{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));position:fixed;bottom:0;left:0;right:0;z-index:95;min-height:var(--phone-dock-height);padding:5px 6px calc(5px + env(safe-area-inset-bottom,0px));background:linear-gradient(180deg,#182227fa,#0b1115fc);border-top:1px solid #67725a66;box-shadow:0 -10px 34px #03070999;backdrop-filter:blur(18px)}
+  .phone-dock{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));position:fixed;bottom:0;left:0;right:0;z-index:95;min-height:var(--phone-dock-height);padding:5px 6px calc(5px + env(safe-area-inset-bottom,0px));background:linear-gradient(180deg,#182227fa,#0b1115fc);border-top:1px solid #67725a66;box-shadow:0 -10px 34px #03070999;backdrop-filter:blur(18px)}
   .phone-tab{min-width:0;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:2px;border:1px solid transparent;border-radius:10px;background:transparent;color:#aebdbb;padding:5px 2px;min-height:60px;font-size:10px;font-weight:650;letter-spacing:-.02em}
   .phone-tab img{width:29px;height:29px;object-fit:contain;filter:grayscale(.2)}
   .phone-tab.is-active{color:#ffdfaa;background:linear-gradient(180deg,#5045349c,#28333772);border-color:#aa855262}
@@ -638,3 +638,17 @@ body{background:#111920;color:var(--text);font-size:15px;letter-spacing:.005em}
  html[data-mobile-cards="1"] .market-ranking td:nth-child(5) .activity-meter{grid-column:2;grid-row:2;justify-self:end;width:110px;max-width:100%}
  html[data-mobile-cards="1"] .market-ranking td:nth-child(5) .rank-sub{grid-row:3}
 }
+
+/* v1.9 Royal sourcing: keep per-city procurement readable on mobile */
+.royal-purchase-section .multifield{grid-template-columns:repeat(auto-fit,minmax(175px,1fr));gap:9px}
+.royal-purchase-section select,.royal-purchase-section input[type=number]{max-width:100%;min-width:0}
+.purchase-transfer-note{display:block;font-size:11px;color:#c8b6a0;margin-top:3px;line-height:1.5}
+.purchase-savings{display:block;font-size:11px;color:#79d9a8;margin-top:3px}
+@media(max-width:700px){.royal-purchase-section .multifield{grid-template-columns:1fr}.purchase-transfer-note{font-size:12px}}
+
+.calculator-buy-settings{display:flex;flex-wrap:wrap;align-items:end;gap:10px 14px;margin:10px 0 14px;padding:12px;border:1px solid rgba(197,159,100,.22);border-radius:10px;background:rgba(20,27,33,.42)}
+.calculator-buy-settings>label{display:flex;flex-direction:column;gap:5px;font-size:12px;color:#e3d2b6;max-width:265px;flex:1 1 160px}
+.calculator-buy-settings>label.batch-inline-control{flex:0 1 auto;flex-direction:row;align-items:center;padding-bottom:8px}
+.calculator-buy-settings select,.calculator-buy-settings input[type=number]{min-width:0;max-width:100%}
+.calculator-buy-settings .small-print{flex:1 1 240px;margin:0}
+@media(max-width:600px){.calculator-buy-settings>label{max-width:none;flex:1 1 100%}.calculator-buy-settings>label.batch-inline-control{flex:1 1 100%}}

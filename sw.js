@@ -1,6 +1,6 @@
-/* Gildem v1.8.1: offline shell ONLY. Never cache market data. */
-const CACHE = 'gildem-shell-v181';
-const SHELL = ["/", "/index.html", "/styles.css", "/manifest.webmanifest", "/src/batch-calculator.js", "/src/branch-reference.js", "/src/branches.js", "/src/flipping.js", "/src/main.js", "/src/market-intelligence.js", "/src/market.js", "/src/planner-transfer.js", "/src/planner.js", "/src/recipe-extractor.js", "/src/refining.js", "/assets/branding/gildem-crest.webp", "/assets/branding/gildem-sidebar-logo.webp", "/assets/pwa-icon-192.png", "/assets/pwa-icon-512.png", "/assets/scenes/craft-cal.webp", "/assets/scenes/forge.webp", "/assets/scenes/planning.webp", "/assets/scenes/royal-market.webp", "/assets/scenes/top-market.webp", "/assets/tabs/craft-cal.svg", "/assets/tabs/craft-planner.svg", "/assets/tabs/flips.svg", "/assets/tabs/refining.svg", "/assets/tabs/top-market.svg"];
+/* Gildem v1.9.0: offline shell ONLY. Never cache market data. */
+const CACHE = 'gildem-shell-v190';
+const SHELL = ["/", "/index.html", "/styles.css", "/manifest.webmanifest", "/src/batch-calculator.js", "/src/branch-reference.js", "/src/branches.js", "/src/main.js", "/src/market-intelligence.js", "/src/market.js", "/src/planner-transfer.js", "/src/planner.js", "/src/recipe-extractor.js", "/src/refining.js", "/assets/branding/gildem-crest.webp", "/assets/branding/gildem-sidebar-logo.webp", "/assets/pwa-icon-192.png", "/assets/pwa-icon-512.png", "/assets/scenes/craft-cal.webp", "/assets/scenes/forge.webp", "/assets/scenes/planning.webp", "/assets/scenes/royal-market.webp", "/assets/scenes/top-market.webp", "/assets/tabs/craft-cal.svg", "/assets/tabs/craft-planner.svg", "/assets/tabs/top-market.svg"];
 self.addEventListener('install', event => {
  event.waitUntil(caches.open(CACHE).then(cache => cache.addAll(SHELL)).then(() => self.skipWaiting()));
 });

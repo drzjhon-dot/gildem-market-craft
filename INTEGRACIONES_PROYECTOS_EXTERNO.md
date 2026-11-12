@@ -48,3 +48,5 @@ NATS West es un flujo de eventos para un servicio persistente, no una función N
 - Toda consulta de mercado pasa por `netlify/functions/market.mjs` y usa `https://west.albion-online-data.com`.
 - Los catálogos no reemplazan los datos de mercado y nunca aportan precios automáticos.
 - `Flips` utiliza datos sólo del servidor América/West, con fecha UTC, calidad 1, y rechazando precios demasiado antiguos.
+
+**Actualización v1.9.0:** Se retiró el módulo Flips a petición del usuario. La información sobre LiveFlipper queda únicamente como investigación histórica; no hay código `src/flipping.js` ni pestaña Flips en esta versión.

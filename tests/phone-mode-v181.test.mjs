@@ -4,15 +4,15 @@ import {readFileSync} from 'node:fs';
 const html=readFileSync('index.html','utf8');
 const script=readFileSync('src/main.js','utf8');
 const css=readFileSync('styles.css','utf8');
-test('teléfono: dock accesible con las cinco rutas',()=>{
- for(const route of ['top','planner','calc','refine','flip'])assert.match(html,new RegExp('class="phone-tab[^\\"]*"[^>]*data-route="'+route+'"|data-route="'+route+'"[^>]*class="phone-tab'));
+test('teléfono: dock accesible con las tres rutas',()=>{
+ for(const route of ['top','planner','calc'])assert.match(html,new RegExp('class="phone-tab[^\\"]*"[^>]*data-route="'+route+'"|data-route="'+route+'"[^>]*class="phone-tab'));
  assert.match(html,/aria-label="Herramientas para teléfono"/);
- assert.equal((html.match(/class="nav-link[^\"]*" data-route=/g)||[]).length,5);
+ assert.equal((html.match(/class="nav-link[^\"]*" data-route=/g)||[]).length,3);
 });
 test('teléfono: tarjetas y tablas seleccionables, preferencia persistente',()=>{
  assert.match(html,/id="mobile-cards-switch"/);
  assert.match(script,/mobileCards:persisted.mobileCards!==false/);
- assert.match(script,/schemaVersion:10,mobileCards:state.mobileCards/);
+ assert.match(script,/schemaVersion:11,mobileCards:state.mobileCards/);
  assert.match(script,/function labelPhoneTables\(\)/);
  assert.match(css,/html\[data-mobile-cards="1"\] \.result-table/);
  assert.match(css,/@media \(max-width:800px\)/);

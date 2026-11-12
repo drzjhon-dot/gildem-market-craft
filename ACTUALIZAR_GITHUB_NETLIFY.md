@@ -1,15 +1,20 @@
-# Gildem Market & Craft v1.8.1 · GitHub + Netlify
+# Actualizar Gildem Market & Craft a v1.9.0
 
-Esta versión añade **Refinamiento, Flips y modo móvil**. Modifica únicamente el proyecto independiente [gildem-market-craft](https://github.com/drzjhon-dot/gildem-market-craft). No subas estos archivos al Gildem Albion Lab original.
+1. Descomprime el ZIP y conserva una copia del repositorio anterior antes de reemplazar sus archivos.
+2. En https://github.com/drzjhon-dot/gildem-market-craft reemplaza los archivos por los del paquete, incluidos `src/`, `netlify/functions/`, `assets/` y `scripts/`.
+3. Elimina `src/flipping.js`, `assets/tabs/flips.svg` y `assets/tabs/refining.svg` si GitHub todavía conserva versiones antiguas.
+4. Haz commit en `main`. Netlify debería desplegarlo si continúa conectado.
+5. Abre https://gildemcraft.netlify.app/ y verifica las tres pestañas, las cinco ramas de Refinamiento y el botón **Ampliar cobertura**.
+6. Si una versión antigua queda guardada en el teléfono, recarga la página; el Service Worker solo almacena recursos estáticos.
 
-1. Descarga el ZIP y extrae su contenido.
-2. Crea una rama de respaldo o guarda una copia de la publicación actual.
-3. En tu repositorio `drzjhon-dot/gildem-market-craft`, sustituye/sube **todos los archivos y carpetas** de la raíz descomprimida.
-4. Haz commit a `main` para desplegar, o prueba una rama con Deploy Preview.
-5. Entra a [gildemcraft.netlify.app](https://gildemcraft.netlify.app/), abre las cinco pestañas y comprueba que Flips aparece también en PC.
-6. En teléfono: verifica la barra inferior, cambia **Tarjetas** on/off y prueba «Marcar → Enviar a Planner → Generar plan → Calculadora». Prueba también Refinamiento y Flips.
-7. Para añadirla a pantalla de inicio, usa la opción del navegador «Añadir a pantalla de inicio» o «Instalar aplicación» si está disponible.
+Se mantienen las restricciones de historial Q1, precios vigentes y presupuesto. No publiques un plan sin verificar cotizaciones en el juego.
 
-Netlify lee `netlify.toml`, construye con `npm run build` y publica `dist/`. Las funciones de Netlify consultan AODP West y el catálogo del juego. No hace falta instalar ninguna APK ni un cliente de captura para utilizar la web.
+## Comprobar las compras Royal
 
-**Importante:** la aplicación no instala el código .NET de JPCodeCraft ni el escáner de LiveFlipper; incorpora aprendizajes de sus documentos y un módulo original de arbitraje, con la fuente AODP West. Datos de mercado sin profundidad verificada no son órdenes ejecutables.
+1. En **Craft Planner → Compras de materiales y diarios**, deja «Mejor coste entre ciudades Royal».
+2. Establece una **tarifa realista de transporte por material/diario** antes de estimar el profit.
+3. Puedes activar Caerleon como lugar de compra externo, pero verifica el riesgo de ruta roja.
+4. Genera el plan, envíalo a **Calculadora de Craft** y consulta «Comprar en», destino de fabricación, transporte y coste total.
+5. Los diarios son opcionales; si los compras o completas, revísalos por separado del beneficio del objeto fabricado.
+
+**Nota:** las cifras de venta de Top Mercado no prueban que exista una orden de compra o venta ejecutable al precio indicado.

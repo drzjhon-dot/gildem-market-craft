@@ -21,9 +21,9 @@ const q=quoteMap(prices);
 const config={...DEFAULTS,budget:1_000_000,tiers:[4,6,7,8],enchants:[0],saleDays:7};
 
 // Catálogo y rama
-test('10 grupos, 105 opciones y las cantidades exactas de ramas indicadas',()=>{
- assert.deepEqual(GROUPS.map(g=>g.items.length),[17,9,1,2,13,1,15,9,36,2]);
- assert.equal(BRANCHES.length,105);
+test('11 grupos, 110 opciones, incluidas 5 ramas de refinamiento',()=>{
+ assert.deepEqual(GROUPS.map(g=>g.items.length),[17,9,1,2,13,1,15,9,36,5,2]);
+ assert.equal(BRANCHES.length,110);
  assert.equal(variant('T7_MAIN_AXE@3').ench,3);
  assert.equal(variant('T6_MAIN_AXE@9'),null);
 });
