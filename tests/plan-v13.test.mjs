@@ -68,12 +68,12 @@ test('tamaño final respeta presupuesto, ROI, estrés y concentración por objet
   assert(r.qty*r.grossCapitalPerCraft<=config.budget*.35+r.grossCapitalPerCraft);
  }
 });
-test('Top contiene configuración de ventas independiente y la calculadora manual permanece',()=>{
+test('Craft Planner contiene configuración de ventas independiente y la calculadora manual permanece',()=>{
  const src=readFileSync(new URL('../src/main.js',import.meta.url),'utf8');
  assert.match(src,/function planBuilderPanel\(/);
  assert.match(src,/function calcPage\(\)\{return hero\('calc'\)\+batchPanel\(\)/);
  assert.match(src,/marketChips\(state\.saleMarkets,'sale'\)/);
- assert.match(src,/const unqueried=sales\.filter\(city=>!state\.markets\.has\(city\)\)/);
+ assert.match(src,/qualities:'1',days:state\.days/);
  assert.match(src,/marketFetch\('history',idsToPlan/);
  assert.doesNotMatch(src,/state\.saleMarkets=new Set\(state\.markets\)/);
 });

@@ -1,14 +1,19 @@
-# Instalar la versión 1.3.0 en gildemcraft.netlify.app
+# Actualizar Gildem Market & Craft a v1.4.0
 
-1. Descarga el ZIP v1.3.0 y extrae su contenido.
-2. Abre https://github.com/drzjhon-dot/gildem-market-craft en GitHub.
-3. Carga los contenidos de la carpeta extraída en la **raíz del repositorio**; reemplaza los archivos anteriores conservando sus rutas (por ejemplo, `src/main.js` debe quedar en `src/main.js`). Nunca subas todo dentro de una carpeta llamada `Gildem_Market_Craft_v1_3/`.
-4. Crea un commit en `main`, o en una rama de prueba para revisar antes de fusionar.
-5. Abre el panel de Deploys de Netlify. Si tu sitio está conectado a este repo y rama, Netlify ejecutará `npm run build` y publicará `dist` junto a las functions.
-6. Comprueba el flujo: Top Mercado -> Consultar top -> Seleccionar destinos -> Generar plan por ciudades -> Revisar resultados.
+Repositorio independiente actual: https://github.com/drzjhon-dot/gildem-market-craft
 
-No reemplaces el proyecto Gildem Albion Lab anterior: este ZIP solo corresponde a `gildem-market-craft`.
+Sitio vinculado: https://gildemcraft.netlify.app/
 
-Para probar localmente (Node 22): `npm test` y `npm run build`. El pequeño `npm run dev` muestra interfaz, pero no ejecuta functions. Para AODP real necesita Netlify o Netlify CLI.
+1. Antes de reemplazar archivos, conserva una copia de la versión que tienes en `main` o crea una rama de respaldo.
+2. Extrae **Gildem_Market_Craft_v1_4_0_GITHUB_NETLIFY.zip** en tu PC. Abre el contenido de la carpeta extraída.
+3. En GitHub abre el repositorio indicado, sube **el contenido de la carpeta** (index.html, styles.css, package.json, netlify.toml, directorios `src`, `netlify`, `scripts`, `assets`, `tests`, etc.) a la **raíz**. No crees un directorio extra encima de ellos.
+4. Si GitHub pide resolver duplicados, reemplaza los archivos antiguos con los nuevos; conserva el nombre y ubicación del repositorio. El ZIP contiene todo lo necesario y no depende del repositorio antiguo.
+5. Realiza el commit en `main`, por ejemplo: `v1.4: Craft Planner separado + tema grafito`.
+6. En Netlify abre el sitio ya conectado y verifica que el deploy termine. Después recarga la web con `Ctrl + Shift + R`.
+7. Verifica las tres pestañas: marca objetos del Top, envíalos al Planner, genera una ruta para una ciudad y transfiere el lote a la calculadora.
 
-La publicación no se ha realizado desde esta conversación. El resultado final con precios reales dependerá de los datos de AODP y de las consultas desde tu sitio.
+Si Netlify no despliega automáticamente, revisa que el sitio conserve la rama `main`, el comando `npm run build` y el directorio publicado `dist`. Están declarados en `netlify.toml`.
+
+**Atención:** la conexión de GitHub disponible para esta conversación anteriormente devolvió 403 al escribir. Esta entrega es un ZIP listo para carga manual; **no se ha modificado tu web ni tu repositorio desde aquí**.
+
+**Aviso de mercado:** los tests usan cotizaciones simuladas; confirma disponibilidad real de AODP y la liquidez de los mercados después del deploy.
