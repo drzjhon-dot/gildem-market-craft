@@ -285,7 +285,7 @@ export function allocatePlan({candidates=[],config={},recipes={},materialHistory
    journalValue:selected.reduce((s,r)=>s+(r.journalGainPerCraft||0)*r.qty,0),
    qualityExtra:selected.reduce((s,r)=>s+(r.qualityExtraPerUnit||0)*r.qty*r.craftAmount*(1-r.marketFee),0),
    purchaseExtraCost:purchaseCheck.extraCost,purchaseHard:purchaseCheck.hard,purchaseLarge:purchaseCheck.large,purchaseInflated:purchaseCheck.inflated,
-   profitAfterPurchases:expectedProfit-purchaseCheck.extraCost,focusCrafts:selected.reduce((s,r)=>s+(r.focusQty||0),0),allowedFameLoss:lossCap,estimatedLosses:selected.reduce((s,r)=>s+Math.max(0,-r.totalProfit),0)},warnings};
+   profitAfterPurchases:expectedProfit-purchaseCheck.extraCost,shareTrim:optimized.best?.shareTrim?.crafts?{crafts:optimized.best.shareTrim.crafts,capital:optimized.best.shareTrim.capital,by:optimized.best.shareTrim.by}:null,focusCrafts:selected.reduce((s,r)=>s+(r.focusQty||0),0),allowedFameLoss:lossCap,estimatedLosses:selected.reduce((s,r)=>s+Math.max(0,-r.totalProfit),0)},warnings};
 }
 
 // Calculadora individual, sin filtro por beneficio: muestra incluso una pérdida.

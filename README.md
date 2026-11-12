@@ -1,4 +1,4 @@
-# Gildem Market & Craft 2.6.0
+# Gildem Market & Craft 2.7.0
 
 Aplicación independiente para Albion Online **América (West)**; tres pestañas: **Top Mercado**, **Craft Planner** y **Calculadora de Craft**.
 

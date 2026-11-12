@@ -891,3 +891,10 @@ select:focus-visible,input:focus-visible,button:focus-visible,summary:focus-visi
 .ob-status b{font-family:var(--hud-font);text-transform:uppercase;letter-spacing:.07em;color:#fff}
 .ob-on{border-left-color:var(--ok)}.ob-on b{color:#8ff0b8}
 .ob-old{border-left-color:var(--hud)}.ob-off{border-left-color:#3a4b5e}
+/* v2.7 · diagnóstico del plan */
+.plan-advice{border:1px solid #5c3412;border-left:3px solid var(--hud);background:#120c05;border-radius:6px;padding:12px 14px;margin:6px 0 14px}
+.plan-advice-small{border-color:#3a3420}
+.plan-advice h3{font-family:var(--hud-font);text-transform:uppercase;letter-spacing:.08em;color:#ffd27a;font-size:14px;margin:0 0 8px}
+.advice-tip{display:grid;gap:2px;padding:7px 0;border-top:1px solid #241a0e}
+.advice-tip:first-of-type{border-top:0}
+.advice-tip b{color:#fff;font-size:13px}.advice-tip span{color:#c9b89a;font-size:12px;line-height:1.45}

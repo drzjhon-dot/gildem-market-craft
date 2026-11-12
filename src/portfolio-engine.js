@@ -7,13 +7,20 @@
  * Each additional craft is priced at its marginal impact, constrained by gross capital,
  * focus, per-SKU exposure, group exposure and the observed Q1 volume cap.
  */
-import {variant} from './branches.js';
+import {variant as parseVariant} from './branches.js';
+// Interpretar el ID es caro y el motor lo consulta millones de veces: se memoriza por ID.
+const variantCache=new Map();
+const variant=id=>{let v=variantCache.get(id);if(v===undefined){v=parseVariant(id)||null;if(variantCache.size>20000)variantCache.clear();variantCache.set(id,v);}return v;};
 import {walkBids} from './orderbook.js';
 const finite=x=>Number.isFinite(Number(x))?Number(x):0;
 const cap=(x,a,b)=>Math.min(b,Math.max(a,x));
 const family=id=>String(id||'').replace(/^T[1-8]_/,'').replace(/@[1-4]$/,'');
-const familyGroup=id=>family(id).replace(/(?:_SET\d+|_UNIQUE(?:_\w+)?|_LEVEL\d+)$/,'');
+const familyCache=new Map();
+const familyGroup=id=>{let f=familyCache.get(id);if(f===undefined){f=family(id).replace(/(?:_SET\d+|_UNIQUE(?:_\w+)?|_LEVEL\d+)$/,'');if(familyCache.size>20000)familyCache.clear();familyCache.set(id,f);}return f;};
 const keyOf=r=>r.routeKey||`${r.id}|${r.city}`;
+export const UNUSED_BUDGET_SHARE=.75;
+// Objetivo «Equilibrado»: cada punto de fama vale este silver al elegir entre crafts rentables.
+export const BALANCED_FAME_SILVER=.6;
 function marginalImpact(r,qty,c){const units=qty*finite(r.craftAmount||1),daily=finite(r.history?.effectiveQuality1DailyUnits??r.history?.quality1DailyUnits??r.history?.averageDailyUnits);
  // Mismo coeficiente que planner.deriveImpact: el impacto depende del mercado, no del estilo.
  return cap(units/Math.max(1,daily*finite(c.saleDays||7))*.75,0,.33);
@@ -55,8 +62,9 @@ const increase=(map,k,v)=>map.set(k,sum(map,k)+v);
 function evalNext(s,r,c,limit,exposure){const key=keyOf(r),qty=sum(s.qty,key),out=(why)=>({ok:false,why});
  const gross=finite(r.grossCapitalPerCraft);
  if(!(gross>0)||!(r.maxCrafts>0))return out('Coste o límite de demanda Q1 no verificable');
- // maxCrafts ya incorpora el estilo (parte de la actividad Q1). No se aplica una segunda reducción.
- const used=qty,styleLimit=r.maxCrafts;
+ // maxCrafts ya incorpora el estilo (parte de la actividad Q1).
+ // «Usar todo lo posible» desmarcado: cada destino se llena como mucho al 75 % de ese cupo (margen de seguridad).
+ const used=qty,styleLimit=c.useBudget?r.maxCrafts:Math.max(1,Math.ceil(r.maxCrafts*UNUSED_BUDGET_SHARE));
  if(used>=styleLimit)return out('Límite de volumen de calidad 1 / estilo');
  if(!used&&s.activeCount>=limit)return out('Límite de variantes del estilo');
  if(gross>s.budgetLeft+1e-7)return out('Presupuesto bruto agotado');
@@ -66,7 +74,7 @@ function evalNext(s,r,c,limit,exposure){const key=keyOf(r),qty=sum(s.qty,key),ou
  if(byItem>c.budget*c.maxCapitalSharePct/100+1e-7)return out('Capital máximo por artículo');
  const v=variant(r.id)||{tier:0,ench:0};
  const groups=[['tier',v.tier,s.tier],['ench',v.ench,s.ench],['family',familyGroup(r.id),s.family],['city',r.city,s.city]];
- if(c.diversify){for(const [field,k,map] of groups){if(sum(map,k)+gross>c.budget*exposure[field]/100+1e-7)return out(`Concentración máxima por ${field}`);}}
+ for(const [field,k,map] of groups){if(sum(map,k)+gross>c.budget*exposure[field]/100+1e-7)return out(`Concentración máxima por ${field}`);}
  const before=estimateRoute(r,qty,c,fq),after=estimateRoute(r,qty+1,c,fq+(useFocus?1:0));
  const marginal=after.profit-before.profit;
  const balanceLoss=s.loss-Math.max(0,-before.profit)+Math.max(0,-after.profit);
@@ -140,11 +148,67 @@ function objective(r,v,c,mode,s){const capital=Math.max(1,v.gross),rate=v.margin
  const isNew=!s.qty.has(keyOf(r)),groupUnused=!s.family.has(familyGroup(r.id));
  const newFactor=isNew?.010:0,spread=groupUnused?.008:0;
  if(c.goal==='fame')return fameRate*(1+(mode==='spread'?.05:0)+newFactor)+(Math.min(.2,rate)*.001);
- if(mode==='profit')return rate+Math.log1p(Math.max(0,v.marginal))*.0008;
- if(mode==='spread')return rate+(c.diversify?(newFactor+spread):0)+(c.goal==='balanced'?fameRate*.008:0);
- return rate*.98+Math.log1p(Math.max(0,v.marginal))*.001+(c.goal==='balanced'?fameRate*.008:0);
+ if(mode==='profit')return rate+Math.log1p(Math.max(0,v.marginal))*.0008+(c.goal==='balanced'?fameRate*BALANCED_FAME_SILVER:0);
+ const fameBonus=c.goal==='balanced'?fameRate*BALANCED_FAME_SILVER:0;
+ if(mode==='spread')return rate+(c.diversify?(newFactor+spread):0)+fameBonus;
+ return rate*.98+Math.log1p(Math.max(0,v.marginal))*.001+fameBonus;
 }
 function seed(s,r,c,caplines,exposure){const next=evalNext(s,r,c,caplines,exposure);if(next.ok){apply(s,r,c,next);return true;}return false;}
+/**
+ * v2.7 · Límites de reparto respecto al CAPITAL DEL PLAN (no al presupuesto).
+ * «Máx. por tier 50 %» significa que ningún tier supera la mitad de lo que el plan invierte.
+ * Un límite solo se aplica si el plan tiene al menos dos grupos en esa dimensión
+ * (si solo hay un tier rentable, no se vacía el plan por ello).
+ */
+const SHARE_DIMS=[['byItem','maxCapitalSharePct','artículo'],['tier','maxTierSharePct','tier'],['ench','maxEnchantSharePct','encantamiento'],['family','maxFamilySharePct','familia'],['city','maxMarketSharePct','ciudad de venta']];
+const groupCache=new WeakMap();
+const groupKey=(r,map)=>{let g=groupCache.get(r);if(!g){const v=variant(r.id)||{tier:0,ench:0};g={byItem:r.id,tier:v.tier,ench:v.ench,family:familyGroup(r.id),city:r.city};groupCache.set(r,g);}return g[map];};
+/** Craft más caro de cada grupo presente en el plan: margen de tolerancia (un craft no se puede partir). */
+function craftTolerance(s,routes){const tol={};for(const [map] of SHARE_DIMS)tol[map]=new Map();
+ for(const r of routes){if(!sum(s.qty,keyOf(r)))continue;const g=finite(r.grossCapitalPerCraft);
+  for(const [map] of SHARE_DIMS){const k=groupKey(r,map),m=tol[map];if(g>(m.get(k)||0))m.set(k,g);}}
+ return tol;
+}
+/** Excesos sobre los límites respecto al capital del plan (con margen de un craft por grupo). */
+function shareExcesses(s,c,tol,extra=null){
+ const g=extra?finite(extra.grossCapitalPerCraft):0,total=c.budget-s.budgetLeft+g;const out=[];if(!(total>0))return out;
+ for(const [map,cfgKey,label] of SHARE_DIMS){const limit=Number(c[cfgKey]);if(!(limit>0&&limit<100))continue;
+  const values=new Map(s[map]);let ek=null;if(extra){ek=groupKey(extra,map);values.set(ek,(values.get(ek)||0)+g);}
+  let groups=0;for(const v of values.values())if(v>1e-7)groups++;if(groups<2)continue;
+  for(const [k,v] of values){const margin=Math.max(tol[map].get(k)||0,k===ek?g:0),e=v-margin-total*limit/100;
+   if(e>1e-6*total)out.push({map,key:k,label,limit,ratio:e/total});}}
+ return out;
+}
+function shareViolation(s,c,routes){const ex=shareExcesses(s,c,craftTolerance(s,routes));return ex.length?ex.reduce((a,b)=>b.ratio>a.ratio?b:a):null;}
+const potentialOf=list=>list.reduce((n,x)=>n+x.ratio,0);
+/**
+ * Tres fases sin ciclos: (1) diluir con crafts de otros grupos que reduzcan el exceso total;
+ * (2) recortar el grupo que se pasa, quitando cada vez el craft menos rentable; (3) rellenar sin romper límites.
+ */
+function enforceShares(s,routes,c,caplines,exposure,mode){const trimmed={crafts:0,capital:0,added:0,by:{}};
+ let tol=craftTolerance(s,routes),pot=potentialOf(shareExcesses(s,c,tol));if(!(pot>0))return trimmed;
+ for(let i=0;i<3000&&pot>0;i++){let best=null,bestCheck=null,bestPot=pot,bestScore=-Infinity;
+  for(const r of routes){const p=potentialOf(shareExcesses(s,c,tol,r));if(!(p<pot-1e-12))continue;const next=evalNext(s,r,c,caplines,exposure);if(!next.ok)continue;
+   const score=objective(r,next,c,mode,s);if(p<bestPot-1e-12||(Math.abs(p-bestPot)<=1e-12&&score>bestScore)){bestPot=p;bestScore=score;best=r;bestCheck=next;}}
+  if(!best)break;apply(s,best,c,bestCheck);trimmed.added++;tol=craftTolerance(s,routes);pot=potentialOf(shareExcesses(s,c,tol));}
+ trimUntilCompliant(s,routes,c,trimmed);
+ return trimmed;
+}
+function trimUntilCompliant(s,routes,c,trimmed){
+ for(let guard=0;guard<20000;guard++){const v=shareViolation(s,c,routes);if(!v)break;
+  let pickR=null,pickLoss=Infinity;
+  for(const r of routes){const q=sum(s.qty,keyOf(r));if(!q||groupKey(r,v.map)!==v.key)continue;
+   const fq=sum(s.focusQty,keyOf(r)),loss=estimateRoute(r,q,c,fq).profit-estimateRoute(r,q-1,c,Math.min(fq,q-1)).profit;
+   if(loss<pickLoss){pickLoss=loss;pickR=r;}}
+  if(!pickR)break;trimmed.crafts++;trimmed.capital+=finite(pickR.grossCapitalPerCraft);trimmed.by[v.label]=v.limit;removeOne(s,pickR,c);}
+}
+function refillWithinShares(s,routes,c,caplines,exposure,mode){let added=0;
+ for(let i=0;i<16000;i++){let best=null,bestCheck=null,bestScore=-Infinity;const tol=craftTolerance(s,routes);
+  for(const r of routes){const next=evalNext(s,r,c,caplines,exposure);if(!next.ok)continue;if(shareExcesses(s,c,tol,r).length)continue;
+   const score=objective(r,next,c,mode,s);if(score>bestScore){bestScore=score;best=r;bestCheck=next;}}
+  if(!best)break;apply(s,best,c,bestCheck);added++;}
+ return added;
+}
 function solve(routes,c,mode,exposure){const s=freshState(routes,c),caplines=c.style==='prudent'?24:c.style==='balanced'?40:c.volume?70:55;
  const eligible=routes.filter(r=>r.maxCrafts>0&&r.grossCapitalPerCraft<=c.budget);
  // First reserve one viable craft per selected tier and enchant if diversity is enabled.
@@ -177,6 +241,13 @@ function solve(routes,c,mode,exposure){const s=freshState(routes,c),caplines=c.s
   for(const r of routes){let q=sum(s.qty,keyOf(r));
    while(q>0&&estimateRoute(r,q,c,sum(s.focusQty,keyOf(r))).profit<=0){removeOne(s,r,c);q--;changed=true;}}
   if(!changed)break;reassignFocus(s,routes,c);}
+ // Límites de reparto sobre el capital real del plan; después se rellena dentro de esos límites.
+ const shareTrim=enforceShares(s,routes,c,caplines,exposure,mode);
+ if(shareTrim.crafts||shareTrim.added){shareTrim.refilled=refillWithinShares(s,routes,c,caplines,exposure,mode);reassignFocus(s,routes,c);
+  // Tras mover el Focus, ninguna ruta puede quedar en pérdida; si se retira algo, se vuelve a comprobar (solo recortes).
+  if(c.goal!=='fame')for(const r of routes){let q=sum(s.qty,keyOf(r));while(q>0&&estimateRoute(r,q,c,sum(s.focusQty,keyOf(r))).profit<=0){removeOne(s,r,c);q--;}}
+  trimUntilCompliant(s,routes,c,shareTrim);}
+ s.shareTrim=shareTrim;
  const chosen=routes.filter(r=>sum(s.qty,keyOf(r))>0).map(r=>({row:r,qty:sum(s.qty,keyOf(r)),focusQty:sum(s.focusQty,keyOf(r))}));
  const profit=chosen.reduce((v,{row,qty,focusQty})=>v+estimateRoute(row,qty,c,focusQty).profit,0);
  const fame=chosen.reduce((v,{row,qty})=>v+finite(row.expectedFamePerCraft)*qty,0);
@@ -201,7 +272,7 @@ export function optimizePortfolio(candidates,config){const c=config,keys=new Map
  const routes=[...keys.values()].map(x=>({...x,routeKey:keyOf(x)}));const exposure=exposures(routes,c);
  const solutions=['profit','balanced','spread'].map(mode=>solve(routes,c,mode,exposure));
  const value=s=>c.goal==='fame'?s.fame+Math.min(0,s.profit)*.02:
-  c.goal==='silver'?s.profit:s.profit+(s.fame*Math.max(0,Math.min(1,s.profit/Math.max(1,s.capital)))*.001);
+  c.goal==='silver'?s.profit:s.profit+s.fame*BALANCED_FAME_SILVER;
  const ordered=solutions.sort((a,b)=>value(b)-value(a)||b.profit-a.profit||b.diversity.variants-a.diversity.variants);
  const best=ordered[0];const selected=best.chosen.map(x=>({...x.row,qty:x.qty,focusQty:x.focusQty||0}));
  const warnings=[];
