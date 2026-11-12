@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import {enrichTrends} from '../src/market-trends.js';
 import {optimizePortfolio,estimateRoute} from '../src/portfolio-engine.js';
-import {allocatePlan,settings,DEFAULTS} from '../src/planner.js';
+import {allocatePlan,settings,DEFAULTS,maxCraftByDemand} from '../src/planner.js';
 const cfg=(extra={})=>({...DEFAULTS,goal:'silver',budget:1_000_000,minRoiPct:0,stressGuard:false,
  tiers:[4,5,6,7,8],enchants:[0,1,2,3],saleDays:7,style:'dynamic',useBudget:true,
  maxCapitalSharePct:50,maxTierSharePct:60,maxEnchantSharePct:72,maxFamilySharePct:65,...extra});
@@ -60,9 +60,10 @@ test('Multi-ciudad: un objeto puede ir a dos destinos, sujeto al mismo máximo p
  assert(out.selected.reduce((n,r)=>n+r.qty*r.grossCapitalPerCraft,0)<=60000*.35+.1);
 });
 test('Estilo prudente y dinámico cambian de verdad el techo de crafts',()=>{
- const row=mk('T5_MAIN_MACE','Black Market',800,80000,1000,12000);
- const prudent=optimizePortfolio([row],cfg({budget:100000,tiers:[5],enchants:[0],diversify:false,style:'prudent',useBudget:false}));
- const dynamic=optimizePortfolio([row],cfg({budget:100000,tiers:[5],enchants:[0],diversify:false,style:'dynamic',useBudget:false}));
+ const row=mk('T5_MAIN_MACE','Black Market',40,80000,1000,12000);
+ const styled=style=>({...row,maxCrafts:maxCraftByDemand(row.history,1,cfg({style}))});
+ const prudent=optimizePortfolio([styled('prudent')],cfg({budget:100000,tiers:[5],enchants:[0],diversify:false,style:'prudent',useBudget:false}));
+ const dynamic=optimizePortfolio([styled('dynamic')],cfg({budget:100000,tiers:[5],enchants:[0],diversify:false,style:'dynamic',useBudget:false}));
  assert(dynamic.best.capital>prudent.best.capital,`prudent ${prudent.best.capital}, dynamic ${dynamic.best.capital}`);
 });
 test('Capital no inventado: falta de candidatos significa plan vacío sin silver invertido',()=>{
