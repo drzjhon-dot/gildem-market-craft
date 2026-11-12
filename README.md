@@ -1,53 +1,60 @@
-# Gildem Albion Lab · Market & Craft v1.5.0
+# Gildem Albion Lab · Market & Craft v1.6.0
 
-Aplicación independiente para **Albion Online, América (West)**, diseñada para GitHub + Netlify. Funciona como tres pestañas conectadas y conserva la lógica de mercado/crafting de v1.3.
+Herramienta independiente de inteligencia de mercado y crafting para **Albion Online América (West)**. Tres pestañas conectadas: **Top Mercado → Craft Planner → Calculadora de Craft**. Diseñada para GitHub y Netlify, sin servidor de pago ni claves privadas.
 
-## Flujo principal
+## La idea
 
-1. **Top Mercado:** elige hasta 6 ramas, mercado, ventana de 1/3/7/14 días y orden de clasificación. Consulta AODP History (calidades 1–5), marca filas con ☆, usa «Marcar primeros 50» y «Borrar marcas». Puedes enviar lo marcado a **Craft Planner** o directamente a **Calculadora de Craft**.
-2. **Craft Planner:** conserva su propia cesta de objetos, independiente del ranking. Permite quitar artículos, configurar destinos de venta, ciudad de bono, tiers, encantamientos, bono diario, Focus verificado, presupuesto rápido (5M, 10M, 15M, 20M u otro), horizonte, objetivo, variedad de tiers y encantamientos, volumen, impuestos, riesgo, costes de transporte y antigüedad máxima de cotizaciones. **Solo genera planes entre los artículos que enviaste.** Consulta nuevamente el historial de calidad 1 de las ciudades de venta elegidas y precios Q1 para comprobar oportunidades. Presenta inversión, beneficio estimado o pérdida permitida en modo Fama, distribución por destino, tiers y encantamientos. El detalle de compras y diarios vive exclusivamente en la Calculadora. El botón «Enviar lote a Calculadora de Craft» transfiere las variantes y las **cantidades de fabricaciones**, sumando las rutas del mismo objeto.
-3. **Calculadora de Craft:** permite editar cantidades, cambiar tiers/encantamientos cuando hay recetas, añadir/eliminar objetos, comparar precios observados BM/Royal, materiales y diarios **integrados y agrupados por tier** en una lista de compras, y exportar/copiar compras. Los diarios son estimaciones opcionales y su coste se presenta separado del profit de crafting. Recibir un plan **reemplaza expresamente el lote actual** para evitar doble conteo. La calculadora muestra un recordatorio de los destinos originales, pero **recalcula el profit BM/Royal por separado**; conserva el plan por ciudad en Craft Planner para la rentabilidad de esos destinos.
+El ranking y el plan comparten evidencia. Al seleccionar una fila no se envía solamente el ID: se conserva el mercado, las unidades históricas por día de todas las calidades, las unidades de **calidad 1**, los días activos y la ventana UTC. El Planner usa esa ficha y consulta mercados adicionales únicamente cuando hacen falta sus propios datos Q1. La selección y el resultado siguen siendo editables y exportables.
 
-## Datos y límites
+### 1. Top Mercado
 
-- **Fuente de precios y actividad:** Albion Online Data Project, región West, mediante funciones de Netlify. Los nombres/recetas se obtienen de los catálogos existentes de v1.3; las imágenes de objetos se solicitan al renderizador oficial de Albion.
-- Top Mercado suma calidades 1–5 y días UTC completos. Craft Planner usa **solo actividad de calidad 1** al dimensionar lotes; History no es un libro de órdenes ejecutables ni confirma ventas.
-- Exige receta y cotizaciones de materiales y ventas utilizables; no trata datos faltantes como silver cero. El presupuesto es máximo. **Silver/Equilibrado** rechazan pérdidas netas esperadas; **Fama por silver** permite perder hasta el porcentaje configurado del presupuesto (por defecto 10%, máximo 30%), sin exceder un 25% de pérdida por ruta, y avisa expresamente. La fama inferida de materiales es una estimación, no fama verificada.
-- El resultado incluye supuestos configurables de margen, impacto, compra, venta, gastos y límites de concentración. AODP Prices no prueba profundidad real del libro. **Contrasta manualmente el precio y la cantidad de cada orden antes de invertir.**
-- La cesta del Planner y sus configuraciones se conservan en el navegador local. La consulta del ranking, la cesta y el resultado no se comparten automáticamente entre dispositivos. Al actualizar la pestaña hay que volver a consultar precios para generar otro plan.
-- Máximo recomendado por transferencia: 150 variantes; ninguna cantidad individual puede superar las 100.000 fabricaciones por lote de calculadora. Si se excede, se muestra un error, no se trunca silenciosamente.
+Selecciona hasta seis ramas y consulta todo su catálogo, o usa el módulo **Objetos individuales** para buscar nombres/IDs y activar «Solo mis artículos». Después elige mercados, ventana y orden. El ranking distingue `Todas/día` y `Calidad 1/día`, porque un craft de calidad 1 no se puede justificar con actividad de calidad 2–5. Conserva los botones **Marcar primeros 50**, **Borrar marcas**, **Enviar a Craft Planner** y **Enviar a Calculadora**.
 
-## Deploy en Netlify
+### 2. Craft Planner
 
-No requiere un backend de pago. El proxy AODP existente está en `netlify/functions`.
+La cesta muestra las cantidades diarias capturadas por artículo y ciudad. Permite vender en los mercados marcados o cambiar destinos, con historial Q1 independiente para los destinos nuevos. Incluye presets de presupuesto 5M/10M/15M/20M, opción Otro, Focus verificado, ciudades con bono, tiers, encantamientos, objetivos silver/fama, horizonte de venta, variedad de variantes y costes/riesgos ajustables. **No fuerza gastos en artículos no rentables en objetivo silver.**
+
+El resultado indica capital bruto reservado, beneficio neto **estimado**, cuota de actividad Q1 que utilizaría cada lote, efecto de precio, escenario de estrés, retorno, destinos y exclusiones. Admite el mismo artículo en varias ciudades sin permitir que el capital supere el tope combinado por SKU. «Enviar lote a Calculadora» agrega las cantidades de fabricación de todas las rutas para ese objeto.
+
+### 3. Calculadora de Craft
+
+Revisa el lote manualmente: cantidades, variantes, materias primas, precios observados o introducidos manualmente, diarios opcionales agrupados por tier, y comparación de Mercado Negro/Royal. Los diarios no se cuentan como coste obligatorio ni se inventan cotizaciones. Su beneficio individual es distinto de la proyección de ciudades del Planner.
+
+## Archivos del proyecto
+
+| Archivo | Función |
+|---|---|
+| `src/market-intelligence.js` | Captura de Top, catálogo individual, conciliación de periodos, actividad Q1 y diagnóstico de confiabilidad |
+| `src/planner-transfer.js` | Transferencia de marcas y cantidades a otras pestañas |
+| `src/market.js` | AODP History, Prices, caché, UTC, agregación y cotizaciones |
+| `src/planner.js` | Recetas, retornos, riesgos, cuotas por mercado y asignación diversificada |
+| `src/main.js` | Navegación, filtros, selección individual, mercado y resultados |
+| `src/batch-calculator.js` | Materiales y diarios opcionales por lote |
+| `netlify/functions/*` | Proxy validado para AODP West y catálogos |
+| `styles.css` + `assets/` | Identidad visual Obsidian & Copper y recursos gráficos |
+| `tests/*.test.mjs` | Pruebas de cálculo, datos y transferencias |
+
+## Instalación y despliegue
+
+1. Sube **todos los archivos y carpetas de la raíz** a tu repositorio **independiente** `drzjhon-dot/gildem-market-craft`. No mezcles con el proyecto original.
+2. Netlify conectado a `main` puede usar `netlify.toml` automáticamente: build `npm run build`, publish `dist`, funciones en `netlify/functions`.
+3. Para probar desde un ordenador con Node 22 o superior:
 
 ```bash
 npm test
 npm run build
 ```
 
-`netlify.toml` configura el comando de build y la carpeta `dist` para publicar. En GitHub sube **todos los archivos y carpetas de la raíz** de este ZIP en tu repo independiente `drzjhon-dot/gildem-market-craft` (no en el repositorio original de Gildem Albion Lab). Una vez registrado el commit en `main`, Netlify publica automáticamente si sigue conectado a esa rama.
+`npm run dev` sirve la interfaz local, pero las funciones de mercado necesitan Netlify CLI (`netlify dev`) o el sitio publicado. `dist/` contiene la web generada sin necesitar GitHub para una inspección estática.
 
-El `dist` incluido en el ZIP es el artefacto estático compilado para inspección o deploy manual. Si Netlify está conectado a GitHub, vuelve a generar ese `dist` durante la compilación.
+## Fuentes y garantías
 
-## Verificación v1.5
+Fuente única de mercado: [AODP West](https://west.albion-online-data.com/api-docs), endpoints History y Prices. Según la documentación oficial, **History se basa en órdenes de venta observadas, no ventas garantizadas**. Se agregan días completos UTC. El cliente conserva datos en memoria durante una hora. Los precios pueden estar desactualizados y no prueban profundidad del libro, disponibilidad real de materiales ni ejecución. El coste de transporte solo se incluye cuando se configura. Si faltan datos críticos, el motor no crea un plan ficticio ni usa precios cero.
 
-- 45 pruebas automatizadas de cálculo, proxy, catálogo, presupuesto, riesgos y transferencias.
-- Compilación para Netlify validada.
-- Prueba de interfaz en Chromium con scripts y respuestas AODP **simulados localmente en memoria**: Top → marcas → Planner → presupuestos/objetivo → generación → envío de cantidades a Calculadora y diarios. Sin excepciones JavaScript; sin desbordamiento horizontal a 390 px. Los iconos remotos de ítems no se verificaron en esa simulación.
-- La disponibilidad de AODP en producción y el resultado del deploy Netlify **no han sido verificados** en esta ejecución.
+En objetivo **Silver** y **Equilibrado**, exige beneficio neto esperado positivo y ROI mínimo. En **Fama**, las pérdidas posibles están acotadas por el porcentaje elegido y se etiquetan explícitamente. La fama puede ser estimada a partir de recursos y no ser una cifra confirmada del juego.
 
-No es una calculadora de beneficios garantizados. Albion Online es marca de Sandbox Interactive; esta herramienta es un proyecto independiente de la comunidad.
+## Validación
 
-## Cambios destacados v1.5
+53 pruebas automatizadas aprobadas y recorrido de interfaz probado en Chromium con datos **simulados** (incluye T8, calidad 1 separada, envío al Planner y Calculadora; móvil 390 px). No se ha demostrado todavía que las cotizaciones de producción sean ejecutables ni se ha desplegado el repositorio desde esta sesión.
 
-- Configuración visual compacta (paneles de varias columnas), con presupuesto por opciones exclusivas 5M/10M/15M/20M y cantidad personalizada.
-- Los IDs técnicos ya no se muestran debajo de los nombres. Se pueden seguir copiando con Shift + clic sobre el icono de copiar.
-- Modo **Fama por silver** amplía la diversidad de tiers y encantamientos, incluso con pérdidas estimadas acotadas. No fuerza compras sin Q1, receta o cotización.
-- Diversidad activa por defecto al migrar desde v1.4; primero se reservan muestras en tiers altos y encantamientos viables, luego se distribuye el resto en rondas para evitar saturación. La concentración sigue sujeta a presupuesto y demanda, con excepción explícita de **un solo craft** de tier seleccionado si supera el límite individual de concentración.
-- Diagnóstico por nombre de artículo para explicar exclusiones de datos/cotizaciones/riesgo, especialmente T8. Un promedio del Top de 18/semana de **calidades 1–5** no significa 18 compras Q1 ni profundidad garantizada; si hay 18/semana Q1 y margen/capital válidos, el motor puede reservar un craft T8.
-- La tabla Plan por artículo y ciudad muestra **Crafts**, no “Salida”. El Planner ya no duplica la lista de compras.
-- La Calculadora incorpora diarios opcionales en la misma lista de materiales, agrupados por tier y tipo, sin contarlos como coste obligatorio ni modificar el profit de crafting.
-- Textos, iconos, tarjetas y escenas de fantasía del juego más visibles; nuevos fondos reutilizados de los recursos del proyecto original.
-
-Los fondos incluidos provienen de los recursos gráficos aportados con la versión previa del proyecto. No se han alterado los datos de origen del mercado ni los proxys de Netlify.
+Revisa `RELEASE_NOTES_v1_6_0.md` para detalles técnicos de la reconciliación Top → Planner.

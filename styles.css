@@ -340,3 +340,102 @@ body{font-size:15px;line-height:1.5}
 .variety-strip{display:flex;gap:7px;flex-wrap:wrap;margin:12px 0;padding:5px 0}
 .variety-strip span{padding:7px 11px;border-radius:9px;font-size:11px;font-weight:800;color:#e2ce9e;border:1px solid #66745e;background:#39423a}
 .batch-table .batch-qty,.game-craft-table .batch-qty{background:#283638!important;color:#f2e5d0!important;border:1px solid #73847b!important}
+
+/* v1.6 · OBSIDIAN / COPPER. Professional market terminal inspired by Albion. */
+:root{--bg:#10151a;--surface:#172027;--card:#202b31;--card2:#26343b;--edge:#38454e;--line:#30414b;--text:#f2ede4;--muted:#b0bec3;--gold:#e3bc76;--gold2:#d19a54;--teal:#91c7b6;--red:#ed9c99;--blue:#a0c7ed;--shadow:0 12px 36px #04080acc}
+body{background:#111920;color:var(--text);font-size:15px;letter-spacing:.005em}
+.workspace{background:radial-gradient(ellipse at 87% 5%,#34505a18,transparent 40%),radial-gradient(ellipse at 10% 80%,#7054310b,transparent 44%),#131c23}
+.sidebar{background:linear-gradient(170deg,#131a1d,#101719 80%);border-color:#354247}
+.topbar{background:#182126ed;border-bottom-color:#3d4b4c}
+.sidebar .brand{border-color:#3e4845}.sidebar .nav-link{color:#c9d5d3}.sidebar .nav-link.is-active{border-color:#8a7854;background:linear-gradient(110deg,#3b382c,#27343a);box-shadow:inset 3px 0 var(--gold),0 7px 15px #0003}
+.sidebar .nav-link:hover{background:#29343a}
+.status-card{background:#22312d;border-color:#547366}.status-card small{color:#bfd2c7}
+.hero{border-color:#72654c;border-radius:16px;box-shadow:0 15px 36px #0005;min-height:228px;background:#1b282e}
+.hero::before{background:linear-gradient(96deg,#121d22fd 0%,#1a282ac9 45%,#35413b66 100%),url('/assets/scenes/royal-market.webp') center/cover no-repeat}
+.hero--planner::before{background:linear-gradient(95deg,#151d20fa 0%,#232d2bea 45%,#34423575 100%),url('/assets/scenes/planning.webp') center/cover no-repeat}
+.hero--calc::before{background:linear-gradient(95deg,#1b1c1bfa 0%,#282824df 47%,#594c366c 100%),url('/assets/scenes/forge.webp') center/cover no-repeat}
+.hero h1{font-size:clamp(32px,3vw,46px);text-shadow:0 3px 18px #0009}
+.hero p{color:#d3d8d1;font-size:14px;line-height:1.6}.chip{background:#182626a8;border-color:#627264;color:#e2e4dd;font-size:11px}
+.panel{background:linear-gradient(160deg,#20292f,#1a232a);border-color:#384750;box-shadow:0 13px 30px #060c1261}
+.panel-heading h2{font-size:20px;letter-spacing:-.25px}.panel-heading p{font-size:13px;color:#bec9c8}
+.btn-gold{background:linear-gradient(116deg,#f1d19a,#cf9953);color:#2a2117;border-color:#f2d09c;box-shadow:0 6px 18px #bd8c4530}
+.btn-ghost{background:#1c292f;border-color:#475962}.btn-outline{border-color:#a18c65;color:#efcc8d;background:#2a2c2a}
+.btn:focus-visible,.catalog-item:focus-visible{outline:2px solid #eec589;outline-offset:3px}
+.result-table,.batch-table-wrap{border-color:#415159}
+.result-table thead th{background:#29353b;color:#e8d8ba;font-weight:750;letter-spacing:.045em}
+.result-table tbody tr{transition:background-color .14s ease}.result-table tbody tr:hover{background:#35434870}
+.market-ranking tr:has(.rank-mark.is-marked){background:linear-gradient(90deg,#58462a36,transparent 75%)}
+.market-ranking .rank-number{color:#e1c28c;font-weight:850}.market-ranking .q1-rank{color:#b4e9d4}
+.rank-mark.is-marked{color:#ffdc91}
+.catalog-selector{margin-top:22px;padding:19px 20px;background:linear-gradient(125deg,#18252a,#1b292f);border:1px solid #53645f;border-radius:13px;box-shadow:inset 0 1px #ffffff0d}
+.catalog-selector-heading{display:flex;align-items:start;justify-content:space-between;gap:15px}.catalog-selector-heading h3{font-family:Georgia,serif;font-size:24px;letter-spacing:-.3px;font-weight:500;margin:2px 0 4px}
+.catalog-selector-heading p{font-size:12px;color:#b2c2c3;margin:0;max-width:800px}
+.catalog-controls{display:flex;align-items:end;flex-wrap:wrap;gap:11px;margin:17px 0 12px}
+.mode-switch{display:inline-flex;gap:3px;padding:4px;border-radius:9px;background:#11191d;border:1px solid #43555d}
+.mode-option{cursor:pointer;border:1px solid transparent;border-radius:7px;color:#b4c6c8;font-size:12px;font-weight:700;padding:9px 12px;white-space:nowrap}
+.mode-option input{position:absolute;opacity:0;width:1px;height:1px}.mode-option.active{background:#594632;border-color:#b99258;color:#fff0d4}
+.mode-option:focus-within{outline:2px solid #dfb574;outline-offset:2px}
+.catalog-search-label{display:flex;flex-direction:column;gap:4px;flex:1;min-width:215px;color:#e5c99a;font-weight:750;font-size:11px}
+.catalog-search-label input{width:100%;height:41px;background:#111c22;border:1px solid #53636c;color:#f5efe5;padding:9px 12px;border-radius:8px;font-size:13px}
+.catalog-controls>.checkline{font-size:12px;white-space:nowrap;margin-bottom:7px;color:#c6d8d8}
+.catalog-list-header{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:5px 0 9px;font-size:12px}
+.catalog-list-header small{color:#9fb4b9;font-size:11px}
+.catalog-item-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;max-height:330px;overflow:auto;padding:2px 5px 5px 1px;scrollbar-color:#57666a #19282d}
+.catalog-item{display:flex;align-items:center;gap:10px;min-width:0;border:1px solid #3a4d55;border-radius:9px;background:#223038;color:#e9ede8;padding:8px 10px;text-align:left;min-height:58px;transition:.15s}
+.catalog-item:hover{border-color:#bd975c;background:#2d3738}.catalog-item.picked{border-color:#c9a569;background:linear-gradient(100deg,#4b432f,#26343a)}
+.catalog-item>img{width:40px;height:40px;object-fit:contain;flex:none}.catalog-item>span{display:flex;align-items:flex-start;flex-direction:column;min-width:0;flex:1;gap:3px}
+.catalog-item strong{display:block;width:100%;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;font-size:12px;font-weight:700}.catalog-item .tier-badge{font-size:10px}
+.catalog-item>em{width:24px;height:24px;flex:none;border:1px solid #74817c;border-radius:6px;display:grid;place-items:center;font-size:17px;font-style:normal;color:#d9bb84;font-weight:800}
+.catalog-item.picked>em{background:#cbaa73;color:#192427}
+.catalog-actions{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;margin-top:12px;padding-top:11px;border-top:1px solid #354b52}
+.catalog-actions .hint{flex:1}
+.catalog-selector .tiny-empty{padding:15px;font-size:12px}
+.planner-basket{background:linear-gradient(135deg,#25302e,#1b292a);border-color:#736445}
+.planner-basket-item{background:#203036;border-color:#415955}
+.planner-basket-item>span small{white-space:normal;line-height:1.35;font-size:10px;color:#cbd0bd}
+.planner-basket-item>span strong{font-size:12px}
+.planner-shell .drawer-content>.panel{background:linear-gradient(145deg,#202f34,#1c262d);border-color:#4c5d5e}
+.planner-shell .config-section{background:linear-gradient(140deg,#29353a,#24313a);border-color:#475961}
+.planner-shell .config-section h3{color:#eed0a0}
+.planner-shell .config-section select,.planner-shell .config-section input[type=number]{background:#152229;border-color:#53666b;color:#f3f0e8}
+.planner-shell .risk-section{background:linear-gradient(145deg,#3c3b31,#273337);border-color:#99815b}
+.top-transfer-bar{background:linear-gradient(110deg,#34392f,#28353b);border-color:#8a7855}
+.top-transfer-bar strong{color:#f5d49b}
+.plan-city-card{background:linear-gradient(130deg,#2c3633,#202c35);border-color:#63716a}
+.plan-diagnostics{background:#1b292f;border-color:#596c70}
+.diagnostic-item{background:#29373c;border-color:#4a6068}
+.panel .metric{background:linear-gradient(160deg,#27363a,#233039);border-color:#526164}
+.game-item-cell img{filter:drop-shadow(0 3px 5px #0008)}
+.city-label{font-weight:800}
+.variety-strip span{background:#2e3b37;border-color:#627267;color:#f2e5c9}
+.activity-meter{width:92px;height:4px;background:#3e494c;border-radius:9px;display:inline-block;vertical-align:middle;margin:6px 0 1px}
+.activity-meter>i{display:block;height:100%;background:linear-gradient(90deg,#8bb6ae,#e3bd77);border-radius:9px}
+.market-ranking .rank-sub{display:block;font-size:10.5px;color:#9fb0b5}
+.market-ranking .q1-context{font-size:10px;color:#c3d6ca}
+.evidence-chain{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:14px 0}
+.evidence-node{border:1px solid #57615a;background:linear-gradient(135deg,#27352f,#222e35);padding:13px;border-radius:10px}
+.evidence-node small{color:#b6c8c0;display:block;font-size:11px}
+.evidence-node strong{font-size:19px;color:#efcf95;display:block;margin-top:2px}
+.evidence-node p{color:#aebdbb;font-size:11px;margin:4px 0 0}
+@media(max-width:1100px){.catalog-item-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:720px){.catalog-selector{padding:14px}.catalog-item-grid{grid-template-columns:1fr;max-height:350px}.catalog-selector-heading h3{font-size:21px}.catalog-controls{align-items:stretch}.catalog-controls .mode-switch{width:100%;justify-content:center}.mode-option{white-space:normal;text-align:center;flex:1}.catalog-list-header{flex-wrap:wrap}.catalog-actions .btn-group{width:100%}.evidence-chain{grid-template-columns:1fr}.hero{min-height:202px}}
+/* Remove legacy violet from the branch picker; city-specific violet (Thetford) stays. */
+.branch-group,.branch-group[open]{background:linear-gradient(120deg,#273239,#1b2930);border-color:#50616a}
+.branch-group.has-selection:not([open]){border-color:#b79860}
+.branch-group[open] summary{border-bottom:1px solid #57605d}
+.group-icon{background:#3b4440;border-color:#6b6855;color:#e7cb94}
+.group-name small,.group-carret{color:#adbec1}
+.branch-choice{background:#26353d;border-color:#415762;color:#e0e7e8}
+.branch-choice:hover{background:#354347;border-color:#c4a575}
+.branch-choice.selected{background:#514733;border-color:#debc81;color:#fff1d4}
+.selected-branch-pill,.selected-branch-pill:hover{background:#544631;border-color:#cbaa72;color:#f9e4c2}
+#plan-results .result-table th{background:#2a373e!important;color:#f0dfbd!important}
+/* The market, route and confidence information must stay readable at every width. */
+.market-ranking td{padding:13px 12px}
+.market-ranking .rank-metric{font-size:15px}
+.market-ranking .game-item-cell strong{font-size:14px}
+.planner-basket-item>img{width:45px;height:45px}
+.planner-basket-item{padding:10px;min-height:74px}
+.planner-basket-item .tier-badge{flex:none}
+@media(max-width:900px){.catalog-item-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:640px){.catalog-item-grid{grid-template-columns:1fr}.market-ranking .rank-metric{font-size:14px}}

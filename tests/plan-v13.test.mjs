@@ -74,6 +74,7 @@ test('Craft Planner contiene configuración de ventas independiente y la calcula
  assert.match(src,/function calcPage\(\)\{return hero\('calc'\)\+batchPanel\(\)/);
  assert.match(src,/marketChips\(state\.saleMarkets,'sale'\)/);
  assert.match(src,/qualities:'1',days:state\.days/);
- assert.match(src,/marketFetch\('history',idsToPlan/);
+ assert.match(src,/reconcileMarketEvidence/);
+ assert.match(src,/marketFetch\('history',missingIds/);
  assert.doesNotMatch(src,/state\.saleMarkets=new Set\(state\.markets\)/);
 });
