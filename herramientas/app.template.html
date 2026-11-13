@@ -1,0 +1,814 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Gildem's Craft — Planificador de crafteo para Albion Online</title>
+<style>
+:root{
+  --bg:#14110d; --panel:#1d1912; --panel2:#262017; --line:#3a3123; --text:#ece3d0; --muted:#a8997c;
+  --gold:#d9a441; --gold2:#f0c46a; --green:#6fbf73; --red:#e06c5a; --blue:#6fa8dc; --warn:#e0b25a;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:14px/1.45 "Segoe UI",system-ui,-apple-system,sans-serif}
+header{display:flex;align-items:center;gap:14px;padding:12px 20px;border-bottom:1px solid var(--line);background:linear-gradient(#211b12,#17130d)}
+header h1{margin:0;font-size:20px;color:var(--gold2);letter-spacing:.5px}
+header .sub{color:var(--muted);font-size:12px}
+header .srv{margin-left:auto;display:flex;gap:8px;align-items:center;color:var(--muted);font-size:12px}
+.layout{display:grid;grid-template-columns:360px 1fr;min-height:calc(100vh - 58px)}
+aside{border-right:1px solid var(--line);background:var(--panel);padding:14px 16px;overflow:auto;max-height:calc(100vh - 58px)}
+main{padding:16px 20px;overflow:auto;max-height:calc(100vh - 58px)}
+fieldset{border:1px solid var(--line);border-radius:8px;margin:0 0 12px;padding:10px 12px 12px}
+legend{color:var(--gold);font-weight:600;padding:0 6px;font-size:13px}
+label{display:block;font-size:12px;color:var(--muted);margin:8px 0 3px}
+label.inline{display:flex;align-items:center;gap:6px;color:var(--text);font-size:13px;margin:6px 0}
+select,input[type=number],input[type=text]{width:100%;background:var(--panel2);color:var(--text);border:1px solid var(--line);border-radius:6px;padding:6px 8px;font:inherit}
+input[type=checkbox]{accent-color:var(--gold)}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.chips{display:flex;flex-wrap:wrap;gap:5px}
+.chips label{margin:0;display:flex;align-items:center;gap:4px;background:var(--panel2);border:1px solid var(--line);border-radius:14px;padding:3px 9px;color:var(--text);font-size:12px;cursor:pointer}
+.hint{color:var(--muted);font-size:11px;margin-top:3px}
+button{font:inherit;cursor:pointer;border-radius:6px;border:1px solid var(--line);background:var(--panel2);color:var(--text);padding:7px 12px}
+button.primary{width:100%;background:linear-gradient(#e2b04f,#b9852b);color:#1b1408;border:none;font-weight:700;padding:11px;font-size:15px}
+button.primary:disabled{opacity:.6;cursor:wait}
+button.small{padding:4px 9px;font-size:12px}
+.tabs{display:flex;gap:4px;border-bottom:1px solid var(--line);margin-bottom:14px}
+.tabs button{border:none;border-bottom:2px solid transparent;border-radius:0;background:none;color:var(--muted);padding:8px 14px}
+.tabs button.on{color:var(--gold2);border-bottom-color:var(--gold)}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:16px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:10px 12px}
+.card .k{color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:.4px}
+.card .v{font-size:19px;font-weight:700;margin-top:2px}
+.pos{color:var(--green)} .neg{color:var(--red)} .warn{color:var(--warn)} .mut{color:var(--muted)}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{text-align:left;color:var(--muted);font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:.3px;border-bottom:1px solid var(--line);padding:6px 8px;position:sticky;top:0;background:var(--bg)}
+td{border-bottom:1px solid #2a2419;padding:6px 8px;vertical-align:middle}
+td.n,th.n{text-align:right;font-variant-numeric:tabular-nums}
+tr:hover td{background:#1c1811}
+.it{display:flex;align-items:center;gap:8px}
+.it img{width:34px;height:34px;flex:none}
+.tier{display:inline-block;background:#3a2f1c;color:var(--gold2);border-radius:4px;padding:0 5px;font-size:11px;font-weight:700;margin-right:4px}
+.pill{display:inline-block;border-radius:10px;padding:1px 7px;font-size:11px;background:#2c2618;color:var(--muted)}
+.pill.b{background:#1f3326;color:var(--green)}
+.pill.f{background:#1e2a3a;color:var(--blue)}
+.empty{color:var(--muted);text-align:center;padding:60px 20px}
+.empty h2{color:var(--gold2);font-weight:600}
+.progress{height:6px;background:var(--panel2);border-radius:3px;overflow:hidden;margin:8px 0}
+.progress div{height:100%;background:var(--gold);width:0;transition:width .2s}
+#status{font-size:12px;color:var(--muted);min-height:18px;margin-top:6px}
+h3{color:var(--gold2);font-size:15px;margin:18px 0 8px}
+.city-block{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:6px 10px 10px;margin-bottom:12px}
+.toolbar{display:flex;gap:8px;align-items:center;margin-bottom:10px;flex-wrap:wrap}
+.note{background:#231d12;border:1px solid var(--line);border-left:3px solid var(--gold);border-radius:6px;padding:8px 12px;font-size:12px;color:var(--muted);margin:10px 0}
+.help p,.help li{color:var(--text);max-width:820px}
+.help code{background:var(--panel2);padding:1px 5px;border-radius:4px}
+@media (max-width:900px){.layout{grid-template-columns:1fr}aside,main{max-height:none}}
+</style>
+</head>
+<body>
+<header>
+  <div>
+    <h1>⚒ Gildem's Craft</h1>
+    <div class="sub">Planificador de crafteo y refinamiento — Albion Online</div>
+  </div>
+  <div class="srv">Servidor
+    <select id="server" style="width:auto">
+      <option value="america" selected>América</option>
+      <option value="europa">Europa</option>
+      <option value="asia">Asia</option>
+    </select>
+  </div>
+</header>
+
+<div id="fileWarn" hidden style="background:#3a2414;border-bottom:1px solid #6b3f1d;color:#f3d3a6;padding:10px 20px;font-size:13px">
+  ⚠ Abriste la app con doble clic y el navegador bloquea la conexión con la API de Albion.
+  Usa la versión web (Netlify) o ábrela con <b>Iniciar_Gildems_Craft.bat</b> (en la misma carpeta).
+</div>
+<div class="layout">
+<aside>
+  <fieldset>
+    <legend>Qué craftear</legend>
+    <label>Rama</label>
+    <select id="group"></select>
+    <label>Subrama</label>
+    <select id="sub"></select>
+    <label>Ítem</label>
+    <select id="base"></select>
+    <label>Tiers</label>
+    <div class="chips" id="tiers"></div>
+    <label>Encantamientos</label>
+    <div class="chips" id="enchs"></div>
+  </fieldset>
+
+  <fieldset>
+    <legend>Venta</legend>
+    <label>Dónde vender</label>
+    <select id="sellLoc"></select>
+    <label>Modo de venta</label>
+    <select id="sellMode">
+      <option value="instant">Venta instantánea (a órdenes de compra)</option>
+      <option value="order">Orden de venta (esperar comprador)</option>
+    </select>
+    <div class="hint" id="sellHint"></div>
+    <label class="inline"><input type="checkbox" id="premium" checked> Tengo premium (impuesto 4% en vez de 8%)</label>
+  </fieldset>
+
+  <fieldset>
+    <legend>Compra de materiales</legend>
+    <label>Ciudades donde comprar</label>
+    <div class="chips" id="buyCities"></div>
+    <label>Modo de compra</label>
+    <select id="buyMode">
+      <option value="instant">Compra instantánea (órdenes de venta)</option>
+      <option value="order">Orden de compra (+2,5% de tarifa)</option>
+    </select>
+  </fieldset>
+
+  <fieldset>
+    <legend>Crafteo</legend>
+    <label>Ciudad de crafteo</label>
+    <select id="craftCity"></select>
+    <div class="hint">Automática = cada ítem en la ciudad con bono para su rama.</div>
+    <label class="inline"><input type="checkbox" id="useFocus"> Usar foco</label>
+    <div class="row">
+      <div><label>Foco disponible</label><input type="number" id="focusPool" value="30000" min="0" step="1000"></div>
+      <div><label>Reducción de foco %</label><input type="number" id="focusRed" value="0" min="0" max="95"></div>
+    </div>
+    <div class="hint">La reducción viene de tu especialización (míralo en el juego).</div>
+    <div class="row">
+      <div><label>Retorno manual sin foco %</label><input type="number" id="rrrNo" placeholder="auto" min="0" max="80" step="0.1"></div>
+      <div><label>Retorno manual con foco %</label><input type="number" id="rrrFo" placeholder="auto" min="0" max="80" step="0.1"></div>
+    </div>
+    <label>Tarifa de estación (plata por 100 de nutrición)</label>
+    <input type="number" id="fee" value="500" min="0" step="50">
+  </fieldset>
+
+  <fieldset>
+    <legend>Presupuesto y riesgo</legend>
+    <label>Presupuesto (plata)</label>
+    <input type="number" id="budget" value="1000000" min="0" step="50000">
+    <div class="row">
+      <div><label>Máx. % del presupuesto por ítem</label><input type="number" id="maxShare" value="35" min="1" max="100"></div>
+      <div><label>Margen mínimo %</label><input type="number" id="minRoi" value="10" min="0"></div>
+    </div>
+    <div class="row">
+      <div><label>Máx. % del volumen diario</label><input type="number" id="volPct" value="25" min="1" max="200"></div>
+      <div><label>Días para vender</label><input type="number" id="days" value="1" min="1" max="14"></div>
+    </div>
+    <div class="hint">Para no saturar el mercado: cantidad máxima = ventas diarias promedio (7 días) × % × días.</div>
+    <label>Antigüedad máxima de precios (horas)</label>
+    <input type="number" id="maxAge" value="24" min="1" max="720">
+  </fieldset>
+
+  <fieldset>
+    <legend>Diarios</legend>
+    <label class="inline"><input type="checkbox" id="journals" checked> Incluir diarios en la lista de compras</label>
+    <label class="inline"><input type="checkbox" id="journalProfit" checked> Sumar la venta de diarios llenos a la ganancia</label>
+  </fieldset>
+
+  <button class="primary" id="go">Generar plan</button>
+  <div class="progress"><div id="bar"></div></div>
+  <div id="status"></div>
+</aside>
+
+<main>
+  <div class="tabs" id="tabs">
+    <button data-t="plan" class="on">Plan</button>
+    <button data-t="shop">Lista de compras</button>
+    <button data-t="opps">Oportunidades</button>
+    <button data-t="saved">Planes guardados</button>
+    <button data-t="help">Cómo funciona</button>
+  </div>
+  <section id="v-plan"><div class="empty"><h2>Configura y pulsa «Generar plan»</h2><p>La app consulta los precios del servidor elegido en Albion Online Data, calcula el coste real de cada crafteo<br>(con tasa de retorno, tarifas e impuestos) y reparte tu presupuesto en los ítems más rentables sin saturar el mercado.</p></div></section>
+  <section id="v-shop" hidden><div class="empty">Aún no hay lista de compras.</div></section>
+  <section id="v-opps" hidden><div class="empty">Aún no hay oportunidades calculadas.</div></section>
+  <section id="v-saved" hidden></section>
+  <section id="v-help" hidden class="help"></section>
+</main>
+</div>
+
+<script>/*DATA*/</script>
+<script>
+"use strict";
+const D = window.GC_DATA;
+const API = {america:"https://west.albion-online-data.com", europa:"https://europe.albion-online-data.com", asia:"https://east.albion-online-data.com"};
+const VIA_PROXY = /^https?:$/.test(location.protocol);
+const apiBase = srv => VIA_PROXY ? `/proxy/${srv}` : API[srv];
+const CITIES = ["Bridgewatch","Fort Sterling","Lymhurst","Martlock","Thetford","Caerleon","Brecilien"];
+const SELL_LOCS = ["Black Market", ...CITIES];
+const LOC_ES = {"Black Market":"Mercado Negro (Caerleon)"};
+const locName = l => LOC_ES[l] || l;
+
+const GROUP_ES = {weapons:"Armas", armors:"Armaduras", head:"Cascos", shoes:"Zapatos", offhands:"Mano secundaria", capes:"Capas", bags:"Bolsas", gathering:"Equipo de recolección", mounts:"Monturas", consumables:"Consumibles", refining:"Refinamiento", furniture:"Muebles"};
+const SUB_ES = {
+  arcanestaff:"Bastones arcanos", axe:"Hachas", bow:"Arcos", crossbow:"Ballestas", cursestaff:"Bastones malditos", dagger:"Dagas", firestaff:"Bastones de fuego", froststaff:"Bastones de hielo", hammer:"Martillos", holystaff:"Bastones sagrados", knuckles:"Guanteletes de guerra", mace:"Mazas", naturestaff:"Bastones de naturaleza", quarterstaff:"Bastones de combate", spear:"Lanzas", sword:"Espadas", shapeshifterstaff:"Bastones cambiaformas",
+  cloth_armor:"Tela", leather_armor:"Cuero", plate_armor:"Placas", cloth_helmet:"Tela", leather_helmet:"Cuero", plate_helmet:"Placas", cloth_shoes:"Tela", leather_shoes:"Cuero", plate_shoes:"Placas",
+  booktype:"Tomos y orbes", shieldtype:"Escudos", torchtype:"Antorchas y cuernos", bags:"Bolsas", satchels:"Morrales",
+  accessoires_capes_capes:"Capas básicas", accessoires_capes_bridgewatch:"Capa de Bridgewatch", accessoires_capes_fortsterling:"Capa de Fort Sterling", accessoires_capes_lymhurst:"Capa de Lymhurst", accessoires_capes_martlock:"Capa de Martlock", accessoires_capes_thetford:"Capa de Thetford", accessoires_capes_caerleon:"Capa de Caerleon", accessoires_capes_brecilien:"Capa de Brecilien", accessoires_capes_avalon:"Capa de Avalon", accessoires_capes_smuggler:"Capa de contrabandista", accessoires_capes_heretic:"Capa hereje", accessoires_capes_undead:"Capa no muerta", accessoires_capes_keeper:"Capa guardiana", accessoires_capes_morgana:"Capa de Morgana", accessoires_capes_demon:"Capa demoníaca",
+  food:"Comida", potions:"Pociones", basemounts:"Monturas básicas", battle_mount:"Monturas de batalla", raremounts:"Monturas raras",
+  wood:"Madera", ore:"Mineral", hide:"Pieles", fiber:"Fibra", rock:"Piedra", fish:"Pesca",
+  chest:"Cofres", island:"Isla", repairkit:"Kits de reparación", other:"Otros"
+};
+const REFINE_SUB = {wood:"Tablas (madera)", ore:"Lingotes (mineral)", hide:"Cuero (pieles)", fiber:"Tela (fibra)", rock:"Bloques (piedra)"};
+const JOURNAL_ES = {WARRIOR:"Herrero", HUNTER:"Peletero", MAGE:"Sastre", TOOLMAKER:"Fabricante de herramientas"};
+const FOCUS_BONUS = 0.59;
+const $ = id => document.getElementById(id);
+const fmt = n => (n==null||!isFinite(n)) ? "—" : Math.round(n).toLocaleString("es-ES");
+const pct = n => (n==null||!isFinite(n)) ? "—" : (n*100).toFixed(1).replace(".",",")+"%";
+const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const icon = id => `https://render.albiononline.com/v1/item/${encodeURIComponent(id)}.png?size=64&quality=1`;
+const store = {
+  get(k, d){ try{ const v = localStorage.getItem(k); return v ? JSON.parse(v) : d; }catch(e){ return d; } },
+  set(k, v){ try{ localStorage.setItem(k, JSON.stringify(v)); }catch(e){} }
+};
+
+/* ---------- Formulario ---------- */
+function opt(v, t, sel){ return `<option value="${esc(v)}"${sel?" selected":""}>${esc(t)}</option>`; }
+function subName(g, s){ return g==="refining" ? (REFINE_SUB[s]||s) : (SUB_ES[s]||s); }
+
+function fillGroups(){
+  const groups = [...new Set(Object.values(D.bases).map(b => b[1]))];
+  const order = Object.keys(GROUP_ES);
+  groups.sort((a,b) => order.indexOf(a) - order.indexOf(b));
+  $("group").innerHTML = opt("", "Todas las ramas") + groups.map(g => opt(g, GROUP_ES[g]||g)).join("");
+}
+function fillSubs(){
+  const g = $("group").value;
+  const subs = [...new Set(Object.values(D.bases).filter(b => !g || b[1]===g).map(b => b[1]+"|"+b[2]))];
+  subs.sort((a,b) => subName(...a.split("|")).localeCompare(subName(...b.split("|")), "es"));
+  $("sub").innerHTML = opt("", "Todas") + subs.map(k => { const [gg,s] = k.split("|"); return opt(k, (g ? "" : (GROUP_ES[gg]||gg)+" · ") + subName(gg,s)); }).join("");
+}
+function fillBases(){
+  const g = $("group").value, sk = $("sub").value;
+  const list = Object.entries(D.bases).filter(([k,b]) => (!g || b[1]===g) && (!sk || b[1]+"|"+b[2]===sk));
+  list.sort((a,b) => a[1][0].localeCompare(b[1][0], "es"));
+  $("base").innerHTML = opt("", `Todos (${list.length})`) + list.map(([k,b]) => opt(k, b[0])).join("");
+}
+function chips(el, items, checked){
+  $(el).innerHTML = items.map(([v,t]) => `<label><input type="checkbox" value="${esc(v)}"${checked.includes(v)?" checked":""}> ${esc(t)}</label>`).join("");
+}
+function checkedVals(el){ return [...$(el).querySelectorAll("input:checked")].map(i => i.value); }
+
+function initForm(){
+  fillGroups(); fillSubs(); fillBases();
+  chips("tiers", [2,3,4,5,6,7,8].map(t => [String(t), "T"+t]), ["4","5","6","7","8"]);
+  chips("enchs", [0,1,2,3,4].map(e => [String(e), "."+e]), ["0","1","2","3"]);
+  chips("buyCities", CITIES.map(c => [c, c]), CITIES.filter(c => c!=="Brecilien"));
+  $("sellLoc").innerHTML = SELL_LOCS.map(l => opt(l, locName(l))).join("");
+  $("craftCity").innerHTML = opt("auto", "Automática (ciudad de bono)") + CITIES.map(c => opt(c, c)).join("");
+  $("group").onchange = () => { fillSubs(); fillBases(); };
+  $("sub").onchange = fillBases;
+  $("sellLoc").onchange = sellHint;
+  $("sellMode").onchange = sellHint;
+  restoreCfg();
+  sellHint();
+}
+function sellHint(){
+  const bm = $("sellLoc").value === "Black Market";
+  $("sellMode").disabled = bm;
+  if (bm) $("sellMode").value = "instant";
+  $("sellHint").textContent = bm
+    ? "En el Mercado Negro siempre se vende al instante a sus órdenes de compra."
+    : ($("sellMode").value==="order" ? "Precio más bajo de venta actual; impuesto + 2,5% de tarifa de publicación." : "Mejor orden de compra actual; solo impuesto.");
+}
+
+const CFG_FIELDS = ["server","group","sub","base","sellLoc","sellMode","buyMode","craftCity","focusPool","focusRed","rrrNo","rrrFo","fee","budget","maxShare","minRoi","volPct","days","maxAge"];
+const CFG_CHECKS = ["premium","useFocus","journals","journalProfit"];
+function readCfg(){
+  const c = {};
+  CFG_FIELDS.forEach(f => c[f] = $(f).value);
+  CFG_CHECKS.forEach(f => c[f] = $(f).checked);
+  c.tiers = checkedVals("tiers").map(Number);
+  c.enchs = checkedVals("enchs").map(Number);
+  c.buyCities = checkedVals("buyCities");
+  ["focusPool","focusRed","fee","budget","maxShare","minRoi","volPct","days","maxAge"].forEach(k => c[k] = Number(c[k])||0);
+  c.rrrNo = c.rrrNo==="" ? null : Number(c.rrrNo)/100;
+  c.rrrFo = c.rrrFo==="" ? null : Number(c.rrrFo)/100;
+  c.tax = c.premium ? 0.04 : 0.08;
+  if (c.sellLoc === "Black Market") c.sellMode = "instant";
+  return c;
+}
+function restoreCfg(){
+  const c = store.get("gc_cfg", null); if (!c) return;
+  if (c.group!=null){ $("group").value = c.group; fillSubs(); }
+  if (c.sub!=null){ $("sub").value = c.sub; fillBases(); }
+  CFG_FIELDS.forEach(f => { if (c[f]!=null && !["group","sub"].includes(f)) $(f).value = (f==="rrrNo"||f==="rrrFo") ? (c[f]==null ? "" : +(c[f]*100).toFixed(2)) : c[f]; });
+  CFG_CHECKS.forEach(f => { if (c[f]!=null) $(f).checked = c[f]; });
+  const setChips = (el, vals) => vals && $(el).querySelectorAll("input").forEach(i => i.checked = vals.map(String).includes(i.value));
+  setChips("tiers", c.tiers); setChips("enchs", c.enchs); setChips("buyCities", c.buyCities);
+}
+
+/* ---------- API ---------- */
+let cancelled = false;
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+async function getJSON(url){
+  for (let a = 0; a < 5; a++){
+    let r;
+    try { r = await fetch(url); }
+    catch(e){ if (a===2) throw new Error(VIA_PROXY ? "No se pudo conectar con la API. Revisa tu conexión a internet." : "El navegador bloqueó la conexión. Usa la versión web o abre la app con «Iniciar_Gildems_Craft.bat»."); await sleep(1500*(a+1)); continue; }
+    if (r.status === 429){ status(`Límite de la API alcanzado, esperando ${10*(a+1)} s…`); await sleep(10000*(a+1)); continue; }
+    if (r.status === 400){ const e = new Error("La API respondió 400"); e.status = 400; throw e; }
+    if (!r.ok) throw new Error(r.status === 502 ? "El puente no pudo contactar la API: " + (await r.text()).slice(0,160) : `La API respondió ${r.status}`);
+    return r.json();
+  }
+  throw new Error("La API está saturada; inténtalo en un minuto.");
+}
+// Si la API rechaza un lote (400), se parte en dos; un ítem que falla solo se omite.
+const skipped = new Set();
+async function getSplit(ids, urlFor){
+  try { return await getJSON(urlFor(ids)); }
+  catch(e){
+    if (e.status !== 400) throw e;
+    if (ids.length === 1){ skipped.add(ids[0]); return []; }
+    const h = Math.ceil(ids.length / 2);
+    return [...await getSplit(ids.slice(0, h), urlFor), ...await getSplit(ids.slice(h), urlFor)];
+  }
+}
+function chunkIds(ids, maxLen){
+  const out = []; let cur = [], len = 0;
+  for (const id of ids){
+    if (len + id.length + 1 > maxLen && cur.length){ out.push(cur); cur = []; len = 0; }
+    cur.push(id); len += id.length + 1;
+  }
+  if (cur.length) out.push(cur);
+  return out;
+}
+async function pool(tasks, n, onDone){
+  let i = 0, done = 0;
+  const run = async () => { while (i < tasks.length && !cancelled){ const t = tasks[i++]; await t(); onDone(++done, tasks.length); } };
+  await Promise.all(Array.from({length:n}, run));
+}
+const parseDate = s => (!s || s.startsWith("0001")) ? null : new Date(s.endsWith("Z") ? s : s + "Z");
+
+async function fetchPrices(cfg, ids, locs, p0, p1){
+  const P = {};
+  const base = apiBase(cfg.server);
+  const q = `?locations=${encodeURIComponent(locs.join(","))}&qualities=1`;
+  const tasks = chunkIds([...ids], 1500).map(ch => async () => {
+    const rows = await getSplit(ch, c => `${base}/api/v2/stats/prices/${c.join(",")}.json${q}`);
+    for (const r of rows){
+      const o = (P[r.item_id] ||= {});
+      o[r.city] = {sell:r.sell_price_min, sellDate:parseDate(r.sell_price_min_date), buy:r.buy_price_max, buyDate:parseDate(r.buy_price_max_date)};
+    }
+  });
+  await pool(tasks, 3, (d,t) => progress(p0 + (p1-p0)*d/t, `Precios: ${d}/${t} consultas`));
+  return P;
+}
+async function fetchHistory(cfg, ids, loc, p0, p1){
+  const H = {};
+  const base = apiBase(cfg.server);
+  const since = Date.now() - 7*864e5;
+  const tasks = chunkIds([...ids], 900).map(ch => async () => {
+    const rows = await getSplit(ch, c => `${base}/api/v2/stats/history/${c.join(",")}.json?locations=${encodeURIComponent(loc)}&time-scale=24`);
+    for (const r of rows){
+      const h = (H[r.item_id] ||= {count:0, value:0, q1count:0, q1value:0});
+      for (const d of r.data || []){
+        const ts = parseDate(d.timestamp); if (!ts || ts.getTime() < since) continue;
+        h.count += d.item_count; h.value += d.item_count * d.avg_price;
+        if (r.quality === 1){ h.q1count += d.item_count; h.q1value += d.item_count * d.avg_price; }
+      }
+    }
+  });
+  await pool(tasks, 3, (d,t) => progress(p0 + (p1-p0)*d/t, `Volumen de ventas: ${d}/${t} consultas`));
+  for (const id in H){
+    const h = H[id];
+    h.daily = h.count / 7;
+    h.avg = h.q1count ? h.q1value / h.q1count : (h.count ? h.value / h.count : null);
+  }
+  return H;
+}
+
+/* ---------- Cálculo ---------- */
+function outId(uid, e, it){
+  if (it[1] === "refining") return e ? `${uid}_LEVEL${e}@${e}` : uid;
+  return e ? `${uid}@${e}` : uid;
+}
+function candidates(cfg){
+  const out = [];
+  const [sg, ss] = cfg.sub ? cfg.sub.split("|") : [null, null];
+  for (const [uid, it] of Object.entries(D.items)){
+    const [, g, s, t] = it;
+    if (cfg.group && g !== cfg.group) continue;
+    if (ss && (g !== sg || s !== ss)) continue;
+    if (cfg.base && uid.replace(/^T\d_/, "") !== cfg.base) continue;
+    if (!cfg.tiers.includes(t)) continue;
+    for (const e of Object.keys(it[6]).map(Number)){
+      if (!cfg.enchs.includes(e)) continue;
+      out.push({uid, e, it, id: outId(uid, e, it), name: it[0], tier: t});
+    }
+  }
+  return out;
+}
+function craftCityFor(cfg, cc, g){
+  const isRef = g === "refining";
+  const baseKey = isRef ? "base_refine" : "base_craft";
+  if (cfg.craftCity !== "auto"){
+    const c = D.cities[cfg.craftCity];
+    return {city: cfg.craftCity, bonus: c[baseKey] + (c.mods[cc] || 0), special: !!c.mods[cc]};
+  }
+  let best = null;
+  for (const [name, c] of Object.entries(D.cities)){
+    const m = c.mods[cc] || 0;
+    if (m && (!best || m > best.m)) best = {city:name, m, base:c[baseKey]};
+  }
+  if (best) return {city: best.city, bonus: best.base + best.m, special: true};
+  return {city: "Cualquier ciudad real", bonus: 0.18, special: false};
+}
+const rrrOf = bonus => 1 - 1/(1 + bonus);
+
+function makeCtx(cfg, P){
+  const fresh = d => d && (Date.now() - d.getTime()) <= cfg.maxAge * 3600e3;
+  const bestBuy = id => {
+    let best = null;
+    for (const loc of cfg.buyCities){
+      const p = P[id]?.[loc]; if (!p) continue;
+      let price, date;
+      if (cfg.buyMode === "instant"){ price = p.sell; date = p.sellDate; }
+      else { price = p.buy ? p.buy * 1.025 : 0; date = p.buyDate; }
+      if (!price || !fresh(date)) continue;
+      if (!best || price < best.price) best = {price, loc, date};
+    }
+    return best;
+  };
+  const sellAt = (id, loc) => {
+    const p = P[id]?.[loc]; if (!p) return null;
+    const instant = loc === "Black Market" || cfg.sellMode === "instant";
+    const price = instant ? p.buy : p.sell, date = instant ? p.buyDate : p.sellDate;
+    if (!price) return null;
+    return {price, date, fresh: fresh(date), net: price * (1 - cfg.tax - (instant ? 0 : 0.025))};
+  };
+  const journalSell = id => {
+    let best = null;
+    const locs = new Set([...cfg.buyCities, ...(cfg.sellLoc !== "Black Market" ? [cfg.sellLoc] : [])]);
+    for (const loc of locs){ const s = sellAt(id, loc); if (s && s.fresh && (!best || s.net > best.net)) best = {...s, loc}; }
+    return best;
+  };
+  return {fresh, bestBuy, sellAt, journalSell};
+}
+
+function evaluate(cfg, ctx, c, withFocus, sellOverride){
+  const [, g, , t, cc, jk, ench] = c.it;
+  const cityInfo = craftCityFor(cfg, cc, g);
+  let rrr = rrrOf(cityInfo.bonus + (withFocus ? FOCUS_BONUS : 0));
+  const manual = withFocus ? cfg.rrrFo : cfg.rrrNo;
+  if (manual != null) rrr = manual;
+  const sell = sellOverride || ctx.sellAt(c.id, cfg.sellLoc);
+  const r = {c, withFocus, city: cityInfo.city, special: cityInfo.special, rrr, sell, reason: null};
+  if (!sell){ r.reason = "Sin precio de venta"; return r; }
+  if (!sell.fresh && !sell.fromHistory){ r.reason = "Precio de venta viejo"; }
+  let best = null, missing = null;
+  for (const rec of ench[c.e]){
+    const [res, amt, silver, focus, fame, iv] = rec;
+    let mat = 0; const lines = [];
+    let ok = true;
+    for (const [rid, cnt, noret] of res){
+      const b = ctx.bestBuy(rid);
+      if (!b){ ok = false; missing = rid; break; }
+      const eff = noret ? cnt : cnt * (1 - rrr);
+      mat += b.price * eff;
+      lines.push({rid, cnt, noret, price: b.price, loc: b.loc});
+    }
+    if (!ok) continue;
+    const fee = iv * 0.1125 * cfg.fee / 100;
+    let jCost = 0, jRev = 0, journal = null;
+    if (cfg.journals && jk && fame > 0){
+      const jid = `T${t}_JOURNAL_${jk}`, maxf = D.jfame[`${jk}_${t}`];
+      const empty = ctx.bestBuy(jid + "_EMPTY");
+      if (maxf && empty){
+        const per = fame / maxf;
+        const full = ctx.journalSell(jid + "_FULL");
+        jCost = per * empty.price;
+        jRev = (cfg.journalProfit && full) ? per * full.net : 0;
+        journal = {jid, kind: jk, tier: t, per, emptyPrice: empty.price, emptyLoc: empty.loc, full};
+      }
+    }
+    const cost = mat + fee + silver + jCost;
+    const revenue = amt * sell.net + jRev;
+    const profit = revenue - cost;
+    const focusCost = withFocus ? focus * (1 - cfg.focusRed/100) : 0;
+    const cand = {rec, amt, lines, mat, fee, silver, jCost, jRev, journal, cost, revenue, profit, roi: cost > 0 ? profit / cost : 0, focusCost, fame};
+    if (!best || cand.profit > best.profit) best = cand;
+  }
+  if (!best){ r.reason = "Sin precio de material: " + (D.res[missing] || missing); return r; }
+  Object.assign(r, best);
+  if (!r.reason && r.roi < cfg.minRoi/100) r.reason = r.profit < 0 ? "Pérdida" : "Margen bajo";
+  return r;
+}
+
+function allocate(cfg, evals, H){
+  let budget = cfg.budget, focus = cfg.useFocus ? cfg.focusPool : 0;
+  const perItemCap = cfg.budget * cfg.maxShare / 100;
+  const spentPerItem = {}, unitsPerItem = {};
+  const plan = [];
+  const list = evals.filter(e => !e.reason).sort((a,b) => b.roi - a.roi);
+  for (const e of list){
+    const id = e.c.id;
+    const h = H[id];
+    const maxUnits = h ? Math.floor(h.daily * cfg.volPct/100 * cfg.days) : 0;
+    e.maxUnits = maxUnits;
+    const unitsLeft = maxUnits - (unitsPerItem[id] || 0);
+    let crafts = Math.floor(unitsLeft / e.amt);
+    if (e.withFocus) crafts = Math.min(crafts, e.focusCost > 0 ? Math.floor(focus / e.focusCost) : crafts);
+    const cap = Math.min(budget, perItemCap - (spentPerItem[id]||0));
+    // dinero que hay que adelantar (el retorno llega después de craftear)
+    if (crafts > 0 && upfront(e, crafts) > cap){
+      let lo = 0, hi = crafts;
+      while (lo < hi){ const mid = Math.ceil((lo+hi)/2); if (upfront(e, mid) <= cap) lo = mid; else hi = mid - 1; }
+      crafts = lo;
+    }
+    if (crafts <= 0) continue;
+    const spend = upfront(e, crafts);
+    budget -= spend; spentPerItem[id] = (spentPerItem[id]||0) + spend;
+    unitsPerItem[id] = (unitsPerItem[id]||0) + crafts * e.amt;
+    if (e.withFocus) focus -= crafts * e.focusCost;
+    plan.push({...e, crafts, units: crafts * e.amt, spend, gain: crafts * e.profit, focusUsed: crafts * e.focusCost});
+    if (budget <= 0) break;
+  }
+  return {plan, budgetLeft: budget, focusLeft: focus};
+}
+
+function upfront(e, n){
+  let t = (e.fee + e.silver + e.jCost) * n;
+  for (const l of e.lines) t += l.price * (l.noret ? l.cnt * n : Math.max(l.cnt, Math.ceil(l.cnt * n * (1 - e.rrr))));
+  return t;
+}
+function shoppingList(plan){
+  const mats = {}, journals = {};
+  for (const p of plan){
+    for (const l of p.lines){
+      const need = l.noret ? l.cnt * p.crafts : Math.max(l.cnt, Math.ceil(l.cnt * p.crafts * (1 - p.rrr)));
+      const k = l.rid + "|" + l.loc;
+      const m = (mats[k] ||= {rid: l.rid, loc: l.loc, price: l.price, qty: 0, noret: l.noret});
+      m.qty += need;
+    }
+    if (p.journal){
+      const j = p.journal, k = j.jid;
+      const o = (journals[k] ||= {...j, fame: 0, count: 0});
+      o.fame += p.fame * p.crafts;
+    }
+  }
+  for (const j of Object.values(journals)){
+    const maxf = D.jfame[`${j.kind}_${j.tier}`];
+    j.count = Math.ceil(j.fame / maxf - 1e-9);
+    j.fullCount = Math.floor(j.fame / maxf + 1e-9);
+  }
+  return {mats: Object.values(mats), journals: Object.values(journals)};
+}
+
+/* ---------- Ejecución ---------- */
+function status(s){ $("status").textContent = s; }
+function progress(p, s){ $("bar").style.width = Math.round(p*100) + "%"; if (s) status(s); }
+let LAST = null;
+
+async function run(){
+  const cfg = readCfg();
+  store.set("gc_cfg", cfg);
+  if (!cfg.tiers.length || !cfg.enchs.length){ status("Elige al menos un tier y un encantamiento."); return; }
+  if (!cfg.buyCities.length){ status("Elige al menos una ciudad para comprar materiales."); return; }
+  const cands = candidates(cfg);
+  if (!cands.length){ status("No hay ítems crafteables con esos filtros."); return; }
+  $("go").disabled = true; cancelled = false; skipped.clear();
+  try{
+    // 1) ids a consultar
+    const outIds = new Set(cands.map(c => c.id));
+    const matIds = new Set();
+    for (const c of cands){
+      for (const rec of c.it[6][c.e]) for (const [rid] of rec[0]) matIds.add(rid);
+      if (cfg.journals && c.it[5]) { matIds.add(`T${c.tier}_JOURNAL_${c.it[5]}_EMPTY`); matIds.add(`T${c.tier}_JOURNAL_${c.it[5]}_FULL`); }
+    }
+    progress(0.02, `Consultando ${outIds.size + matIds.size} precios (${cands.length} variantes)…`);
+    const locs = [...new Set([cfg.sellLoc, ...cfg.buyCities])];
+    const P = await fetchPrices(cfg, new Set([...outIds, ...matIds]), locs, 0.02, 0.7);
+    const ctx = makeCtx(cfg, P);
+
+    // 2) evaluación inicial
+    let evals = [];
+    for (const c of cands){
+      evals.push(evaluate(cfg, ctx, c, false));
+      if (cfg.useFocus) evals.push(evaluate(cfg, ctx, c, true));
+    }
+    // 3) historial para los mejores (incluye precios viejos para poder rescatarlos con el promedio)
+    const scored = evals.filter(e => e.profit != null && (!e.reason || e.reason === "Precio de venta viejo"));
+    scored.sort((a,b) => b.roi - a.roi);
+    const histIds = [...new Set(scored.filter(e => e.roi > 0).map(e => e.c.id))].slice(0, 300);
+    const histSet = new Set(histIds);
+    let H = {};
+    if (histIds.length) H = await fetchHistory(cfg, histIds, cfg.sellLoc, 0.7, 0.97);
+
+    // 4) ajustar precios con historial y recalcular
+    evals = evals.map(e => {
+      const h = H[e.c.id];
+      if (!h || !h.avg || !e.sell) return e;
+      const cap = h.avg * 1.25;
+      const instant = cfg.sellLoc === "Black Market" || cfg.sellMode === "instant";
+      const netF = instant ? (1 - cfg.tax) : (1 - cfg.tax - 0.025);
+      let price = e.sell.price, fromHistory = false;
+      if (!e.sell.fresh){ price = h.avg; fromHistory = true; }
+      else if (price > cap){ price = cap; fromHistory = true; }
+      if (!fromHistory) return e;
+      return evaluate(cfg, ctx, e.c, e.withFocus, {...e.sell, price, net: price * netF, fresh: true, fromHistory: true, original: e.sell.price});
+    });
+    for (const e of evals){
+      const h = H[e.c.id];
+      e.daily = h ? h.daily : null;
+      if (!e.reason && !h) e.reason = histSet.has(e.c.id) ? "Sin datos de volumen" : "Fuera del top 300 analizado";
+      else if (!e.reason && h && Math.floor(h.daily * cfg.volPct/100 * cfg.days) < e.amt) e.reason = "Se vende muy poco";
+    }
+    const alloc = allocate(cfg, evals, H);
+    const shop = shoppingList(alloc.plan);
+    LAST = {cfg, evals, alloc, shop, at: new Date(), counts: {cands: cands.length}};
+    progress(1, `Listo: ${cands.length} variantes analizadas, ${alloc.plan.length} entran en el plan.` + (skipped.size ? ` (${skipped.size} ítems no reconocidos por la API se omitieron)` : ""));
+    if (skipped.size) console.warn("Omitidos por la API:", [...skipped]);
+    renderAll();
+    show("plan");
+  } catch(err){
+    console.error(err);
+    status("Error: " + err.message);
+  } finally {
+    $("go").disabled = false;
+  }
+}
+
+/* ---------- Render ---------- */
+function itemCell(c, extra){
+  const tier = `${c.tier}.${c.e}`;
+  return `<div class="it"><img loading="lazy" src="${icon(c.id)}" alt=""><div><span class="tier">${tier}</span>${esc(c.name)}${extra||""}</div></div>`;
+}
+function ageText(d){
+  if (!d) return "—";
+  const h = (Date.now() - d.getTime()) / 3600e3;
+  return h < 1 ? `${Math.max(1, Math.round(h*60))} min` : h < 48 ? `${Math.round(h)} h` : `${Math.round(h/24)} d`;
+}
+function renderPlan(){
+  const {cfg, alloc} = LAST;
+  const plan = alloc.plan;
+  if (!plan.length){
+    $("v-plan").innerHTML = `<div class="empty"><h2>No se encontró nada rentable</h2><p>Prueba con otra rama, baja el margen mínimo, sube la antigüedad máxima de precios o añade más ciudades de compra.<br>Mira la pestaña «Oportunidades» para ver por qué se descartó cada ítem.</p></div>`;
+    return;
+  }
+  const inv = plan.reduce((s,p) => s + p.spend, 0);
+  const gain = plan.reduce((s,p) => s + p.gain, 0);
+  const net = plan.reduce((s,p) => s + p.crafts * p.cost, 0);
+  const rev = plan.reduce((s,p) => s + p.crafts * p.revenue, 0);
+  const focusUsed = plan.reduce((s,p) => s + p.focusUsed, 0);
+  const rows = plan.map(p => `<tr>
+    <td>${itemCell(p.c, p.withFocus ? ' <span class="pill f">foco</span>' : "")}</td>
+    <td>${esc(p.city)} ${p.special ? '<span class="pill b">bono</span>' : ""}<div class="mut" style="font-size:11px">retorno ${pct(p.rrr)}</div></td>
+    <td class="n">${fmt(p.crafts)}${p.amt>1?` <span class="mut">(${fmt(p.units)} u.)</span>`:""}</td>
+    <td class="n">${fmt(p.cost / p.amt)}</td>
+    <td class="n">${fmt(p.sell.price)}${p.sell.fromHistory ? ' <span class="warn" title="Ajustado al promedio de 7 días">*</span>' : ""}<div class="mut" style="font-size:11px">${ageText(p.sell.date)}</div></td>
+    <td class="n pos">${fmt(p.gain)}</td>
+    <td class="n">${pct(p.roi)}</td>
+    <td class="n mut">${p.daily!=null ? fmt(p.daily) : "—"}</td>
+  </tr>`).join("");
+  $("v-plan").innerHTML = `
+    <div class="cards">
+      <div class="card"><div class="k">Inversión (dinero a adelantar)</div><div class="v">${fmt(inv)}</div></div>
+      <div class="card"><div class="k">Ingreso esperado</div><div class="v">${fmt(rev)}</div></div>
+      <div class="card"><div class="k">Ganancia esperada</div><div class="v ${gain>=0?"pos":"neg"}">${fmt(gain)}</div></div>
+      <div class="card"><div class="k">Margen sobre coste neto</div><div class="v">${pct(net ? gain/net : 0)}</div></div>
+      <div class="card"><div class="k">Presupuesto libre</div><div class="v">${fmt(alloc.budgetLeft)}</div></div>
+      ${cfg.useFocus ? `<div class="card"><div class="k">Foco usado</div><div class="v">${fmt(focusUsed)}</div></div>` : ""}
+    </div>
+    <div class="toolbar">
+      <button class="small" id="copyPlan">Copiar plan como texto</button>
+      <button class="small" id="savePlan">Guardar plan</button>
+      <span class="mut" style="font-size:12px">Venta en ${esc(locName(cfg.sellLoc))} · ${cfg.premium ? "premium" : "sin premium"} · calculado ${LAST.at.toLocaleString("es-ES")}</span>
+    </div>
+    <table><thead><tr><th>Ítem</th><th>Craftear en</th><th class="n">Crafteos</th><th class="n">Coste / u.</th><th class="n">Venta / u.</th><th class="n">Ganancia</th><th class="n">Margen</th><th class="n">Ventas/día</th></tr></thead><tbody>${rows}</tbody></table>
+    <div class="note">* Precio ajustado al promedio de los últimos 7 días porque el actual estaba viejo o era sospechosamente alto.
+    La inversión es lo que pagas al comprar; el coste por unidad ya descuenta lo que te devuelve la tasa de retorno, la tarifa de estación${cfg.journals ? ", los diarios" : ""} y el impuesto de venta.
+    ${cfg.journals && cfg.journalProfit ? "La ganancia incluye la venta de los diarios llenos." : ""}</div>`;
+  $("copyPlan").onclick = copyPlan;
+  $("savePlan").onclick = savePlan;
+}
+function renderShop(){
+  const {shop, cfg} = LAST;
+  if (!shop.mats.length){ $("v-shop").innerHTML = `<div class="empty">El plan está vacío.</div>`; return; }
+  const byCity = {};
+  for (const m of shop.mats) (byCity[m.loc] ||= []).push(m);
+  let total = 0;
+  let html = `<div class="toolbar"><button class="small" id="copyShop">Copiar lista de compras</button></div>`;
+  for (const [city, list] of Object.entries(byCity).sort()){
+    list.sort((a,b) => (D.res[a.rid]||a.rid).localeCompare(D.res[b.rid]||b.rid, "es"));
+    const sub = list.reduce((s,m) => s + m.qty * m.price, 0); total += sub;
+    html += `<div class="city-block"><h3>${esc(city)} <span class="mut" style="font-size:13px;font-weight:400">— ${fmt(sub)} plata</span></h3>
+      <table><thead><tr><th>Material</th><th class="n">Cantidad</th><th class="n">Precio u.</th><th class="n">Total</th></tr></thead><tbody>
+      ${list.map(m => `<tr><td><div class="it"><img loading="lazy" src="${icon(m.rid)}" alt=""><div>${esc(D.res[m.rid] || m.rid)}${m.noret ? ' <span class="pill">no retorna</span>' : ""}</div></div></td><td class="n">${fmt(m.qty)}</td><td class="n">${fmt(m.price)}</td><td class="n">${fmt(m.qty*m.price)}</td></tr>`).join("")}
+      </tbody></table></div>`;
+  }
+  if (shop.journals.length){
+    let jt = 0;
+    const rows = shop.journals.map(j => { jt += j.count * j.emptyPrice; return `<tr>
+      <td><div class="it"><img loading="lazy" src="${icon(j.jid+"_EMPTY")}" alt=""><div><span class="tier">T${j.tier}</span>Diario de ${esc(JOURNAL_ES[j.kind])} (vacío)</div></div></td>
+      <td>${esc(j.emptyLoc)}</td><td class="n">${fmt(j.count)}</td><td class="n">${fmt(j.emptyPrice)}</td><td class="n">${fmt(j.count*j.emptyPrice)}</td>
+      <td class="n">${fmt(j.fame)}</td><td class="n">${fmt(j.fullCount)}${j.full ? ` <span class="mut">× ${fmt(j.full.price)} en ${esc(j.full.loc)}</span>` : ""}</td></tr>`; }).join("");
+    total += jt;
+    html += `<div class="city-block"><h3>Diarios <span class="mut" style="font-size:13px;font-weight:400">— ${fmt(jt)} plata</span></h3>
+      <table><thead><tr><th>Diario</th><th>Comprar en</th><th class="n">Cantidad</th><th class="n">Precio u.</th><th class="n">Total</th><th class="n">Fama estimada</th><th class="n">Se llenan</th></tr></thead><tbody>${rows}</tbody></table>
+      <div class="note">La fama se estima a partir de los materiales refinados de cada receta. Los diarios solo se llenan con ítems de su mismo tier.</div></div>`;
+  }
+  html = `<div class="cards"><div class="card"><div class="k">Total a gastar en compras</div><div class="v">${fmt(total)}</div></div>
+    <div class="card"><div class="k">Modo de compra</div><div class="v" style="font-size:15px">${cfg.buyMode==="instant" ? "Compra instantánea" : "Órdenes de compra"}</div></div></div>` + html +
+    `<div class="note">Las cantidades ya descuentan lo que te devuelve la tasa de retorno (se compra lo justo para el primer crafteo y el resto se cubre con lo devuelto). Compra un pequeño extra por si el retorno sale por debajo del promedio.</div>`;
+  $("v-shop").innerHTML = html;
+  $("copyShop").onclick = copyShop;
+}
+function renderOpps(){
+  const {evals} = LAST;
+  const list = evals.filter(e => e.profit != null).sort((a,b) => (a.reason?1:0) - (b.reason?1:0) || b.roi - a.roi).slice(0, 300);
+  const noPrice = evals.filter(e => e.profit == null).length;
+  $("v-opps").innerHTML = `<div class="toolbar"><input type="text" id="oppFilter" placeholder="Filtrar por nombre…" style="max-width:280px"><span class="mut" style="font-size:12px">${evals.length} evaluaciones · ${noPrice} sin precios suficientes · se muestran las 300 mejores</span></div>
+    <table><thead><tr><th>Ítem</th><th>Craftear en</th><th class="n">Coste / u.</th><th class="n">Venta / u.</th><th class="n">Ganancia / crafteo</th><th class="n">Margen</th><th class="n">Ventas/día</th><th>Estado</th></tr></thead><tbody id="oppRows">
+    ${list.map(e => `<tr data-n="${esc(e.c.name.toLowerCase())}">
+      <td>${itemCell(e.c, e.withFocus ? ' <span class="pill f">foco</span>' : "")}</td>
+      <td>${esc(e.city)}${e.special ? ' <span class="pill b">bono</span>' : ""}</td>
+      <td class="n">${fmt(e.cost / e.amt)}</td>
+      <td class="n">${fmt(e.sell?.price)}<div class="mut" style="font-size:11px">${ageText(e.sell?.date)}</div></td>
+      <td class="n ${e.profit>=0?"pos":"neg"}">${fmt(e.profit)}</td>
+      <td class="n">${pct(e.roi)}</td>
+      <td class="n mut">${e.daily!=null ? fmt(e.daily) : "—"}</td>
+      <td>${e.reason ? `<span class="warn">${esc(e.reason)}</span>` : '<span class="pos">Rentable</span>'}</td></tr>`).join("")}
+    </tbody></table>`;
+  $("oppFilter").oninput = ev => { const q = ev.target.value.toLowerCase(); document.querySelectorAll("#oppRows tr").forEach(tr => tr.hidden = q && !tr.dataset.n.includes(q)); };
+}
+function renderSaved(){
+  const saved = store.get("gc_saved", []);
+  if (!saved.length){ $("v-saved").innerHTML = `<div class="empty">No hay planes guardados. Genera un plan y pulsa «Guardar plan».</div>`; return; }
+  $("v-saved").innerHTML = saved.map((s,i) => `<div class="city-block">
+    <div class="toolbar" style="margin:6px 0"><strong style="color:var(--gold2)">${esc(s.title)}</strong>
+    <span class="mut" style="font-size:12px">${new Date(s.at).toLocaleString("es-ES")}</span>
+    <span style="margin-left:auto"></span><button class="small" data-copy="${i}">Copiar</button><button class="small" data-del="${i}">Borrar</button></div>
+    <pre style="white-space:pre-wrap;font-size:12px;color:var(--muted);margin:0;max-height:220px;overflow:auto">${esc(s.text)}</pre></div>`).join("");
+  $("v-saved").querySelectorAll("[data-del]").forEach(b => b.onclick = () => { const s = store.get("gc_saved", []); s.splice(+b.dataset.del, 1); store.set("gc_saved", s); renderSaved(); });
+  $("v-saved").querySelectorAll("[data-copy]").forEach(b => b.onclick = () => copyText(store.get("gc_saved", [])[+b.dataset.copy].text, b));
+}
+function renderHelp(){
+  $("v-help").innerHTML = `
+  <h3>De dónde salen los datos</h3>
+  <p>Los precios y el volumen de ventas vienen de <a href="https://www.albion-online-data.com/" style="color:var(--gold2)">Albion Online Data</a>, que se alimenta de jugadores que usan su cliente. Si un ítem no tiene precio reciente es porque nadie lo ha escaneado: abre el mercado en el juego con el cliente de Albion Data activo para actualizarlo.</p>
+  <p>Las recetas, los bonos de ciudad y la fama de los diarios se extrajeron de los archivos del juego (ao-bin-dumps).</p>
+  <h3>Cómo se calcula</h3>
+  <ul>
+    <li><b>Tasa de retorno:</b> bono base de la ciudad (18%) + bono de especialidad (15% crafteo, 40% refinamiento) + 59% si usas foco. Retorno = 1 − 1/(1 + bono). Puedes poner tu propio valor en «Retorno manual».</li>
+    <li><b>Materiales:</b> se elige la ciudad más barata entre las marcadas. Los artefactos y otros materiales marcados como «no retorna» no se devuelven.</li>
+    <li><b>Tarifa de estación:</b> valor del ítem × 0,1125 × tarifa ÷ 100 (aproximado).</li>
+    <li><b>Venta:</b> impuesto 4% con premium (8% sin premium) y +2,5% si publicas una orden de venta.</li>
+    <li><b>Anti-saturación:</b> se mira cuántas unidades se vendieron en promedio al día durante los últimos 7 días en el mercado de venta, y como mucho se planifica ese número × % × días. Si el precio actual es más de un 25% superior al promedio, se usa el promedio.</li>
+    <li><b>Reparto del presupuesto:</b> se ordenan los ítems por margen y se asigna dinero de mayor a menor, respetando el volumen, el máximo por ítem y el foco disponible.</li>
+    <li><b>Diarios:</b> se calcula la fama de cada crafteo y cuántos diarios vacíos hacen falta para llenarlos; se compran en la ciudad más barata.</li>
+  </ul>
+  <h3>Consejos</h3>
+  <ul>
+    <li>Usa la versión web (Netlify) o, en local, <code>Iniciar_Gildems_Craft.bat</code>: ambas hacen de puente con la API.</li>
+    <li>Con «Todas las ramas» se consultan miles de precios y tarda 1–2 minutos (la API limita las consultas por minuto). Filtrar por rama es mucho más rápido.</li>
+    <li>La calidad del ítem crafteado es aleatoria; la app usa el precio de calidad normal, que es el escenario conservador.</li>
+    <li>Revisa siempre el precio en el juego antes de comprar: los datos pueden tener minutos u horas.</li>
+  </ul>`;
+}
+function renderAll(){ renderPlan(); renderShop(); renderOpps(); }
+
+function planText(){
+  const {cfg, alloc, shop} = LAST;
+  const L = [];
+  L.push(`Gildem's Craft — plan para vender en ${locName(cfg.sellLoc)} (${LAST.at.toLocaleString("es-ES")})`);
+  let inv = 0, gain = 0;
+  for (const p of alloc.plan){ inv += p.spend; gain += p.gain;
+    L.push(`- ${p.c.name} ${p.c.tier}.${p.c.e}${p.withFocus?" (foco)":""}: ${p.crafts} crafteos en ${p.city} → ${p.units} u. a ${fmt(p.sell.price)} · ganancia ${fmt(p.gain)}`); }
+  L.push(`Inversión ${fmt(inv)} · Ganancia esperada ${fmt(gain)} (${pct(inv?gain/inv:0)})`);
+  L.push(""); L.push("Lista de compras:");
+  for (const m of shop.mats) L.push(`- ${D.res[m.rid]||m.rid}: ${m.qty} en ${m.loc} (${fmt(m.price)} c/u)`);
+  for (const j of shop.journals) L.push(`- Diario de ${JOURNAL_ES[j.kind]} T${j.tier} vacío: ${j.count} en ${j.emptyLoc} (${fmt(j.emptyPrice)} c/u)`);
+  return L.join("\n");
+}
+function copyText(text, btn){
+  const done = () => { const o = btn.textContent; btn.textContent = "¡Copiado!"; setTimeout(() => btn.textContent = o, 1500); };
+  if (navigator.clipboard) navigator.clipboard.writeText(text).then(done, () => fallbackCopy(text, done)); else fallbackCopy(text, done);
+}
+function fallbackCopy(text, done){
+  const ta = document.createElement("textarea"); ta.value = text; document.body.appendChild(ta); ta.select();
+  try { document.execCommand("copy"); done(); } catch(e){} ta.remove();
+}
+function copyPlan(){ copyText(planText(), $("copyPlan")); }
+function copyShop(){ copyText(planText().split("Lista de compras:")[1].trim(), $("copyShop")); }
+function savePlan(){
+  const s = store.get("gc_saved", []);
+  const g = LAST.alloc.plan.reduce((a,p) => a + p.gain, 0);
+  s.unshift({at: LAST.at.toISOString(), title: `${locName(LAST.cfg.sellLoc)} · ${LAST.alloc.plan.length} ítems · ganancia ${fmt(g)}`, text: planText()});
+  store.set("gc_saved", s.slice(0, 30));
+  $("savePlan").textContent = "¡Guardado!";
+}
+
+function show(t){
+  document.querySelectorAll("#tabs button").forEach(b => b.classList.toggle("on", b.dataset.t === t));
+  ["plan","shop","opps","saved","help"].forEach(k => $("v-"+k).hidden = k !== t);
+  if (t === "saved") renderSaved();
+}
+document.querySelectorAll("#tabs button").forEach(b => b.onclick = () => show(b.dataset.t));
+$("go").onclick = run;
+initForm();
+renderHelp();
+if (!VIA_PROXY) $("fileWarn").hidden = false;
+</script>
+</body>
+</html>

@@ -1,37 +1,27 @@
+# Netlify publica index.html tal cual (no hay paso de compilación)
+# y hace de puente con la API de Albion Online Data para evitar el bloqueo CORS.
 [build]
-  command = "npm run build"
-  publish = "dist"
-  functions = "netlify/functions"
-[build.environment]
-  NODE_VERSION = "22"
-[functions]
-  node_bundler = "esbuild"
+  publish = "."
+
+[[redirects]]
+  from = "/proxy/america/*"
+  to = "https://west.albion-online-data.com/:splat"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/proxy/europa/*"
+  to = "https://europe.albion-online-data.com/:splat"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/proxy/asia/*"
+  to = "https://east.albion-online-data.com/:splat"
+  status = 200
+  force = true
+
 [[headers]]
   for = "/index.html"
   [headers.values]
-    Cache-Control = "no-cache"
-[[headers]]
-  for = "/src/*"
-  [headers.values]
-    Cache-Control = "public, max-age=180, must-revalidate"
-[[redirects]]
-  from = "/api/market"
-  to = "/.netlify/functions/market"
-  status = 200
-[[redirects]]
-  from = "/api/gold"
-  to = "/.netlify/functions/gold"
-  status = 200
-[[redirects]]
-  from = "/api/catalog"
-  to = "/.netlify/functions/catalog"
-  status = 200
-
-[[headers]]
-  for = "/sw.js"
-  [headers.values]
-    Cache-Control = "no-cache, no-store, must-revalidate"
-[[headers]]
-  for = "/manifest.webmanifest"
-  [headers.values]
-    Cache-Control = "public, max-age=3600"
+    Cache-Control = "public, max-age=0, must-revalidate"
