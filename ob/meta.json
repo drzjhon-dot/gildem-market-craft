@@ -1,0 +1,29 @@
+{
+ "v": 1,
+ "generatedAt": "2026-11-13T02:20:40.319Z",
+ "entries": 1177,
+ "orders": 21156,
+ "shards": {
+  "T7": 88,
+  "T5": 266,
+  "T6": 75,
+  "T8": 202,
+  "T4": 408,
+  "T3": 32,
+  "T1": 29,
+  "T2": 30,
+  "other": 47
+ },
+ "freshHours": 48,
+ "fillDays": 7,
+ "source": "AODP West · NATS marketorders.deduped (Gildem collector)",
+ "lastRun": {
+  "minutes": 25,
+  "messages": 9614,
+  "added": 9043,
+  "updated": 571,
+  "filledUnits": 1606,
+  "invalid": 0,
+  "removed": 11
+ }
+}
