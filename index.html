@@ -1,83 +1,55 @@
 <!doctype html>
 <html lang="es">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <meta name="theme-color" content="#14101f">
-  <meta name="description" content="Planificador de crafting Royal y Mercado Negro para Albion Online. Ramas, bonos, Focus, presupuesto, diarios y listas de compras.">
-  <link rel="manifest" href="./manifest.webmanifest">
-  <link rel="icon" href="./icons/icon.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="./styles.css?v=9.11.0-unified.1">
-  <link rel="stylesheet" href="./lab-v3.css?v=1.0.0">
-  <title>Gildem Albion Lab · Unificado · Craft + Mercados + Refinamiento</title>
+ <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+ <meta name="theme-color" content="#06080b">
+ <meta name="apple-mobile-web-app-capable" content="yes">
+ <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+ <meta name="mobile-web-app-capable" content="yes">
+ <link rel="manifest" href="/manifest.webmanifest">
+ <link rel="apple-touch-icon" href="/assets/pwa-icon-192.png">
+ <meta name="description" content="Gildem Albion Lab 4.0: crafteo para Mercado Negro y ciudades Royal, refinamiento, encantamiento, precios, alertas, granja y tu negocio real con AODP West.">
+ <title>Gildem Albion Lab · Albion Online West</title>
+ <link rel="icon" type="image/webp" href="/assets/branding/gildem-crest.webp">
+ <link rel="stylesheet" href="/styles.css">
 </head>
-<body data-page="crafting">
-<div class="app-shell">
-  <aside class="sidebar">
-    <div class="brand brand-logo-only" aria-label="Gildem Albion Lab"><img class="brand-logo-only-img" src="./assets/branding/gildem-sidebar-logo.webp" alt="Gildem Albion Lab" width="214" height="214"></div>
-    <nav class="nav" aria-label="Navegación principal">
-      <button data-nav="craftcal" class="nav-item"><span class="nav-art" aria-hidden="true"><img src="./assets/tabs/craft-cal.svg" alt="" width="42" height="42"></span><span>Calculadora de Craft</span></button>
-      <button data-nav="crafting" class="nav-item active"><span class="nav-art" aria-hidden="true"><img src="./assets/tabs/black-craft.svg" alt="" width="42" height="42"></span><span>Black Craft</span></button>
-      <button data-nav="autocraft" class="nav-item"><span class="nav-art" aria-hidden="true"><img src="./assets/tabs/royal-craft.svg" alt="" width="42" height="42"></span><span>Royal Craft</span></button>
-      <button data-nav="refinamiento" class="nav-item"><span class="nav-art" aria-hidden="true"><img src="./assets/tabs/refine-tab.svg" alt="" width="42" height="42"></span><span>Refinamiento</span></button>
-      <button data-nav="topmercado" class="nav-item"><span class="nav-art" aria-hidden="true"><img src="./assets/tabs/top-market.svg" alt="" width="42" height="42"></span><span>Top Mercado</span></button>
-      <button data-nav="ajustes" class="nav-item"><span class="nav-art" aria-hidden="true"><img src="./assets/tabs/settings.svg" alt="" width="42" height="42"></span><span>Ajustes y Datos</span></button>
-    </nav>
-    <div class="sidebar-bottom"><div class="side-card"><span class="side-dot"></span><div><strong>Albion Data Project</strong><small id="sidebar-status">Esperando conexión</small></div></div><p>Black Craft · Royal Craft · Refinamiento · AODP West.</p><small class="gildem-build-tag" aria-label="Versión publicada">Gildem v9.11.0 · Unificado 1.0</small></div>
-  </aside>
-  <div class="workspace">
-    <header class="topbar">
-      <div class="topbar-left"><button class="mobile-menu" id="mobile-menu" title="Abrir menú">☰</button><div><div class="eyebrow">Gildem Albion Lab <span class="divider-text">/</span> <span id="breadcrumb">Black Craft</span></div><h1 id="page-title">Black Craft</h1></div></div>
-      <div class="topbar-right"><span class="live-indicator"><i></i><span id="api-indicator">Datos AODP</span></span><select id="server-select" aria-label="Servidor"><option value="west">América · West</option></select><button class="icon-btn" data-action="refresh" title="Actualizar precios">↻</button></div>
-    </header>
-    <main id="main-content" aria-live="polite">
-      <section id="gildem-boot" class="panel boot-panel" role="status">
-        <h2>Preparando Gildem Albion Lab Unificado…</h2>
-        <p>Cargando las ramas y el catálogo. Si la conexión se interrumpe, puedes reparar la carga sin borrar tus planes.</p>
-        <button type="button" class="btn gold" data-boot-repair>Reparar carga</button>
-      </section>
-    </main>
-    <footer class="footer">Precios aportados por la comunidad · El refresco horario no garantiza que cada observación sea reciente. <a href="https://www.albion-online-data.com/" target="_blank" rel="noopener">Fuente AODP ↗</a></footer>
-  </div>
+<body>
+<div class="app">
+ <aside class="sidebar" id="mobile-menu">
+  <div class="brand"><img src="/assets/branding/gildem-sidebar-logo.webp" alt="Emblema Gildem Albion Lab"><div><small>GILDEM ALBION LAB</small><strong>Albion Lab</strong></div></div>
+  <div class="sidebar-label">LABORATORIO / V4.1.0</div>
+  <nav id="main-navigation" aria-label="Navegación principal" class="main-nav">
+   <div class="nav-section">Planificar</div>
+   <button type="button" class="nav-link is-active" data-route="top" id="nav-top"><img src="/assets/tabs/top-market.svg" alt=""><span><strong>Top Mercado</strong><small>Market intelligence</small></span><span class="nav-arrow">›</span></button>
+   <button type="button" class="nav-link" data-route="planner" id="nav-planner"><img src="/assets/tabs/craft-planner.svg" alt=""><span><strong>Craft Planner</strong><small>Planificación de inversión</small></span><span class="nav-arrow">›</span></button>
+   <button type="button" class="nav-link" data-route="bm" id="nav-bm"><img src="/assets/tabs/bm-plan.svg" alt=""><span><strong>Plan Mercado Negro</strong><small>Vender en pocos días</small></span><span class="nav-arrow">›</span></button>
+   <button type="button" class="nav-link" data-route="refine" id="nav-refine"><img src="/assets/tabs/refine-tab.svg" alt=""><span><strong>Refinamiento</strong><small>Comprar · refinar · vender</small></span><span class="nav-arrow">›</span></button>
+   <button type="button" class="nav-link" data-route="calc" id="nav-calc"><img src="/assets/tabs/craft-cal.svg" alt=""><span><strong>Calculadora de Craft</strong><small>Materiales y lotes manuales</small></span><span class="nav-arrow">›</span></button>
+   <div class="nav-section">Vender y vigilar</div>
+   <button type="button" class="nav-link" data-route="prices" id="nav-prices"><img src="/assets/tabs/prices-tab.svg" alt=""><span><strong>Precios y alertas</strong><small>Oro · 8 mercados · avisos</small></span><span class="nav-arrow">›</span></button>
+   <button type="button" class="nav-link" data-route="flips" id="nav-flips"><img src="/assets/tabs/flips-tab.svg" alt=""><span><strong>Flips Mercado Negro</strong><small>Caerleon → MN al instante</small></span><span class="nav-arrow">›</span></button>
+   <button type="button" class="nav-link" data-route="enchant" id="nav-enchant"><img src="/assets/tabs/enchant-tab.svg" alt=""><span><strong>Encantar</strong><small>Runas, almas, reliquias → MN</small></span><span class="nav-arrow">›</span></button>
+   <div class="nav-section">Negocio e isla</div>
+   <button type="button" class="nav-link" data-route="business" id="nav-business"><img src="/assets/tabs/business-tab.svg" alt=""><span><strong>Mi negocio</strong><small>Inversiones y ventas reales</small></span><span class="nav-arrow">›</span></button>
+   <button type="button" class="nav-link" data-route="farm" id="nav-farm"><img src="/assets/tabs/farm-tab.svg" alt=""><span><strong>Isla</strong><small>Cultivos, animales, cocina</small></span><span class="nav-arrow">›</span></button>
+  </nav>
+  <div class="sidebar-bottom"><div class="status-card"><span class="status-dot"></span><div><strong>América · West</strong><small id="source-status">AODP REST · listo para consultar</small></div></div><p>Diez herramientas · Motor 3.0 · solo West.</p><small class="version">STANDALONE · 4.1.0</small></div>
+ </aside>
+ <button type="button" id="mobile-backdrop" aria-label="Cerrar menú" tabindex="-1" hidden></button>
+ <div class="workspace">
+  <header class="topbar"><button id="mobile-nav" aria-label="Mostrar navegación" aria-expanded="false" aria-controls="main-navigation">☰</button><div class="crumb"><span>GILDEM / MARKET INTELLIGENCE</span><strong id="page-name">Top Mercado</strong></div><div class="topbar-right"><label class="mobile-mode-switch" title="Ver resultados como tarjetas o tablas"><input type="checkbox" id="mobile-cards-switch" checked><span>Tarjetas</span></label><span class="region-pill"><span class="mini-dot"></span> Servidor West</span><a href="https://west.albion-online-data.com/api-docs" target="_blank" rel="noopener noreferrer" class="help-link">Documentación API ↗</a></div></header>
+  <main id="main" tabindex="-1"><section class="loading-state"><div class="loading-symbol">✧</div><h1>Preparando el laboratorio…</h1><p>Conectando catálogo y paneles independientes.</p></section></main>
+  <footer>Gildem Albion Lab · Datos comunitarios de Albion Online Data Project · Historial observado ≠ ventas confirmadas · Precios sujetos a antigüedad y profundidad.</footer>
+ </div>
+ <nav class="phone-dock" aria-label="Herramientas para teléfono">
+  <button type="button" data-route="top" class="phone-tab is-active" aria-label="Top Mercado" aria-current="page"><img src="/assets/tabs/top-market.svg" alt=""><span>Mercado</span></button>
+  <button type="button" data-route="planner" class="phone-tab" aria-label="Craft Planner"><img src="/assets/tabs/craft-planner.svg" alt=""><span>Planner</span></button>
+  <button type="button" data-route="bm" class="phone-tab" aria-label="Plan Mercado Negro"><img src="/assets/tabs/bm-plan.svg" alt=""><span>M. Negro</span></button>
+  <button type="button" data-route="refine" class="phone-tab" aria-label="Refinamiento"><img src="/assets/tabs/refine-tab.svg" alt=""><span>Refinar</span></button>
+  <button type="button" data-route="calc" class="phone-tab" aria-label="Calculadora de Craft"><img src="/assets/tabs/craft-cal.svg" alt=""><span>Calculadora</span></button>
+ </nav>
 </div>
 <div id="toast" role="status" aria-live="polite"></div>
-<script>
-(function(){
- const main=document.getElementById('main-content');
- function failed(message){
-  if(!document.getElementById('gildem-boot'))return;
-  const boot=document.getElementById('gildem-boot');
-  const text=boot.querySelector('p');
-  if(text)text.textContent=message||'No se pudo iniciar el panel. Puedes reparar la carga sin borrar tus inversiones.';
-  const title=boot.querySelector('h2');if(title)title.textContent='No se pudo iniciar Gildem Albion Lab Unificado';
- }
- // v9.11.0 · Diagnóstico: además del aviso, averigua QUÉ módulo falló. Un error de
- // «export» casi siempre significa un despliegue mezclado (un archivo de core/ de
- // una versión anterior junto a un app.js nuevo).
- let probed=false;
- function probe(extra){
-  if(probed)return;probed=true;
-  const script=document.querySelector('script[type="module"][src*="app.js"]');
-  const src=script?script.getAttribute('src'):'./app.js';
-  import(src).catch(function(err){
-   const detail=String(err&&err.message||err||'').slice(0,300);
-   const mixed=/export|import|MIME|Unexpected token|Failed to fetch dynamically imported module|404/i.test(detail);
-   failed('No se pudo iniciar. Detalle: «'+detail+'».'+(mixed?' Esto suele significar que algún archivo del sitio quedó de una versión anterior: vuelve a copiar TODOS los archivos del ZIP sobre el repositorio (incluida la carpeta core/), haz Commit y Push, y tras publicar usa Reparar carga.':' Pulsa Reparar carga para actualizar la caché.'));
-  });
-  if(extra)failed(extra);
- }
- window.addEventListener('error',function(e){if(document.getElementById('gildem-boot'))probe('Error al cargar un archivo del sitio ('+String((e&&(e.message||(e.target&&e.target.src)))||'desconocido').slice(0,160)+'). Pulsa Reparar carga.');},true);
- window.addEventListener('unhandledrejection',function(e){if(document.getElementById('gildem-boot'))probe('Falló la inicialización de un módulo'+(e&&e.reason&&e.reason.message?' ('+String(e.reason.message).slice(0,160)+')':'')+'. Pulsa Reparar carga.');});
- window.setTimeout(function(){if(document.getElementById('gildem-boot'))failed('La aplicación no terminó de iniciar. Comprueba tu conexión y utiliza Reparar carga.');},6500);
- document.addEventListener('click',async function(e){
-  const button=e.target.closest('[data-boot-repair]');if(!button)return;
-  button.disabled=true;button.textContent='Limpiando caché…';
-  try{if('serviceWorker' in navigator){const regs=await navigator.serviceWorker.getRegistrations();await Promise.all(regs.map(x=>x.unregister()));}}catch{}
-  try{if('caches' in window){const keys=await caches.keys();await Promise.all(keys.filter(k=>k.startsWith('gildem-craft-pro-')).map(k=>caches.delete(k)));}}catch{}
-  const url=new URL(window.location.href);url.searchParams.set('carga','9.11.0');window.location.replace(url.toString());
- });
-})();
-</script>
-<script type="module" src="./app.js?v=9.11.0-unified.1"></script>
+<script type="module" src="/src/main.js"></script>
 </body>
 </html>

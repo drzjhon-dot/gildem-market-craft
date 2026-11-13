@@ -1,75 +1,75 @@
-import test from 'node:test';
-import assert from 'node:assert/strict';
-import {qualityQuote,rowMap,topTrades,craftCost,craftProfit,allocatePlan,historyDaily} from '../core/engine.js';
-const now=Date.now();
-const ts=(h)=>new Date(now-h*3600000).toISOString();
-const make=(city,id,ask,bid,age=0.2)=>({city,item_id:id,quality:1,sell_price_min:ask,sell_price_min_date:ts(age),buy_price_max:bid,buy_price_max_date:ts(age)});
-test('cotizaciones con precio cero o antiguas nunca son válidas para oportunidades',()=>{
- assert.equal(qualityQuote(make('Martlock','T4_BAG',0,10),'sell_price_min'),null);
- assert.equal(qualityQuote(make('Martlock','T4_BAG',10,11,48),'sell_price_min',24).fresh,false);
+import test from 'node:test';import assert from 'node:assert/strict';
+import {GROUPS,BRANCHES,catalogPage,variant} from '../src/branches.js';
+import {utcRange,toUtcMs,summarizeHistory,quoteMap,cheapestMaterial,marketFetch} from '../src/market.js';
+import {DEFAULTS,settings,returnRate,estimatedFame,journalEstimate} from '../src/planner.js';
+
+const T=Date.parse('2026-11-11T19:00:00Z');const ago=new Date(T-3600e3).toISOString();
+const hist=(id,city='Black Market',daily=100,price=50_000)=>({id,city,averageDailyUnits:daily,averageDailySilver:daily*price,
+ averageUnitPrice:price,activeDays:7,days:7,observations:7,qualities:[1,2,3]});
+const recipe=(materials,city='Martlock',amount=1)=>({city,materials:materials.map(([id,count,ret])=>({id,count,ret:ret!==false})),amount});
+const quote=(id,city,ask,bid=0,at=ago)=>({item_id:id,city,quality:1,sell_price_min:ask,sell_price_min_date:at,buy_price_max:bid,buy_price_max_date:at});
+const recipes={'T6_MAIN_AXE':recipe([['T6_METALBAR',16],['T6_PLANKS',8]]),
+ 'T7_MAIN_AXE':recipe([['T7_METALBAR',16],['T7_PLANKS',8]]),
+ 'T8_MAIN_AXE':recipe([['T8_METALBAR',16],['T8_PLANKS',8]]),
+ 'T4_MAIN_AXE':recipe([['T4_METALBAR',16],['T4_PLANKS',8]]),
+ 'T6_POTION_HEAL':recipe([['T6_HERB',2]],'Brecilien',5)};
+const prices=[...['T4','T6','T7','T8'].flatMap((t,i)=>[
+ quote(`${t}_METALBAR`,'Martlock',350+i*150),quote(`${t}_PLANKS`,'Lymhurst',250+i*160),
+ quote(`${t}_MAIN_AXE`,'Black Market',0,45000+i*13000),quote(`${t}_MAIN_AXE`,'Lymhurst',47000+i*14000)
+]),quote('T6_HERB','Bridgewatch',500),quote('T6_POTION_HEAL','Lymhurst',8000)];
+const q=quoteMap(prices);
+const config={...DEFAULTS,budget:1_000_000,tiers:[4,6,7,8],enchants:[0],saleDays:7};
+
+// Catálogo y rama
+test('11 grupos, 110 opciones, incluidas 5 ramas de refinamiento',()=>{
+ assert.deepEqual(GROUPS.map(g=>g.items.length),[17,9,1,2,13,1,15,9,36,5,2]);
+ assert.equal(BRANCHES.length,110);
+ assert.equal(variant('T7_MAIN_AXE@3').ench,3);
+ assert.equal(variant('T6_MAIN_AXE@9'),null);
 });
-test('arbitraje descontando impuestos y transporte, BM solo instantáneo',()=>{
- const m=rowMap([make('Martlock','T4_BAG',100,90),make('Black Market','T4_BAG',0,150)]);
- const arr=topTrades(m,['T4_BAG'],{tax:.04,setup:.025,transport:5,destinations:['Black Market']});
- assert.equal(arr.length,1);assert.equal(arr[0].profit,39);assert.equal(arr[0].mode,'instant');
-});
-test('crafting no devuelve artefactos y devuelve materiales corrientes',()=>{
- const c=craftCost({materials:[{id:'T4_METALBAR',count:8,ret:true},{id:'ARTIFACT',count:1,ret:false}]},id=>({price:id==='ARTIFACT'?1000:100,city:'Martlock'}),25,20);
- assert.equal(c.materialCost,8*100*.75+1000);assert.equal(c.total,1620);
- const p=craftProfit(c,2000,{tax:.04,setup:.025,mode:'instant'});assert.equal(p.profit,300);
-});
-test('diversificación no excede presupuesto, limita unidades sin historial',()=>{
- const candidates=[{id:'a',cost:100,profit:70,dailySales:null,materials:[{id:'raw',count:8,used:6,unitPrice:10}]},{id:'b',cost:200,profit:100,dailySales:50,materials:[]}];
- const p=allocatePlan(candidates,1000,.1,2);
- assert.equal(p.rows.find(x=>x.id==='a').qty,2);
- assert.ok(p.totalCost<=1000);assert.equal(p.materials.find(x=>x.id==='raw').qtyGross,16);
-});
-test('volumen de historial solo cuenta días UTC completos',()=>{
- const day=Date.UTC(2026,10,7,12,0);const entries=[{timestamp:'2026-11-06T02:00:00Z',item_count:70},{timestamp:'2026-11-07T02:00:00Z',item_count:5000},{timestamp:'2026-10-23T02:00:00Z',item_count:1000}];
- const res=historyDaily(entries,14,day);
- assert.equal(res.count,70);assert.equal(res.daily,5);
+test('distribución del catálogo cubre distintas ramas y tiers sin fabricar IDs',()=>{
+ const ids=['T4_MAIN_AXE','T5_MAIN_AXE','T6_MAIN_AXE','T7_MAIN_AXE','T8_MAIN_AXE','T4_MAIN_SWORD'];
+ const page=catalogPage(ids,['axe','sword'],{limit:4});
+ assert(page.ids.includes('T4_MAIN_SWORD'));assert(page.ids.every(id=>ids.includes(id)));
+ assert.equal(page.total,6);assert.equal(page.complete,false);
 });
 
-import {craftingReturnRate,allocateCraftPlan} from '../core/engine.js';
-import {recipesForBranch,branchByKey} from '../core/branches.js';
-test('bonos diarios no son directamente retorno de recursos',()=>{
- assert.ok(Math.abs(craftingReturnRate({specialty:true}).returnRate-24.8120)<.01);
- assert.ok(Math.abs(craftingReturnRate({specialty:true,dailyBonus:10}).returnRate-30.0699)<.01);
- assert.ok(Math.abs(craftingReturnRate({specialty:true,dailyBonus:20,focus:true}).returnRate-52.8302)<.02);
- assert.ok(Math.abs(craftingReturnRate({specialty:false}).returnRate-15.254)<.01);
- assert.throws(()=>craftingReturnRate({dailyBonus:25}));
+test('días UTC completos: se ignora el día abierto, suma calidades 1–5, deduplica puntos y pondera precios',()=>{
+ const rows=[{item_id:'T6_MAIN_AXE',location:'Black Market',quality:1,data:[
+  {timestamp:'2026-11-10T00:00:00',item_count:12,avg_price:200},
+  {timestamp:'2026-11-10T00:00:00',item_count:12,avg_price:200},
+  {timestamp:'2026-11-11T00:00:00',item_count:1000,avg_price:500}]},
+  {item_id:'T6_MAIN_AXE',location:'Black Market',quality:2,data:[{timestamp:'2026-11-10T00:00:00',item_count:8,avg_price:400}]},
+  {item_id:'T6_MAIN_AXE',location:'Black Market',quality:5,data:[{timestamp:'2026-11-10T00:00:00',item_count:1,avg_price:2000}]}];
+ const rowsOut=summarizeHistory(rows,{days:1,now:T});assert.equal(rowsOut.length,1);
+ assert.equal(rowsOut[0].units,21);assert.equal(rowsOut[0].averageDailySilver,7600);
+ assert.equal(rowsOut[0].averageUnitPrice,7600/21);assert.equal(rowsOut[0].activeDays,1);
+ const r=utcRange(7,T);assert.equal(r.date,'2026-11-04');assert.equal(r.end_date,'2026-11-11');
 });
-test('ramas exactas y filtro de ciudad no mezclan bonos distintos',()=>{
- const mock={
-  'T4_SHOES_PLATE_SET1':{city:'Martlock',materials:[{id:'T4_METALBAR',count:8}]},
-  'T4_SHOES_CLOTH_SET1':{city:'Bridgewatch',materials:[{id:'T4_CLOTH',count:8}]},
-  'T4_SHOES_LEATHER_SET1':{city:'Lymhurst',materials:[{id:'T4_LEATHER',count:8}]},
-  'T4_SHOES_PLATE_SET1@1':{city:'Martlock',materials:[{id:'T4_METALBAR_LEVEL1@1',count:8}]},
- };
- assert.equal(branchByKey('boots_plate').city,'Martlock');
- assert.deepEqual(recipesForBranch(mock,'boots_plate',4,4,1,20,'Martlock'),['T4_SHOES_PLATE_SET1','T4_SHOES_PLATE_SET1@1']);
- assert.equal(recipesForBranch(mock,'boots_plate',4,4,1,20,'Bridgewatch').length,0);
- assert.deepEqual(recipesForBranch(mock,'boots_all',4,4,0,20,'Lymhurst'),['T4_SHOES_LEATHER_SET1']);
+test('rechaza puntos sin precio válido, calidad fuera de 1–5 y fechas futuras',()=>{
+ const x=summarizeHistory([{item_id:'T4_BAG',location:'Thetford',quality:6,data:[{timestamp:'2026-11-10',item_count:100,avg_price:100}]},
+  {item_id:'T4_BAG',location:'Thetford',quality:1,data:[{timestamp:'2026-11-10',item_count:10,avg_price:0}]}],{days:1,now:T});assert.equal(x.length,0);
 });
-test('modo usar todo respeta presupuesto BRUTO y demanda Royal',()=>{
- const c=[
-  {id:'T4_SHOES_PLATE_SET1',city:'Martlock',cost:70,capitalPerUnit:100,profit:40,dailySales:100,materials:[{id:'T4_METALBAR',city:'Fort Sterling',count:8,used:6,unitPrice:10}]},
-  {id:'T4_SHOES_PLATE_SET2',city:'Lymhurst',cost:140,capitalPerUnit:200,profit:50,dailySales:100,materials:[]}
- ];
- const v=allocateCraftPlan(c,1500,{useAll:true,capFraction:.20});
- assert.equal(v.totalCost,1500);assert.equal(v.remaining,0);
- assert.equal(v.rows[0].qty,15);
- assert.equal(v.materials[0].qtyGross,120);
- const safe=allocateCraftPlan(c,1500,{useAll:false,capFraction:.05});
- assert.ok(safe.totalCost<=1500);assert.ok(safe.remaining>0);
+test('ticks .NET, epoch numérico y cotizaciones con fecha explícita',()=>{
+ const ticks=(T/1000*10000000)+621355968000000000;
+ assert(Math.abs(toUtcMs(ticks)-T)<1000);
+ assert.equal(toUtcMs('2026-11-10T00:00:00Z'),Date.parse('2026-11-10'));
+ assert.equal(cheapestMaterial(q,'T6_METALBAR',['Martlock'],48,T).price,500);
+ assert.equal(cheapestMaterial(q,'T6_METALBAR',['Martlock'],0.1,T),null);
 });
-test('sin historial, el modo intensivo no inventa demanda',()=>{
- const p=allocateCraftPlan([{id:'x',city:'Black Market',cost:40,capitalPerUnit:100,profit:20,dailySales:null,materials:[]}],10000,{useAll:true,unknownCap:4});
- assert.equal(p.totalCost,400);assert.equal(p.remaining,9600);assert.equal(p.rows[0].qty,4);
+test('formula de retorno 18+15=>24.812% y Focus obligatorio verificado',()=>{
+ const r=returnRate({recipe:{city:'Martlock'},bonusCity:true});
+ assert(Math.abs(r.returnPct-24.81203)<0.001);
+ assert(returnRate({recipe:{city:'Martlock'},focus:true}).returnPct>r.returnPct);
+ assert.throws(()=>settings({...DEFAULTS,focus:true,focusPerCraft:0,focusAvailable:0}),/Focus/);
+ assert.doesNotThrow(()=>settings({...DEFAULTS,focus:true,focusPerCraft:0,focusAvailable:10000}),'v2.5: el coste de Focus puede venir de la receta del juego');
+ assert.doesNotThrow(()=>settings({...DEFAULTS,focus:true,focusPerCraft:120,focusAvailable:1000}));
 });
-test('la lista de compras incluye diarios vacíos cuando se calculan',()=>{
- const p=allocateCraftPlan([{id:'x',city:'Martlock',cost:90,capitalPerUnit:100,profit:40,dailySales:20,materials:[{id:'T4_LEATHER',city:'Martlock',count:2,used:1.5,unitPrice:30}],journal:{prices:true,empty:'T4_JOURNAL_EMPTY',full:'T4_JOURNAL_FULL',ratio:.5,price:60,buyCity:'Lymhurst'}}],1000,{useAll:true,capFraction:.2});
- const journal=p.materials.find(x=>x.id==='T4_JOURNAL_EMPTY');
- assert.equal(journal.qtyGross,2);
- assert.equal(journal.city,'Lymhurst');
+test('fama y diarios están marcados como estimados, no acreditados',()=>{
+ const f=estimatedFame('T6_MAIN_AXE',recipes.T6_MAIN_AXE,true);
+ assert(f.estimated&&f.value>0);
+ const journal=journalEstimate('T6_MAIN_AXE',f,3);
+ assert(journal?.estimated&&journal.fractional>0);
+ assert.equal(journalEstimate('T6_POTION_HEAL',null,3),null);
 });
+

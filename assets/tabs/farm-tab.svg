@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 80" width="80" height="80" role="img" aria-label="granja"><defs>
+ <linearGradient id="bfarm" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#21301c"/><stop offset=".55" stop-color="#17151c"/><stop offset="1" stop-color="#0e1116"/></linearGradient>
+ <linearGradient id="gfarm" x1="0" y1="0" x2=".9" y2="1"><stop offset="0" stop-color="#ffe9a8"/><stop offset=".45" stop-color="#e3b25c"/><stop offset="1" stop-color="#9a6526"/></linearGradient>
+ <filter id="sfarm" x="-30%" y="-30%" width="160%" height="160%"><feDropShadow dx="0" dy="3" stdDeviation="2" flood-color="#000" flood-opacity=".55"/></filter>
+</defs><rect x="2" y="2" width="76" height="76" rx="15" fill="url(#bfarm)" stroke="#cba76a" stroke-width="2"/><g filter="url(#sfarm)"><path d="M40 62V34" stroke="#6fbf5a" stroke-width="3.5" stroke-linecap="round"/><path d="M40 44c-12 0-16-8-16-14 8 0 16 4 16 14zM40 38c10 0 15-7 15-13-8 0-15 4-15 13z" fill="#7ccf62" stroke="#2d5a22" stroke-width="1.4"/><ellipse cx="40" cy="63" rx="20" ry="4" fill="#5a3d1f"/><circle cx="57" cy="21" r="6" fill="url(#gfarm)"/></g></svg>

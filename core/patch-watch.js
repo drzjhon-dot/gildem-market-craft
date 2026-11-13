@@ -1,5 +1,0 @@
-export function recipeSignature(recipe){if(!recipe)return null;const materials=(recipe.materials||[]).map(m=>({id:m.id,count:m.count,ret:m.ret!==false,maxReturn:m.maxReturn??null})).sort((a,b)=>a.id.localeCompare(b.id));return JSON.stringify({materials,amountCrafted:recipe.amountCrafted||1,city:recipe.city,specialtyEnabled:recipe.specialtyEnabled!==false,dailyEnabled:recipe.dailyEnabled!==false});}
-export function recipeSnapshot(rows,recipes){const snaps={};for(const r of rows||[]){snaps[r.id]=recipeSignature(recipes[r.id]);}return snaps;}
-export function compareSnapshot(snapshot,recipes){const out=[];for(const [id,old] of Object.entries(snapshot||{})){const latest=recipeSignature(recipes[id]);if(latest!==old)out.push({id,missing:!latest,previous:old,current:latest});}return out;}
-export function flagChangedPortfolios(portfolios,recipes,revision){return portfolios.map(p=>{const changes=compareSnapshot(p.recipeSnapshot,recipes);
- return {...p,patchRevisionChecked:revision||null,patchChanges:changes.map(x=>x.id)};});}
