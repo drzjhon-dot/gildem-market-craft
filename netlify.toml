@@ -2,6 +2,8 @@
 # y hace de puente con la API de Albion Online Data para evitar el bloqueo CORS.
 [build]
   publish = "."
+  # No hay nada que compilar; esto anula cualquier comando puesto en la web de Netlify.
+  command = "echo Sin compilacion: se publica index.html tal cual"
 
 [[redirects]]
   from = "/proxy/america/*"

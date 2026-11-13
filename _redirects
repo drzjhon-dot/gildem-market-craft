@@ -1,0 +1,3 @@
+/proxy/america/*  https://west.albion-online-data.com/:splat    200!
+/proxy/europa/*   https://europe.albion-online-data.com/:splat  200!
+/proxy/asia/*     https://east.albion-online-data.com/:splat    200!
