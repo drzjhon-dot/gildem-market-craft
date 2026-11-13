@@ -1,15 +1,1 @@
-{
-  "name": "Gildem Market & Craft · Albion West",
-  "short_name": "Gildem Craft",
-  "description": "Top Mercado, Craft Planner, Calculadora, Refinamiento y Flips para Albion West",
-  "lang": "es",
-  "start_url": "/",
-  "scope": "/",
-  "display": "standalone",
-  "background_color": "#06080b",
-  "theme_color": "#06080b",
-  "icons": [
-    {"src": "/assets/pwa-icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable"},
-    {"src": "/assets/pwa-icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable"}
-  ]
-}
+{"name":"Gildem Albion Lab · Craft Pro v9.11.0","short_name":"Gildem Albion Lab","description":"Plan de crafting con materiales refinados comprados en ciudades de bono, encantamiento exacto y escáner de oportunidades Royal y Mercado Negro.","start_url":"./","scope":"./","display":"standalone","background_color":"#09111d","theme_color":"#09111d","icons":[{"src":"./icons/icon.svg","sizes":"any","type":"image/svg+xml","purpose":"any maskable"}]}

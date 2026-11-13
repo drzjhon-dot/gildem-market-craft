@@ -1,33 +1,58 @@
+# Solo se publica dist/. Las funciones y el código fuente quedan fuera del sitio público.
 [build]
   command = "npm run build"
   publish = "dist"
   functions = "netlify/functions"
+
 [build.environment]
   NODE_VERSION = "22"
+  GILDEM_PREFETCH_ICONS = "0"
+
 [functions]
   node_bundler = "esbuild"
+
 [[headers]]
   for = "/index.html"
   [headers.values]
     Cache-Control = "no-cache"
-[[headers]]
-  for = "/src/*"
-  [headers.values]
-    Cache-Control = "public, max-age=180, must-revalidate"
-[[redirects]]
-  from = "/api/market"
-  to = "/.netlify/functions/market"
-  status = 200
-[[redirects]]
-  from = "/api/catalog"
-  to = "/.netlify/functions/catalog"
-  status = 200
 
 [[headers]]
   for = "/sw.js"
   [headers.values]
-    Cache-Control = "no-cache, no-store, must-revalidate"
+    Cache-Control = "no-cache"
+
 [[headers]]
-  for = "/manifest.webmanifest"
+  for = "/core/*"
   [headers.values]
-    Cache-Control = "public, max-age=3600"
+    Cache-Control = "public, max-age=300"
+
+[[headers]]
+  for = "/item-icons/*"
+  [headers.values]
+    Cache-Control = "public, max-age=604800, immutable"
+
+[[headers]]
+  for = "/app.js"
+  [headers.values]
+    Cache-Control = "no-cache"
+
+[[headers]]
+  for = "/styles.css"
+  [headers.values]
+    Cache-Control = "no-cache"
+
+[[headers]]
+  for = "/catalog/*"
+  [headers.values]
+    Cache-Control = "public, max-age=3600, must-revalidate"
+
+# Adaptador del motor V3; utiliza la MISMA función AODP del proyecto base.
+[[redirects]]
+  from = "/api/market"
+  to = "/.netlify/functions/market"
+  status = 200
+
+[[headers]]
+  for = "/lab-v3/*"
+  [headers.values]
+    Cache-Control = "public, max-age=300, must-revalidate"

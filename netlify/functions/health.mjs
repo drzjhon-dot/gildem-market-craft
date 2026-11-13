@@ -1,0 +1,1 @@
+export default async () => new Response(JSON.stringify({status:'ok',app:'Gildem Craft Pro Royal + BM',version:'9.11.0',functions:true,utc:new Date().toISOString()}),{headers:{'content-type':'application/json; charset=utf-8','cache-control':'no-store'}});

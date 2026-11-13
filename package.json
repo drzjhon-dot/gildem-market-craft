@@ -1,15 +1,22 @@
 {
-  "name": "gildem-market-craft-standalone",
-  "version": "3.1.0",
+  "name": "gildem-albion-lab-unificado",
   "private": true,
+  "version": "9.11.0",
   "type": "module",
-  "description": "Top Mercado, Craft Planner (Motor 3.0), Refinamiento inteligente, Calculadora y modo móvil, AODP West",
+  "description": "Gildem Albion Lab Unificado: Black Craft, Royal Craft, Top Mercado, Calculadora, Refinamiento inteligente y motor BM alternativo, West AODP.",
   "scripts": {
-    "dev": "node scripts/dev.mjs",
-    "test": "node --test tests/*.test.mjs collector/orderbook-core.test.mjs",
-    "build": "npm test && node scripts/build.mjs"
+    "start": "python3 -m http.server 8080",
+    "test": "node --test tests/*.test.mjs lab-v3/tests/refining-v3.test.mjs lab-v3/tests/refining-v28.test.mjs lab-v3/tests/bm-plan-v31.test.mjs lab-v3/tests/engine-v3.test.mjs",
+    "build": "npm run preflight && node --check app.js && node --check lab-v3/src/refine-page.js && node --check lab-v3/src/refining-engine.js && node --check lab-v3/src/bm-page.js && node --check lab-v3/src/bm-plan.js && node --check netlify/functions/private-sync.mjs && node --check netlify/functions/market.mjs && node --check netlify/functions/recipes.mjs && node --check netlify/functions/catalog.mjs && node --check netlify/functions/item-image.mjs && node --check netlify/functions/hourly-prices.mjs && node --check netlify/functions/snapshot.mjs && node --check netlify/functions/market-references.mjs && npm test && node scripts/build.mjs",
+    "preflight": "node scripts/check-deploy.mjs"
   },
   "engines": {
-    "node": ">=20"
+    "node": ">=22.12.0 <23"
+  },
+  "dependencies": {
+    "@netlify/blobs": "11.1.7"
+  },
+  "overrides": {
+    "@netlify/otel": "7.0.6"
   }
 }

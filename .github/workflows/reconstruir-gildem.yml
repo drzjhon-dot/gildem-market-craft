@@ -1,0 +1,34 @@
+name: Gildem Craft Pro | Validar proyecto completo
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  pruebas-y-compilacion:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      GILDEM_PREFETCH_ICONS: '0'
+    steps:
+      - name: Descargar archivos del repositorio
+        uses: actions/checkout@v4
+      - name: Instalar Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Instalar dependencias
+        run: npm install --ignore-scripts --no-audit --no-fund
+      - name: Verificar versión, archivos y ejecutar todos los tests
+        run: npm run build
+      - name: Guardar sitio compilado si todo pasó
+        uses: actions/upload-artifact@v4
+        with:
+          name: Gildem-Craft-Pro-Sitio-Compilado
+          path: dist/
+          if-no-files-found: error
+          retention-days: 14

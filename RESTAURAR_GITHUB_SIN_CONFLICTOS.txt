@@ -1,0 +1,48 @@
+GILDEM ALBION LAB · RESTAURACIÓN COMPLETA
+Versión: 9.9.0-top.7.1
+
+Este ZIP contiene TODO el proyecto, no solo los dos scripts.
+No necesitas combinarlo con ZIP anteriores.
+
+RECOMENDADO SI GITHUB DESKTOP MUESTRA «RESOLVE CONFLICTS BEFORE MERGE»:
+1. En la ventana de conflicto, pulsa «Abort merge»; no pulses «Continue merge».
+2. En GitHub Desktop, entra en File > Clone repository y crea un CLON NUEVO del mismo repositorio
+   en otra carpeta vacía de tu computadora. Asegúrate de usar la rama main (o la rama
+   conectada a Netlify). Así trabajas desde el estado ACTUAL de origin/main, sin conflictos locales viejos.
+3. Extrae ESTE ZIP en otra carpeta temporal.
+4. Abre el nuevo clon desde GitHub Desktop: Repository > Show in Explorer.
+5. Copia TODOS los archivos y carpetas extraídos dentro de la RAÍZ del clon. Reemplaza
+   archivos si Windows lo solicita. El contenido debe quedar en la raíz:
+      index.html
+      app.js
+      styles.css
+      package.json
+      netlify.toml
+      scripts/build.mjs
+      scripts/check-deploy.mjs
+      core/
+      netlify/
+      tests/
+      assets/
+   No copies una carpeta contenedora adicional (ej.: .../repo/Gildem_Albion_Lab/...)
+   y NO borres ni reemplaces la carpeta oculta .git del clon.
+6. Verifica que GitHub Desktop muestre archivos añadidos o modificados, incluyendo los dos scripts.
+7. Haz Commit to main y Push origin. Si la rama tiene protección, crea una rama nueva
+   y abre un Pull Request en GitHub en su lugar.
+8. En Netlify revisa que el despliegue del último commit indique «Published».
+9. En la página comprueba que la versión visible sea «9.9.0-top.7.1».
+   También puedes visitar:
+       https://TU-SITIO.netlify.app/.netlify/functions/health
+   y revisar la propiedad "version".
+10. Si sigues viendo una versión antigua, usa Ctrl+Shift+R, o la función de reparar carga
+    de la propia web para limpiar caché del Service Worker, tras confirmar Published.
+
+NO HAGAS MERGE ENTRE ZIPs NI INTENTES CONTINUAR EL MERGE BLOQUEADO.
+
+VERIFICACIÓN LOCAL HECHA SOBRE EL PROYECTO COMPLETO:
+- npm run build completado con éxito
+- 405 de 405 pruebas aprobadas
+- Resultado de compilación en dist/
+- Los scripts build.mjs y check-deploy.mjs están incluidos
+
+Nota: estos tests no constituyen comprobación de un deploy remoto ni de la API AODP en vivo.

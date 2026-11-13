@@ -1,5 +1,11 @@
+# Archivos temporales. Subir únicamente el código fuente.
 node_modules/
 dist/
 .netlify/
+.cache/
+coverage/
+*.log
+DIAGNOSTICO_EJECUCION.txt
+.gildem-respaldo-antes-*/
 .DS_Store
-.env*
+Thumbs.db

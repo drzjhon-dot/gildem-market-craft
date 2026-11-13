@@ -1,29 +1,4 @@
-/* Gildem v2.0: offline shell ONLY. Never cache market data. */
-const CACHE = 'gildem-shell-v310';
-const SHELL = ["/", "/index.html", "/styles.css", "/manifest.webmanifest", "/src/batch-calculator.js", "/src/demand-signals.js", "/src/top-filters.js", "/src/economics.js", "/src/orderbook.js", "/src/plan-advisor.js", "/src/plan-log.js", "/src/branch-reference.js", "/src/branches.js", "/src/main.js", "/src/market-intelligence.js", "/src/market.js", "/src/planner-transfer.js", "/src/planner.js", "/src/engine-v3.js", "/src/optimizer.js", "/src/refining-engine.js", "/src/refining-data.js", "/src/refine-page.js", "/src/bm-plan.js", "/src/bm-page.js", "/src/market-trends.js", "/src/recipe-extractor.js", "/src/refining.js", "/assets/branding/gildem-crest.webp", "/assets/fonts/rajdhani-latin-600-normal.woff2", "/assets/fonts/rajdhani-latin-700-normal.woff2", "/assets/branding/gildem-sidebar-logo.webp", "/assets/pwa-icon-192.png", "/assets/pwa-icon-512.png", "/assets/scenes/craft-cal.webp", "/assets/scenes/forge.webp", "/assets/scenes/planning.webp", "/assets/scenes/royal-market.webp", "/assets/scenes/top-market.webp", "/assets/tabs/craft-cal.svg", "/assets/tabs/craft-planner.svg", "/assets/tabs/top-market.svg", "/assets/tabs/refine-tab.svg", "/assets/tabs/bm-plan.svg"];
-self.addEventListener('install', event => {
- event.waitUntil(caches.open(CACHE).then(cache => cache.addAll(SHELL)).then(() => self.skipWaiting()));
-});
-self.addEventListener('activate', event => {
- event.waitUntil(Promise.all([
-  caches.keys().then(keys=>Promise.all(keys.filter(k=>k.startsWith('gildem-shell-')&&k!==CACHE).map(k=>caches.delete(k)))),
-  self.clients.claim()
- ]));
-});
-self.addEventListener('fetch', event => {
- const request = event.request;
- if(request.method !== 'GET') return;
- const url = new URL(request.url);
- // Market API and external game/catalog sources are ALWAYS network-only.
- if(url.origin !== self.location.origin || url.pathname.startsWith('/api/') || url.pathname.startsWith('/.netlify/') || url.pathname.startsWith('/netlify/')) return;
- // Network-first allows GitHub/Netlify updates. Offline fallback covers only HTML shell.
- if(request.mode === 'navigate'){
-  event.respondWith(fetch(request).catch(() => caches.match('/index.html')));
-  return;
- }
- if(!SHELL.includes(url.pathname)) return;
- event.respondWith(fetch(request).then(response => {
-  if(response.ok){const copy=response.clone();event.waitUntil(caches.open(CACHE).then(cache=>cache.put(request,copy)));}
-  return response;
- }).catch(() => caches.match(request)));
-});
+const VERSION='gildem-craft-pro-v9.11.0-unified.1';const SHELL=['./','./index.html','./app.js','./app.js?v=9.11.0-unified.1','./styles.css','./styles.css?v=9.11.0-unified.1','./lab-v3.css?v=1.0.0','./lab-v3/src/bm-page.js','./lab-v3/src/refine-page.js','./lab-v3/src/refining-engine.js','./lab-v3/src/market.js','./fonts/bricolage-grotesque-latin-wght-normal.woff2','./fonts/grenze-gotisch-latin-wght-normal.woff2','./core/engine.js','./core/game-focus.js','./core/recipe-supplement.js','./core/motor3.js','./core/marginal-optimizer.js','./core/enforce-config.js','./core/afm-trades.js','./core/names-en.js','./core/icons.js','./core/icon-manifest.js','./core/data.js','./core/catalog.js','./core/branches.js','./core/item-selection.js','./core/refining-integration.js','./core/material-cities.js','./core/refining-opportunities.js','./core/special-recipes.js','./core/personal-learning.js','./core/material-supply.js','./core/market-volume.js','./core/server-policy.js','./core/west-ai-brief.js','./core/demand-first.js','./core/market-impact.js','./core/market-mechanics.js','./core/craft-plan-controls.js','./core/top-market.js','./core/top-craft-bridge.js','./core/sell-hours.js','./core/craft-calc.js','./core/calculator-handoff.js','./core/market-proof.js','./core/bm-listing-prices.js','./core/royal-sale-markets.js','./core/external-demand.js','./core/adaptive-planner.js','./core/market-discovery.js','./core/market-references.js','./core/procurement-liquidity.js','./core/optimizer.js','./core/depth.js','./core/journals.js','./core/plan.js','./core/ledger.js','./core/alerts.js','./core/allocator-v6.js','./core/diversity-policy.js','./core/portfolio-proposals.js','./core/intelligent-portfolio.js','./core/high-volume.js','./core/competition.js','./core/verify.js','./core/cashflow.js','./core/inventory.js','./core/logistics.js','./core/production-view.js','./core/results-view.js','./assets/results-banner.webp','./assets/results-sidebar.webp','./assets/tabs/black-craft.svg','./assets/tabs/royal-craft.svg','./assets/tabs/refine-tab.svg','./assets/scenes/refining.webp','./assets/tabs/top-market.svg','./assets/tabs/craft-cal.svg','./assets/tabs/results.svg','./assets/tabs/settings.svg','./assets/branding/gildem-sidebar-logo.webp','./assets/scenes/black-craft.webp','./assets/scenes/royal-craft.webp','./assets/scenes/top-market.webp','./assets/scenes/craft-cal.webp','./assets/scenes/results.webp','./assets/scenes/settings.webp','./core/level-craft.js','./core/viability.js','./core/market-intelligence.js','./core/city-consolidation.js','./core/opportunity-scan.js','./core/patch-watch.js','./core/sync-crypto.js','./icons/icon.svg','./icons/item-fallback.svg','./manifest.webmanifest'];
+self.addEventListener('install',e=>e.waitUntil(caches.open(VERSION).then(async c=>{await c.addAll(SHELL);await Promise.allSettled(['./catalog/names_es.json','./catalog/recipes.json'].map(url=>c.add(url)));}).then(()=>self.skipWaiting())));
+self.addEventListener('activate',e=>e.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k!==VERSION).map(k=>caches.delete(k)))).then(()=>self.clients.claim())));
+self.addEventListener('fetch',e=>{if(e.request.method!=='GET'||new URL(e.request.url).origin!==self.location.origin)return;if(e.request.url.includes('/.netlify/')||e.request.url.includes('/api/'))return;e.respondWith(fetch(e.request).then(r=>{if(r.ok){const copy=r.clone();caches.open(VERSION).then(c=>c.put(e.request,copy));}return r;}).catch(()=>caches.match(e.request)));});
